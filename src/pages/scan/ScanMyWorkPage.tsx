@@ -21,6 +21,7 @@ export function ScanMyWorkPage() {
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
   const [simulateUnsafe, setSimulateUnsafe] = useState(false)
+  const [visualSafetyChecked, setVisualSafetyChecked] = useState(false)
 
   useEffect(() => {
     if (activeLearner) fetchSubjectsForGrade(activeLearner.grade_id).then(setSubjects)
@@ -39,6 +40,7 @@ export function ScanMyWorkPage() {
       contentType: file.type === 'application/pdf' ? 'pdf' : 'image',
       result,
     })
+    setVisualSafetyChecked(result.visualSafetyChecked)
     setState(result.decision === 'approved' ? 'approved' : 'rejected')
   }
 
@@ -72,9 +74,10 @@ export function ScanMyWorkPage() {
           <Card className="mt-4 flex items-start gap-3 bg-slate-50">
             <ShieldCheck className="mt-0.5 shrink-0 text-brand-600" size={20} />
             <p className="text-xs text-slate-500">
-              Every upload is checked before it's used. File-type and size checks are real; full visual
-              safety scanning (nudity, PII, documents) requires a vision-moderation provider that isn't
-              connected in this demo yet — see the toggle below to preview how a rejection looks.
+              Every upload is checked on our server before it's used — file type, size, and hidden
+              location data in the photo are always verified for real. Deep visual scanning for unsafe
+              imagery runs too once a vision-safety provider is connected; see the toggle below to
+              preview how a rejection looks either way.
             </p>
           </Card>
           <label className="flex items-center gap-2 text-xs font-medium text-slate-500">
@@ -111,7 +114,12 @@ export function ScanMyWorkPage() {
             {preview && (
               <img src={preview} alt="Your upload" className="mb-3 max-h-48 w-full rounded-2xl object-cover" />
             )}
-            <Badge tone="success">{t('scan.approved')}</Badge>
+            <div className="flex flex-wrap gap-2">
+              <Badge tone="success">{t('scan.approved')}</Badge>
+              <Badge tone={visualSafetyChecked ? 'success' : 'neutral'}>
+                {visualSafetyChecked ? 'Visual safety scan: checked' : 'Visual safety scan: not connected'}
+              </Badge>
+            </div>
             <p className="mt-3 font-semibold text-slate-800">{t('scan.detectedSubject')}...</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {subjects.map((s) => (

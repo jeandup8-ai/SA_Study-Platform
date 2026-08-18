@@ -17,6 +17,7 @@ interface ModerationRow {
   content_type: string
   decision: string
   provider: string
+  visual_safety_checked: boolean
   created_at: string
 }
 
@@ -39,7 +40,7 @@ export function AdminDashboardPage() {
 
       const { data: modRows } = await supabase
         .from('moderation_logs')
-        .select('id, content_type, decision, provider, created_at')
+        .select('id, content_type, decision, provider, visual_safety_checked, created_at')
         .order('created_at', { ascending: false })
         .limit(10)
       setModeration(modRows ?? [])
@@ -72,6 +73,7 @@ export function AdminDashboardPage() {
             <tr>
               <th className="px-4 py-2 font-medium">Type</th>
               <th className="px-4 py-2 font-medium">Decision</th>
+              <th className="px-4 py-2 font-medium">Visual scan</th>
               <th className="px-4 py-2 font-medium">Provider</th>
               <th className="px-4 py-2 font-medium">When</th>
             </tr>
@@ -85,13 +87,18 @@ export function AdminDashboardPage() {
                     {row.decision}
                   </span>
                 </td>
+                <td className="px-4 py-2">
+                  <span className={row.visual_safety_checked ? 'text-success-400' : 'text-slate-500'}>
+                    {row.visual_safety_checked ? 'checked' : 'not connected'}
+                  </span>
+                </td>
                 <td className="px-4 py-2 text-slate-400">{row.provider}</td>
                 <td className="px-4 py-2 text-slate-400">{new Date(row.created_at).toLocaleString()}</td>
               </tr>
             ))}
             {moderation.length === 0 && (
               <tr>
-                <td className="px-4 py-6 text-center text-slate-500" colSpan={4}>
+                <td className="px-4 py-6 text-center text-slate-500" colSpan={5}>
                   No moderation events yet.
                 </td>
               </tr>

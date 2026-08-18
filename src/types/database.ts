@@ -925,6 +925,7 @@ export type Database = {
           parent_id: string | null
           provider: string
           reasons: Json
+          visual_safety_checked: boolean
         }
         Insert: {
           content_type: Database["public"]["Enums"]["moderation_content_type"]
@@ -935,6 +936,7 @@ export type Database = {
           parent_id?: string | null
           provider?: string
           reasons?: Json
+          visual_safety_checked?: boolean
         }
         Update: {
           content_type?: Database["public"]["Enums"]["moderation_content_type"]
@@ -945,6 +947,7 @@ export type Database = {
           parent_id?: string | null
           provider?: string
           reasons?: Json
+          visual_safety_checked?: boolean
         }
         Relationships: [
           {

@@ -5,13 +5,18 @@ export type ModerationDecision = 'approved' | 'rejected'
 export type ModerationReasonCode =
   | 'unsupported_file_type'
   | 'file_too_large'
-  | 'suspected_unsafe_content' // reserved for a real vision-safety provider's verdict
-  | 'suspected_pii' // reserved for a real PII-detection provider's verdict
+  | 'suspected_unsafe_content' // a real vision-safety provider flagged the image
+  | 'gps_location_detected' // real EXIF GPS metadata found in the photo
+  | 'suspected_pii' // reserved for a future OCR/PII-detection pass on the image/PDF text
+  | 'moderation_provider_error' // the safety provider call failed — treated as a rejection, not a pass
   | 'demo_simulated_rejection'
 
 export interface ModerationResult {
   decision: ModerationDecision
   reasonCodes: ModerationReasonCode[]
+  /** Did a real visual-safety model actually run, or only structural checks
+   * (file type/size, EXIF GPS)? Lets the UI be honest about what was checked. */
+  visualSafetyChecked: boolean
 }
 
 export interface ModerationProvider {

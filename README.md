@@ -107,12 +107,26 @@ mock tests, the parent dashboard (weekly stats, subject breakdown, attention
 needed), RLS-enforced data isolation, and a read-only admin overview.
 
 **Mocked / deliberately simplified — clearly labelled in the code and UI:**
-- **Content moderation** (`src/lib/moderation/`): real MIME-type and file-size
-  validation, but the actual image-safety scan (nudity, weapons, PII, ID
-  documents) is not implemented — no vision-moderation provider is connected.
-  The UI has a "simulate an unsafe upload" toggle so the rejection UX is
-  demonstrable without a real provider. Swapping in a real one is a single
-  file (`mockProvider.ts` → a new implementation of `ModerationProvider`).
+- **Content moderation** now runs server-side, for real, in a Supabase Edge
+  Function (`supabase/functions/moderate-upload/`) — the client never decides
+  what's safe. Two checks are genuinely live in production terms, not stubs:
+  file-type/size validation (re-checked server-side, independent of whatever
+  the client already did) and real EXIF GPS metadata extraction (a photo with
+  embedded location data is rejected). The vision-safety scan (nudity, weapons,
+  drugs, gore, offensive content) calls Sightengine and is fully wired up, but
+  is *inert* until `SIGHTENGINE_API_USER` / `SIGHTENGINE_API_SECRET` are set as
+  Edge Function secrets — no such account/credentials exist in this project.
+  Until then the function still runs and returns `visualSafetyChecked: false`
+  so the UI can say so honestly rather than pretending a scan happened; the
+  Scan My Work screen and the admin moderation log both surface this flag. Any
+  provider failure or network error **fails closed** (rejected, never silently
+  approved). PII-in-image detection (addresses, phone numbers, ID documents,
+  identity numbers) is not implemented — that needs OCR plus a PII classifier,
+  a larger follow-up. The UI keeps a "simulate an unsafe upload" toggle so the
+  rejection UX is demonstrable without live provider credentials. Swapping in a
+  different vision provider (AWS Rekognition, Google Cloud Vision SafeSearch,
+  Hive, etc.) means changing the `checkWithSightengine` call and env var names
+  inside that one Edge Function file — nothing in the client changes.
 - **Scan My Work's "what is this about"** step asks the learner to pick a
   subject rather than claiming to auto-detect it from the photo — there's no
   OCR/vision AI wired up, and pretending otherwise would be dishonest.
@@ -124,7 +138,11 @@ needed), RLS-enforced data isolation, and a read-only admin overview.
   Illustrative ZAR prices are seeded data, not finalised commercial pricing.
 
 **Requires API credentials (not present in this repo):**
-- A vision/content-safety moderation provider, for real image-safety scanning.
+- A Sightengine account (or another vision-safety provider, with a code change
+  — see above), to activate the deep image-safety scan. Set as Edge Function
+  secrets, never in this repo: `supabase secrets set SIGHTENGINE_API_USER=... SIGHTENGINE_API_SECRET=...`
+  against project `dzphkuzhdpzawhucmjzh`, or via the Supabase dashboard's Edge
+  Function secrets UI. No redeploy of the function is needed once set.
 - A South African payment provider (Paystack / PayFast / Peach Payments, etc.).
 - An LLM provider, if/when the tutor's "explain again" family of interactions
   is upgraded from content-driven to genuinely adaptive.
@@ -152,6 +170,20 @@ and RLS policies directly against the database via SQL, plus a full read of
 every page's code, rather than by clicking through it in a browser session.
 **Whoever runs this next should do one real click-through in a normal
 (non-sandboxed) environment before considering it launch-ready.**
+
+The same restriction applies to the `moderate-upload` Edge Function: it
+deployed successfully (confirmed `ACTIVE` and its source was read back and
+diffed against what was sent), but could not be invoked from this sandbox to
+confirm its live behaviour — `curl` to the function's `*.supabase.co` URL hit
+the same 403. The one external dependency inside it (a dynamic `import()` of
+the `exifr` npm package via esm.sh, for real EXIF GPS parsing) is wrapped in
+try/catch specifically so a failure to load it degrades to "skip the GPS
+check" rather than crashing the whole function — but this has not been
+proven with a live request. **Invoke it once for real before relying on it**:
+`supabase functions invoke moderate-upload --project-ref dzphkuzhdpzawhucmjzh
+-H "Authorization: Bearer <a signed-in parent's access token>"` with a small
+test image attached, and check `visualSafetyChecked` and `reasonCodes` in the
+response match expectations.
 
 ## Database
 

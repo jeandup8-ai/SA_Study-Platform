@@ -1,12 +1,12 @@
 import { supabase } from '@/lib/supabase'
-import { mockModerationProvider } from './mockProvider'
+import { edgeModerationProvider } from './edgeProvider'
 import type { ModerationResult } from './types'
 
 export type { ModerationDecision, ModerationReasonCode, ModerationResult, ModerationProvider } from './types'
 
-// Single swap point: replace with a real provider implementation once one is
-// integrated. Nothing outside this module needs to change.
-export const moderationProvider = mockModerationProvider
+// Single swap point: point this at a different ModerationProvider implementation
+// to change providers. Nothing outside this module needs to change.
+export const moderationProvider = edgeModerationProvider
 
 export async function logModerationDecision(params: {
   learnerId: string
@@ -20,6 +20,7 @@ export async function logModerationDecision(params: {
     content_type: params.contentType,
     decision: params.result.decision,
     reasons: params.result.reasonCodes,
+    visual_safety_checked: params.result.visualSafetyChecked,
     provider: moderationProvider.name,
   })
 }
