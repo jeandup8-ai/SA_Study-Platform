@@ -1,0 +1,31 @@
+import type { Database } from '@/types/database'
+
+export type Tables = Database['public']['Tables']
+export type Enums = Database['public']['Enums']
+
+export type Curriculum = Tables['curricula']['Row']
+export type Grade = Tables['grades']['Row']
+export type Term = Tables['terms']['Row']
+export type Subject = Tables['subjects']['Row']
+export type Topic = Tables['topics']['Row']
+export type Subtopic = Tables['subtopics']['Row']
+export type Lesson = Tables['lessons']['Row']
+export type LessonContent = Tables['lesson_content']['Row']
+export type Media = Tables['media']['Row']
+export type Question = Tables['questions']['Row']
+export type QuestionOption = Tables['question_options']['Row']
+export type Assessment = Tables['assessments']['Row']
+
+export type Parent = Tables['parents']['Row']
+export type Learner = Tables['learners']['Row']
+export type LearnerProgress = Tables['learner_progress']['Row']
+export type Mastery = Tables['mastery']['Row']
+export type ExamReadiness = Tables['exam_readiness']['Row']
+export type ModerationLog = Tables['moderation_logs']['Row']
+export type Subscription = Tables['subscriptions']['Row']
+
+export type LanguageCode = Enums['language_code']
+export type LearnerAvatar = Enums['learner_avatar']
+export type LessonSectionType = Enums['lesson_section_type']
+export type QuestionType = Enums['question_type']
+export type QuestionDifficulty = Enums['question_difficulty']
