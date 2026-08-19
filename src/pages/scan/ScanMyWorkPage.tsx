@@ -15,7 +15,8 @@ export function ScanMyWorkPage() {
   const { t } = useTranslation()
   const { parent } = useAuth()
   const { activeLearner } = useLearner()
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const imageInputRef = useRef<HTMLInputElement>(null)
+  const pdfInputRef = useRef<HTMLInputElement>(null)
   const [state, setState] = useState<ScanState>('idle')
   const [preview, setPreview] = useState<string | null>(null)
   const [subjects, setSubjects] = useState<Subject[]>([])
@@ -53,21 +54,34 @@ export function ScanMyWorkPage() {
 
       {state === 'idle' && (
         <div className="mt-6 space-y-3">
+          {/* Separate inputs, deliberately: combining a forced camera capture with a
+              non-image accept type (PDF) on one input is a known mobile-Chrome trap —
+              Android can kill and reload the whole tab returning from the camera app,
+              wiping in-flight state before the file ever gets processed. */}
           <input
-            ref={fileInputRef}
+            ref={imageInputRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp,application/pdf"
-            capture="environment"
+            accept="image/jpeg,image/png,image/webp"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0]
               if (file) void handleFile(file)
             }}
           />
-          <Button className="w-full" onClick={() => fileInputRef.current?.click()}>
+          <input
+            ref={pdfInputRef}
+            type="file"
+            accept="application/pdf"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) void handleFile(file)
+            }}
+          />
+          <Button className="w-full" onClick={() => imageInputRef.current?.click()}>
             <Camera size={20} /> {t('scan.uploadCta')}
           </Button>
-          <Button variant="secondary" className="w-full" onClick={() => fileInputRef.current?.click()}>
+          <Button variant="secondary" className="w-full" onClick={() => pdfInputRef.current?.click()}>
             <FileText size={20} /> {t('scan.uploadPdf')}
           </Button>
 
