@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Camera, FileText, ShieldCheck } from 'lucide-react'
@@ -15,8 +15,6 @@ export function ScanMyWorkPage() {
   const { t } = useTranslation()
   const { parent } = useAuth()
   const { activeLearner } = useLearner()
-  const imageInputRef = useRef<HTMLInputElement>(null)
-  const pdfInputRef = useRef<HTMLInputElement>(null)
   const [state, setState] = useState<ScanState>('idle')
   const [preview, setPreview] = useState<string | null>(null)
   const [subjects, setSubjects] = useState<Subject[]>([])
@@ -54,36 +52,42 @@ export function ScanMyWorkPage() {
 
       {state === 'idle' && (
         <div className="mt-6 space-y-3">
-          {/* Separate inputs, deliberately: combining a forced camera capture with a
-              non-image accept type (PDF) on one input is a known mobile-Chrome trap —
-              Android can kill and reload the whole tab returning from the camera app,
-              wiping in-flight state before the file ever gets processed. */}
-          <input
-            ref={imageInputRef}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (file) void handleFile(file)
-            }}
-          />
-          <input
-            ref={pdfInputRef}
-            type="file"
-            accept="application/pdf"
-            className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0]
-              if (file) void handleFile(file)
-            }}
-          />
-          <Button className="w-full" onClick={() => imageInputRef.current?.click()}>
-            <Camera size={20} /> {t('scan.uploadCta')}
-          </Button>
-          <Button variant="secondary" className="w-full" onClick={() => pdfInputRef.current?.click()}>
-            <FileText size={20} /> {t('scan.uploadPdf')}
-          </Button>
+          {/* The real <input type="file"> sits directly on top of each button (opacity-0,
+              not display:none) so the tap lands on the input itself rather than going
+              through a JS .click() proxy on a hidden element. Many mobile/in-app browsers
+              silently refuse to open the file picker for a programmatic click on a
+              display:none input — this is the reliable cross-browser pattern.
+              Image and PDF are separate inputs deliberately: combining a forced camera
+              capture with a non-image accept type on one input is a known Android Chrome
+              trap that can kill and reload the whole tab returning from the camera app. */}
+          <div className="relative">
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) void handleFile(file)
+              }}
+            />
+            <Button className="pointer-events-none w-full">
+              <Camera size={20} /> {t('scan.uploadCta')}
+            </Button>
+          </div>
+          <div className="relative">
+            <input
+              type="file"
+              accept="application/pdf"
+              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (file) void handleFile(file)
+              }}
+            />
+            <Button variant="secondary" className="pointer-events-none w-full">
+              <FileText size={20} /> {t('scan.uploadPdf')}
+            </Button>
+          </div>
 
           <Card className="mt-4 flex items-start gap-3 bg-slate-50">
             <ShieldCheck className="mt-0.5 shrink-0 text-brand-600" size={20} />
