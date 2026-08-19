@@ -13,19 +13,42 @@ export function SignUpPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [awaitingConfirmation, setAwaitingConfirmation] = useState(false)
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
     setSubmitting(true)
     try {
-      await signUp({ fullName, email, password })
-      navigate('/onboarding/learner')
+      const { requiresEmailConfirmation } = await signUp({ fullName, email, password })
+      if (requiresEmailConfirmation) {
+        setAwaitingConfirmation(true)
+      } else {
+        navigate('/onboarding/learner')
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.')
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (awaitingConfirmation) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-4 py-10">
+        <Card className="w-full max-w-md text-center">
+          <p className="text-4xl">📩</p>
+          <h1 className="mt-3 text-xl font-extrabold text-slate-900">Check your email</h1>
+          <p className="mt-2 text-sm text-slate-600">
+            We sent a confirmation link to <span className="font-semibold">{email}</span>. Click it,
+            then come back and sign in to set up your child's profile.
+          </p>
+          <Link to="/sign-in" className="mt-6 block">
+            <Button className="w-full">{t('auth.signIn')}</Button>
+          </Link>
+        </Card>
+      </div>
+    )
   }
 
   return (

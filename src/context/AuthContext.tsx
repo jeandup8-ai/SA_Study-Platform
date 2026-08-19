@@ -8,7 +8,11 @@ interface AuthContextValue {
   user: User | null
   parent: Parent | null
   loading: boolean
-  signUp: (params: { fullName: string; email: string; password: string }) => Promise<void>
+  signUp: (params: {
+    fullName: string
+    email: string
+    password: string
+  }) => Promise<{ requiresEmailConfirmation: boolean }>
   signIn: (params: { email: string; password: string }) => Promise<void>
   signOut: () => Promise<void>
   refreshParent: () => Promise<void>
@@ -53,17 +57,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fullName: string
     email: string
     password: string
-  }) {
-    const { data, error } = await supabase.auth.signUp({ email, password })
+  }): Promise<{ requiresEmailConfirmation: boolean }> {
+    // The `parents` row is created server-side by a trigger on auth.users (see
+    // migration 0012) — never inserted from here. Doing it client-side would
+    // require an active session at this exact moment, which doesn't exist yet
+    // when the project requires email confirmation (the default).
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { full_name: fullName } },
+    })
     if (error) throw error
     if (!data.user) throw new Error('Sign up did not return a user.')
 
-    const { error: parentError } = await supabase
-      .from('parents')
-      .insert({ id: data.user.id, full_name: fullName, email })
-    if (parentError) throw parentError
-
-    await loadParent(data.user.id)
+    if (data.session) {
+      await loadParent(data.user.id)
+      return { requiresEmailConfirmation: false }
+    }
+    return { requiresEmailConfirmation: true }
   }
 
   async function signIn({ email, password }: { email: string; password: string }) {
