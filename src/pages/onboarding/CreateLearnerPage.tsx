@@ -22,14 +22,19 @@ export function CreateLearnerPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    fetchActiveCurriculum().then(async (c) => {
-      setCurriculum(c)
-      if (c) {
+    fetchActiveCurriculum()
+      .then(async (c) => {
+        setCurriculum(c)
+        if (!c) {
+          setError('Could not load the curriculum. Please try again shortly.')
+          return
+        }
         const g = await fetchLaunchedGrades(c.id)
         setGrades(g)
         if (g.length > 0) setGradeId(g[0].id)
-      }
-    })
+        else setError('No grades are available yet. Please try again shortly.')
+      })
+      .catch(() => setError('Could not load grades. Please check your connection and try again.'))
   }, [])
 
   async function onSubmit() {

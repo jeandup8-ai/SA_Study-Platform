@@ -150,16 +150,22 @@ needed), RLS-enforced data isolation, and a read-only admin overview.
   video rather than only the built-in SVG/React animations.
 
 **Known operational follow-ups:**
-- **Email confirmation**: the project's default built-in email sender is
-  rate-limited to a handful of emails/hour, which broke testing signups
-  (`email rate limit exceeded`). "Confirm email" (Authentication → Providers →
-  Email) is meant to be switched off for now to unblock testing — that setting
-  lives outside anything the Supabase MCP toolset or this repo can change, so
-  it has to be flipped by hand in the dashboard. **Before real users sign up**,
-  either connect a real SMTP provider (Resend, Postmark, SendGrid, etc. under
+- **Email confirmation** was switched OFF in the dashboard (Authentication →
+  Providers → Email) to unblock testing, after the project's default built-in
+  email sender's rate limit (a handful of emails/hour) broke back-to-back test
+  signups. That's a manual dashboard setting outside anything the Supabase MCP
+  toolset or this repo can change. **Before real users sign up**, either
+  connect a real SMTP provider (Resend, Postmark, SendGrid, etc. under
   Authentication → Settings → SMTP Settings) and re-enable confirmation, or
   make a deliberate, informed call to launch without email verification (not
   recommended from an account-recovery/security standpoint).
+- **Supabase API key format**: use the *legacy* anon (JWT) key for
+  `VITE_SUPABASE_PUBLISHABLE_KEY`, not the newer `sb_publishable_...` key —
+  the newer format returned 401s on direct PostgREST calls from the deployed
+  app (confirmed via Supabase's edge logs), while the legacy JWT key works
+  correctly. Both `.env.example` and the Netlify site's env vars now use the
+  legacy key; if API calls ever start 401ing again after rotating keys,
+  check this first.
 
 **Requires human content review before real use:**
 - All lesson/topic/question content is marked `is_demo_content = true` and is
