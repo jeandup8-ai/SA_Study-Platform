@@ -138,16 +138,28 @@ needed), RLS-enforced data isolation, and a read-only admin overview.
   Illustrative ZAR prices are seeded data, not finalised commercial pricing.
 
 **Requires API credentials (not present in this repo):**
-- A Sightengine account (or another vision-safety provider, with a code change
-  — see above), to activate the deep image-safety scan. Set as Edge Function
-  secrets, never in this repo: `supabase secrets set SIGHTENGINE_API_USER=... SIGHTENGINE_API_SECRET=...`
-  against project `dzphkuzhdpzawhucmjzh`, or via the Supabase dashboard's Edge
-  Function secrets UI. No redeploy of the function is needed once set.
+- ~~A Sightengine account~~ — done: `SIGHTENGINE_API_USER` / `SIGHTENGINE_API_SECRET`
+  are set as Edge Function secrets on project `dzphkuzhdpzawhucmjzh` (never
+  committed here). Not yet confirmed live via a real upload — check the
+  `moderate-upload` function logs after the next real Scan My Work attempt for
+  `visualSafetyChecked: true` before relying on it.
 - A South African payment provider (Paystack / PayFast / Peach Payments, etc.).
 - An LLM provider, if/when the tutor's "explain again" family of interactions
   is upgraded from content-driven to genuinely adaptive.
 - A video-generation provider, if/when `media` rows should include produced
   video rather than only the built-in SVG/React animations.
+
+**Known operational follow-ups:**
+- **Email confirmation**: the project's default built-in email sender is
+  rate-limited to a handful of emails/hour, which broke testing signups
+  (`email rate limit exceeded`). "Confirm email" (Authentication → Providers →
+  Email) is meant to be switched off for now to unblock testing — that setting
+  lives outside anything the Supabase MCP toolset or this repo can change, so
+  it has to be flipped by hand in the dashboard. **Before real users sign up**,
+  either connect a real SMTP provider (Resend, Postmark, SendGrid, etc. under
+  Authentication → Settings → SMTP Settings) and re-enable confirmation, or
+  make a deliberate, informed call to launch without email verification (not
+  recommended from an account-recovery/security standpoint).
 
 **Requires human content review before real use:**
 - All lesson/topic/question content is marked `is_demo_content = true` and is
