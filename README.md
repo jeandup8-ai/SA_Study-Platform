@@ -203,6 +203,78 @@ proven with a live request. **Invoke it once for real before relying on it**:
 test image attached, and check `visualSafetyChecked` and `reasonCodes` in the
 response match expectations.
 
+## Curriculum knowledge base: infrastructure vs. real content
+
+A second build phase added the infrastructure for a real, sourced curriculum
+knowledge base — deliberately kept separate from the demo content above,
+which stays illustrative and untouched.
+
+**What's real and working:**
+- **Schema**: `phases`, `subject_components`, `strands`, `curriculum_outcomes`,
+  `curriculum_sources`, `curriculum_versions`, `atp_entries`, `skills`,
+  `curriculum_skills`, `question_skills`, `learner_skill_mastery`,
+  `terminology`, `exam_plans` (migrations `0013`–`0020`), all RLS-protected
+  (public-read, admin-write). `topics`/`learning_objectives`/`lessons`/
+  `questions` gained a `content_workflow_status` enum
+  (`DRAFT → REVIEW_REQUIRED → VERIFIED → PUBLISHED → ARCHIVED`) and, on
+  `topics`/`learning_objectives`, `source_id`/`source_page`/`source_section`
+  so every extracted record traces back to a page in an official document.
+  CAPS (content requirement) and ATP (yearly pacing) are structurally
+  separate tables, never conflated. IEB is **not** a separate curriculum
+  entity — it's an `assessment_style` enum (`caps_standard` /
+  `ieb_enrichment`) plus skill-tagging on top of the same CAPS topics,
+  per the spec's explicit instruction.
+- **Import pipeline** (`curriculum-tools/`, a standalone Node/tsx package,
+  kept out of the Vite bundle): real PDF (pdfjs-dist, with geometric
+  row/column/heading reconstruction), DOCX (mammoth), HTML (cheerio), and
+  plain-text parsers, feeding grade/term/topic-candidate detectors and a CLI
+  (`npm run import -- --file <path> --document-id <id> [--dry-run]`) that
+  writes extracted topics as `REVIEW_REQUIRED` with full source attribution.
+  Tested against fixture files (explicitly labelled "NOT OFFICIAL CURRICULUM
+  CONTENT") — both parsing and grade/term/topic detection work correctly.
+  See `curriculum-tools/README.md` for real capabilities and limitations.
+- **Admin review UI**: `/admin/curriculum-sources` (mark a source document
+  verified) and `/admin/review-queue` (verify or reject each
+  extracted topic against its source page/section) — nothing extracted can
+  reach `PUBLISHED` without a human clicking Verify.
+- **Terminology verification**: `/admin/terminology` — every subject-vocabulary
+  translation sits as unverified until a reviewer confirms it; only
+  `verified = true` rows are ever returned to a learner-facing feature or the
+  tutor context (`fetchVerifiedTerminology`).
+- **Skill-level mastery**: `src/lib/mastery/engine.ts` now updates
+  `learner_skill_mastery` (same EMA approach as topic mastery) from
+  `question_skills` tags whenever a quiz is recorded. The IEB application
+  score shown on the exam prep page (`src/lib/exam/iebReadiness.ts`) is the
+  learner's average mastery on just the `application` skill — a platform
+  score, explicitly labelled as not an official IEB score.
+- **Recommendation engine** (`src/lib/recommendation/nextTopic.ts`), wired
+  into the child dashboard's "Recommended For You" card: next un-started
+  topic in curriculum order → topic tied to a recent weakness signal → lowest
+  attempted mastery → a topic in a subject with an assessment in the next 14
+  days → spaced revision of a stale-but-mastered topic. Replaces the earlier
+  "lowest-average-subject" heuristic with an actual topic-level suggestion.
+- **AI tutor context assembly** (`src/lib/tutor/context.ts`): given a learner
+  and topic, assembles grade, subject, topic mastery, lesson, learning
+  objectives, this learner's specific recent wrong answers, and verified
+  subject terminology in their language — real data, real queries. **There is
+  still no LLM wired up anywhere in this codebase.** This is the context
+  object a future LLM-backed tutor call would receive; see "AI tutor actions"
+  above for what exists today.
+
+**What's explicitly not done, and why:** actually importing real DBE CAPS/ATP
+documents. This sandbox's network egress blocks `education.gov.za` (confirmed
+via direct `curl`/fetch attempts returning 403, not assumed) — every doc that
+would seed `curriculum_sources` would have to be fabricated, which the task
+explicitly forbids ("Do NOT invent CAPS content"). `curriculum/sources/manifest.json`
+lists the real DBE document sets that should be imported first, each marked
+`PENDING` with an honest note on why it wasn't fetched automatically. The
+fastest path to real content: a human downloads the official PDFs from
+education.gov.za and either uploads them to `curriculum/sources/{caps,atp,sba,ieb}/`
+for `curriculum-tools/` to run against, or a future session gets network access
+to fetch them directly — the whole pipeline (parse → detect → write
+`REVIEW_REQUIRED` → admin review → `VERIFIED`) is ready and tested end-to-end
+against fixtures; it has just never touched a real document yet.
+
 ## Database
 
 Supabase project: `sa-learning-platform` (a dedicated project, separate from

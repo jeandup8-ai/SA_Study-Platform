@@ -164,6 +164,7 @@ export type Database = {
       }
       assessments: {
         Row: {
+          assessment_style: Database["public"]["Enums"]["assessment_style"]
           created_at: string
           grade_id: string
           id: string
@@ -177,6 +178,7 @@ export type Database = {
           type: Database["public"]["Enums"]["assessment_type"]
         }
         Insert: {
+          assessment_style?: Database["public"]["Enums"]["assessment_style"]
           created_at?: string
           grade_id: string
           id?: string
@@ -190,6 +192,7 @@ export type Database = {
           type: Database["public"]["Enums"]["assessment_type"]
         }
         Update: {
+          assessment_style?: Database["public"]["Enums"]["assessment_style"]
           created_at?: string
           grade_id?: string
           id?: string
@@ -233,6 +236,67 @@ export type Database = {
           },
           {
             foreignKeyName: "assessments_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      atp_entries: {
+        Row: {
+          academic_year: string
+          content_workflow_status: Database["public"]["Enums"]["content_workflow_status"]
+          created_at: string
+          id: string
+          sequence_order: number
+          source_id: string | null
+          term_id: string
+          topic_id: string
+          week_end: number | null
+          week_start: number | null
+        }
+        Insert: {
+          academic_year: string
+          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
+          created_at?: string
+          id?: string
+          sequence_order?: number
+          source_id?: string | null
+          term_id: string
+          topic_id: string
+          week_end?: number | null
+          week_start?: number | null
+        }
+        Update: {
+          academic_year?: string
+          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
+          created_at?: string
+          id?: string
+          sequence_order?: number
+          source_id?: string | null
+          term_id?: string
+          topic_id?: string
+          week_end?: number | null
+          week_start?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "atp_entries_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "atp_entries_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "terms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "atp_entries_topic_id_fkey"
             columns: ["topic_id"]
             isOneToOne: false
             referencedRelation: "topics"
@@ -303,6 +367,240 @@ export type Database = {
         }
         Relationships: []
       }
+      curriculum_outcomes: {
+        Row: {
+          code: string | null
+          created_at: string
+          description: string
+          id: string
+          phase_id: string | null
+          sort_order: number
+          source_id: string | null
+          subject_id: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          phase_id?: string | null
+          sort_order?: number
+          source_id?: string | null
+          subject_id: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          phase_id?: string | null
+          sort_order?: number
+          source_id?: string | null
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curriculum_outcomes_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "phases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "curriculum_outcomes_source_fk"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "curriculum_outcomes_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      curriculum_skills: {
+        Row: {
+          learning_objective_id: string | null
+          skill_id: string
+          topic_id: string | null
+          weight: number
+        }
+        Insert: {
+          learning_objective_id?: string | null
+          skill_id: string
+          topic_id?: string | null
+          weight?: number
+        }
+        Update: {
+          learning_objective_id?: string | null
+          skill_id?: string
+          topic_id?: string | null
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curriculum_skills_learning_objective_id_fkey"
+            columns: ["learning_objective_id"]
+            isOneToOne: false
+            referencedRelation: "learning_objectives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "curriculum_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "curriculum_skills_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      curriculum_sources: {
+        Row: {
+          academic_year: string | null
+          checksum: string | null
+          created_at: string
+          document_id: string
+          document_type: Database["public"]["Enums"]["source_document_type"]
+          grade_id: string | null
+          id: string
+          import_date: string | null
+          last_verified: string | null
+          local_file_path: string | null
+          official_url: string | null
+          organisation: string
+          phase_id: string | null
+          publication_year: number | null
+          status: Database["public"]["Enums"]["source_verification_status"]
+          subject_id: string | null
+          title: string
+          updated_at: string
+          version: string | null
+        }
+        Insert: {
+          academic_year?: string | null
+          checksum?: string | null
+          created_at?: string
+          document_id: string
+          document_type: Database["public"]["Enums"]["source_document_type"]
+          grade_id?: string | null
+          id?: string
+          import_date?: string | null
+          last_verified?: string | null
+          local_file_path?: string | null
+          official_url?: string | null
+          organisation?: string
+          phase_id?: string | null
+          publication_year?: number | null
+          status?: Database["public"]["Enums"]["source_verification_status"]
+          subject_id?: string | null
+          title: string
+          updated_at?: string
+          version?: string | null
+        }
+        Update: {
+          academic_year?: string | null
+          checksum?: string | null
+          created_at?: string
+          document_id?: string
+          document_type?: Database["public"]["Enums"]["source_document_type"]
+          grade_id?: string | null
+          id?: string
+          import_date?: string | null
+          last_verified?: string | null
+          local_file_path?: string | null
+          official_url?: string | null
+          organisation?: string
+          phase_id?: string | null
+          publication_year?: number | null
+          status?: Database["public"]["Enums"]["source_verification_status"]
+          subject_id?: string | null
+          title?: string
+          updated_at?: string
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curriculum_sources_grade_id_fkey"
+            columns: ["grade_id"]
+            isOneToOne: false
+            referencedRelation: "grades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "curriculum_sources_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "phases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "curriculum_sources_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      curriculum_versions: {
+        Row: {
+          academic_year: string
+          created_at: string
+          entity_id: string
+          entity_type: string
+          id: string
+          is_current: boolean
+          source_id: string | null
+          supersedes_version_id: string | null
+        }
+        Insert: {
+          academic_year: string
+          created_at?: string
+          entity_id: string
+          entity_type: string
+          id?: string
+          is_current?: boolean
+          source_id?: string | null
+          supersedes_version_id?: string | null
+        }
+        Update: {
+          academic_year?: string
+          created_at?: string
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          is_current?: boolean
+          source_id?: string | null
+          supersedes_version_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curriculum_versions_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "curriculum_versions_supersedes_version_id_fkey"
+            columns: ["supersedes_version_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exam_periods: {
         Row: {
           created_at: string
@@ -351,6 +649,70 @@ export type Database = {
           },
           {
             foreignKeyName: "exam_periods_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "terms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exam_plans: {
+        Row: {
+          based_on_readiness_score: number | null
+          created_at: string
+          generated_at: string
+          id: string
+          is_active: boolean
+          learner_id: string
+          plan_items: Json
+          recommended_session_minutes: number
+          recommended_sessions_per_week: number
+          subject_id: string
+          term_id: string | null
+        }
+        Insert: {
+          based_on_readiness_score?: number | null
+          created_at?: string
+          generated_at?: string
+          id?: string
+          is_active?: boolean
+          learner_id: string
+          plan_items?: Json
+          recommended_session_minutes?: number
+          recommended_sessions_per_week?: number
+          subject_id: string
+          term_id?: string | null
+        }
+        Update: {
+          based_on_readiness_score?: number | null
+          created_at?: string
+          generated_at?: string
+          id?: string
+          is_active?: boolean
+          learner_id?: string
+          plan_items?: Json
+          recommended_session_minutes?: number
+          recommended_sessions_per_week?: number
+          subject_id?: string
+          term_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_plans_learner_id_fkey"
+            columns: ["learner_id"]
+            isOneToOne: false
+            referencedRelation: "learners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_plans_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_plans_term_id_fkey"
             columns: ["term_id"]
             isOneToOne: false
             referencedRelation: "terms"
@@ -463,6 +825,7 @@ export type Database = {
           id: string
           is_launched: boolean
           name: string
+          phase_id: string | null
         }
         Insert: {
           created_at?: string
@@ -471,6 +834,7 @@ export type Database = {
           id?: string
           is_launched?: boolean
           name: string
+          phase_id?: string | null
         }
         Update: {
           created_at?: string
@@ -479,6 +843,7 @@ export type Database = {
           id?: string
           is_launched?: boolean
           name?: string
+          phase_id?: string | null
         }
         Relationships: [
           {
@@ -486,6 +851,13 @@ export type Database = {
             columns: ["curriculum_id"]
             isOneToOne: false
             referencedRelation: "curricula"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "grades_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "phases"
             referencedColumns: ["id"]
           },
         ]
@@ -534,6 +906,68 @@ export type Database = {
             columns: ["lesson_id"]
             isOneToOne: false
             referencedRelation: "lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      learner_skill_mastery: {
+        Row: {
+          attempts_count: number
+          id: string
+          learner_id: string
+          mastery_score: number
+          skill_id: string
+          subject_id: string | null
+          topic_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          attempts_count?: number
+          id?: string
+          learner_id: string
+          mastery_score?: number
+          skill_id: string
+          subject_id?: string | null
+          topic_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          attempts_count?: number
+          id?: string
+          learner_id?: string
+          mastery_score?: number
+          skill_id?: string
+          subject_id?: string | null
+          topic_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learner_skill_mastery_learner_id_fkey"
+            columns: ["learner_id"]
+            isOneToOne: false
+            referencedRelation: "learners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learner_skill_mastery_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learner_skill_mastery_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learner_skill_mastery_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
             referencedColumns: ["id"]
           },
         ]
@@ -601,33 +1035,52 @@ export type Database = {
       }
       learning_objectives: {
         Row: {
+          content_workflow_status: Database["public"]["Enums"]["content_workflow_status"]
           created_at: string
           description: string
           id: string
           language: Database["public"]["Enums"]["language_code"]
           sort_order: number
+          source_id: string | null
+          source_page: string | null
+          source_section: string | null
           subtopic_id: string | null
           topic_id: string
         }
         Insert: {
+          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
           created_at?: string
           description: string
           id?: string
           language?: Database["public"]["Enums"]["language_code"]
           sort_order?: number
+          source_id?: string | null
+          source_page?: string | null
+          source_section?: string | null
           subtopic_id?: string | null
           topic_id: string
         }
         Update: {
+          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
           created_at?: string
           description?: string
           id?: string
           language?: Database["public"]["Enums"]["language_code"]
           sort_order?: number
+          source_id?: string | null
+          source_page?: string | null
+          source_section?: string | null
           subtopic_id?: string | null
           topic_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "learning_objectives_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_sources"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "learning_objectives_subtopic_id_fkey"
             columns: ["subtopic_id"]
@@ -654,6 +1107,7 @@ export type Database = {
           lesson_id: string
           section_type: Database["public"]["Enums"]["lesson_section_type"]
           sort_order: number
+          translation_status: Database["public"]["Enums"]["translation_status"]
         }
         Insert: {
           body_markdown?: string | null
@@ -664,6 +1118,7 @@ export type Database = {
           lesson_id: string
           section_type: Database["public"]["Enums"]["lesson_section_type"]
           sort_order?: number
+          translation_status?: Database["public"]["Enums"]["translation_status"]
         }
         Update: {
           body_markdown?: string | null
@@ -674,6 +1129,7 @@ export type Database = {
           lesson_id?: string
           section_type?: Database["public"]["Enums"]["lesson_section_type"]
           sort_order?: number
+          translation_status?: Database["public"]["Enums"]["translation_status"]
         }
         Relationships: [
           {
@@ -687,6 +1143,7 @@ export type Database = {
       }
       lessons: {
         Row: {
+          content_workflow_status: Database["public"]["Enums"]["content_workflow_status"]
           created_at: string
           estimated_minutes: number
           id: string
@@ -697,8 +1154,10 @@ export type Database = {
           subtopic_id: string | null
           title: string
           topic_id: string
+          translation_status: Database["public"]["Enums"]["translation_status"]
         }
         Insert: {
+          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
           created_at?: string
           estimated_minutes?: number
           id?: string
@@ -709,8 +1168,10 @@ export type Database = {
           subtopic_id?: string | null
           title: string
           topic_id: string
+          translation_status?: Database["public"]["Enums"]["translation_status"]
         }
         Update: {
+          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
           created_at?: string
           estimated_minutes?: number
           id?: string
@@ -721,6 +1182,7 @@ export type Database = {
           subtopic_id?: string | null
           title?: string
           topic_id?: string
+          translation_status?: Database["public"]["Enums"]["translation_status"]
         }
         Relationships: [
           {
@@ -996,6 +1458,47 @@ export type Database = {
         }
         Relationships: []
       }
+      phases: {
+        Row: {
+          code: string
+          created_at: string
+          curriculum_id: string
+          grade_range_end: number
+          grade_range_start: number
+          id: string
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          curriculum_id: string
+          grade_range_end: number
+          grade_range_start: number
+          id?: string
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          curriculum_id?: string
+          grade_range_end?: number
+          grade_range_start?: number
+          id?: string
+          name?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "phases_curriculum_id_fkey"
+            columns: ["curriculum_id"]
+            isOneToOne: false
+            referencedRelation: "curricula"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       question_options: {
         Row: {
           id: string
@@ -1028,8 +1531,43 @@ export type Database = {
           },
         ]
       }
+      question_skills: {
+        Row: {
+          question_id: string
+          skill_id: string
+          weight: number
+        }
+        Insert: {
+          question_id: string
+          skill_id: string
+          weight?: number
+        }
+        Update: {
+          question_id?: string
+          skill_id?: string
+          weight?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "question_skills_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "question_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       questions: {
         Row: {
+          assessment_style: Database["public"]["Enums"]["assessment_style"]
+          content_workflow_status: Database["public"]["Enums"]["content_workflow_status"]
           correct_answer: string
           created_at: string
           difficulty: Database["public"]["Enums"]["question_difficulty"]
@@ -1041,12 +1579,16 @@ export type Database = {
           learning_objective_id: string | null
           prompt: string
           question_type: Database["public"]["Enums"]["question_type"]
+          source_id: string | null
           subject_id: string
           subtopic_id: string | null
           term_id: string | null
           topic_id: string
+          translation_status: Database["public"]["Enums"]["translation_status"]
         }
         Insert: {
+          assessment_style?: Database["public"]["Enums"]["assessment_style"]
+          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
           correct_answer: string
           created_at?: string
           difficulty?: Database["public"]["Enums"]["question_difficulty"]
@@ -1058,12 +1600,16 @@ export type Database = {
           learning_objective_id?: string | null
           prompt: string
           question_type?: Database["public"]["Enums"]["question_type"]
+          source_id?: string | null
           subject_id: string
           subtopic_id?: string | null
           term_id?: string | null
           topic_id: string
+          translation_status?: Database["public"]["Enums"]["translation_status"]
         }
         Update: {
+          assessment_style?: Database["public"]["Enums"]["assessment_style"]
+          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
           correct_answer?: string
           created_at?: string
           difficulty?: Database["public"]["Enums"]["question_difficulty"]
@@ -1075,10 +1621,12 @@ export type Database = {
           learning_objective_id?: string | null
           prompt?: string
           question_type?: Database["public"]["Enums"]["question_type"]
+          source_id?: string | null
           subject_id?: string
           subtopic_id?: string | null
           term_id?: string | null
           topic_id?: string
+          translation_status?: Database["public"]["Enums"]["translation_status"]
         }
         Relationships: [
           {
@@ -1093,6 +1641,13 @@ export type Database = {
             columns: ["learning_objective_id"]
             isOneToOne: false
             referencedRelation: "learning_objectives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questions_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_sources"
             referencedColumns: ["id"]
           },
           {
@@ -1121,6 +1676,75 @@ export type Database = {
             columns: ["topic_id"]
             isOneToOne: false
             referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skills: {
+        Row: {
+          code: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      strands: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          name: string
+          phase_id: string | null
+          sort_order: number
+          subject_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          phase_id?: string | null
+          sort_order?: number
+          subject_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          phase_id?: string | null
+          sort_order?: number
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "strands_phase_id_fkey"
+            columns: ["phase_id"]
+            isOneToOne: false
+            referencedRelation: "phases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "strands_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
         ]
@@ -1183,6 +1807,41 @@ export type Database = {
             columns: ["topic_id"]
             isOneToOne: false
             referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subject_components: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          name: string
+          sort_order: number
+          subject_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number
+          subject_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number
+          subject_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subject_components_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
         ]
@@ -1323,6 +1982,7 @@ export type Database = {
       }
       subtopics: {
         Row: {
+          content_workflow_status: Database["public"]["Enums"]["content_workflow_status"]
           created_at: string
           description: string | null
           id: string
@@ -1331,6 +1991,7 @@ export type Database = {
           topic_id: string
         }
         Insert: {
+          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
           created_at?: string
           description?: string | null
           id?: string
@@ -1339,6 +2000,7 @@ export type Database = {
           topic_id: string
         }
         Update: {
+          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
           created_at?: string
           description?: string | null
           id?: string
@@ -1352,6 +2014,80 @@ export type Database = {
             columns: ["topic_id"]
             isOneToOne: false
             referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      terminology: {
+        Row: {
+          created_at: string
+          definition: string | null
+          grade_id: string | null
+          id: string
+          language: Database["public"]["Enums"]["language_code"]
+          reviewer_id: string | null
+          source_id: string | null
+          subject_id: string | null
+          term: string
+          translation: string | null
+          updated_at: string
+          verified: boolean
+        }
+        Insert: {
+          created_at?: string
+          definition?: string | null
+          grade_id?: string | null
+          id?: string
+          language: Database["public"]["Enums"]["language_code"]
+          reviewer_id?: string | null
+          source_id?: string | null
+          subject_id?: string | null
+          term: string
+          translation?: string | null
+          updated_at?: string
+          verified?: boolean
+        }
+        Update: {
+          created_at?: string
+          definition?: string | null
+          grade_id?: string | null
+          id?: string
+          language?: Database["public"]["Enums"]["language_code"]
+          reviewer_id?: string | null
+          source_id?: string | null
+          subject_id?: string | null
+          term?: string
+          translation?: string | null
+          updated_at?: string
+          verified?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "terminology_grade_id_fkey"
+            columns: ["grade_id"]
+            isOneToOne: false
+            referencedRelation: "grades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "terminology_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "terminology_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "terminology_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
         ]
@@ -1391,6 +2127,7 @@ export type Database = {
       topics: {
         Row: {
           code: string
+          content_workflow_status: Database["public"]["Enums"]["content_workflow_status"]
           created_at: string
           description: string | null
           grade_id: string
@@ -1398,11 +2135,17 @@ export type Database = {
           is_demo_content: boolean
           name: string
           sort_order: number
+          source_id: string | null
+          source_page: string | null
+          source_section: string | null
+          strand_id: string | null
+          subject_component_id: string | null
           subject_id: string
           term_id: string | null
         }
         Insert: {
           code: string
+          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
           created_at?: string
           description?: string | null
           grade_id: string
@@ -1410,11 +2153,17 @@ export type Database = {
           is_demo_content?: boolean
           name: string
           sort_order?: number
+          source_id?: string | null
+          source_page?: string | null
+          source_section?: string | null
+          strand_id?: string | null
+          subject_component_id?: string | null
           subject_id: string
           term_id?: string | null
         }
         Update: {
           code?: string
+          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
           created_at?: string
           description?: string | null
           grade_id?: string
@@ -1422,6 +2171,11 @@ export type Database = {
           is_demo_content?: boolean
           name?: string
           sort_order?: number
+          source_id?: string | null
+          source_page?: string | null
+          source_section?: string | null
+          strand_id?: string | null
+          subject_component_id?: string | null
           subject_id?: string
           term_id?: string | null
         }
@@ -1431,6 +2185,27 @@ export type Database = {
             columns: ["grade_id"]
             isOneToOne: false
             referencedRelation: "grades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "topics_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "topics_strand_id_fkey"
+            columns: ["strand_id"]
+            isOneToOne: false
+            referencedRelation: "strands"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "topics_subject_component_id_fkey"
+            columns: ["subject_component_id"]
+            isOneToOne: false
+            referencedRelation: "subject_components"
             referencedColumns: ["id"]
           },
           {
@@ -1458,9 +2233,17 @@ export type Database = {
     }
     Enums: {
       admin_role: "content_admin" | "super_admin"
+      assessment_style: "caps_standard" | "ieb_enrichment"
       assessment_type: "mini_quiz" | "quiz" | "test" | "mock_exam"
       audit_actor_type: "parent" | "admin" | "system"
       billing_interval: "monthly" | "annual"
+      content_workflow_status:
+        | "DRAFT"
+        | "AI_GENERATED"
+        | "REVIEW_REQUIRED"
+        | "VERIFIED"
+        | "PUBLISHED"
+        | "ARCHIVED"
       language_code:
         | "en"
         | "af"
@@ -1512,12 +2295,32 @@ export type Database = {
         | "true_false"
         | "short_answer"
         | "numeric"
+      source_document_type:
+        | "caps"
+        | "atp"
+        | "sba_exemplar"
+        | "ieb_reference"
+        | "index_page"
+        | "other"
+      source_verification_status:
+        | "PENDING"
+        | "IMPORTED"
+        | "PARSED"
+        | "REVIEW_REQUIRED"
+        | "VERIFIED"
+        | "PUBLISHED"
+        | "ARCHIVED"
       subscription_status:
         | "trialing"
         | "active"
         | "past_due"
         | "canceled"
         | "incomplete"
+      translation_status:
+        | "original"
+        | "machine_translated"
+        | "human_reviewed"
+        | "verified"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1646,9 +2449,18 @@ export const Constants = {
   public: {
     Enums: {
       admin_role: ["content_admin", "super_admin"],
+      assessment_style: ["caps_standard", "ieb_enrichment"],
       assessment_type: ["mini_quiz", "quiz", "test", "mock_exam"],
       audit_actor_type: ["parent", "admin", "system"],
       billing_interval: ["monthly", "annual"],
+      content_workflow_status: [
+        "DRAFT",
+        "AI_GENERATED",
+        "REVIEW_REQUIRED",
+        "VERIFIED",
+        "PUBLISHED",
+        "ARCHIVED",
+      ],
       language_code: [
         "en",
         "af",
@@ -1705,12 +2517,35 @@ export const Constants = {
         "short_answer",
         "numeric",
       ],
+      source_document_type: [
+        "caps",
+        "atp",
+        "sba_exemplar",
+        "ieb_reference",
+        "index_page",
+        "other",
+      ],
+      source_verification_status: [
+        "PENDING",
+        "IMPORTED",
+        "PARSED",
+        "REVIEW_REQUIRED",
+        "VERIFIED",
+        "PUBLISHED",
+        "ARCHIVED",
+      ],
       subscription_status: [
         "trialing",
         "active",
         "past_due",
         "canceled",
         "incomplete",
+      ],
+      translation_status: [
+        "original",
+        "machine_translated",
+        "human_reviewed",
+        "verified",
       ],
     },
   },

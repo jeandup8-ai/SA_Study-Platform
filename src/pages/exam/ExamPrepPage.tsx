@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useLearner } from '@/context/LearnerContext'
 import { fetchSubjectsForGrade } from '@/lib/curriculum/queries'
 import { computeExamReadiness, type ExamReadiness } from '@/lib/exam/readiness'
+import { computeIebApplicationScore } from '@/lib/exam/iebReadiness'
 import { Card, Badge, Button, ProgressRing } from '@/components/ui'
 import type { Subject } from '@/types/curriculum'
 
@@ -13,6 +14,7 @@ export function ExamPrepPage() {
   const [subjects, setSubjects] = useState<Subject[]>([])
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
   const [readiness, setReadiness] = useState<ExamReadiness | null>(null)
+  const [iebScore, setIebScore] = useState<number | null>(null)
 
   useEffect(() => {
     if (activeLearner) fetchSubjectsForGrade(activeLearner.grade_id).then(setSubjects)
@@ -21,6 +23,7 @@ export function ExamPrepPage() {
   useEffect(() => {
     if (activeLearner && selectedSubject) {
       computeExamReadiness(activeLearner.id, selectedSubject.id, activeLearner.grade_id).then(setReadiness)
+      computeIebApplicationScore(activeLearner.id, selectedSubject.id).then(setIebScore)
     }
   }, [activeLearner, selectedSubject])
 
@@ -51,10 +54,26 @@ export function ExamPrepPage() {
         <div className="mt-6 space-y-4">
           <Card className="flex items-center gap-4">
             <ProgressRing value={readiness.readinessScore} size={80} strokeWidth={8} />
-            <p className="font-bold text-slate-800">
-              {t('exam.readinessTitle', { subject: selectedSubject.name })}
-            </p>
+            <div>
+              <p className="font-bold text-slate-800">
+                {t('exam.readinessTitle', { subject: selectedSubject.name })}
+              </p>
+              <p className="text-xs text-slate-400">CAPS mastery — do they know the content?</p>
+            </div>
           </Card>
+
+          {iebScore !== null && (
+            <Card className="flex items-center gap-4 bg-coral-100/40">
+              <ProgressRing value={iebScore} size={64} strokeWidth={7} />
+              <div>
+                <p className="font-bold text-slate-800">IEB-style application</p>
+                <p className="text-xs text-slate-500">
+                  Can they apply what they know to new, unfamiliar problems? A platform-original score
+                  from practice questions tagged "application" — not an official IEB score.
+                </p>
+              </div>
+            </Card>
+          )}
 
           <TopicGroup label={t('exam.strong')} tone="success" items={readiness.strong} />
           <TopicGroup label={t('exam.needsRevision')} tone="warning" items={readiness.needsRevision} />

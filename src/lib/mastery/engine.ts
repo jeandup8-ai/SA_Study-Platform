@@ -92,7 +92,78 @@ export async function recordQuizResult(params: {
     duration_seconds: Math.max(1, Math.round((endedAt.getTime() - startedAt.getTime()) / 1000)),
   })
 
+  await updateSkillMastery({ learnerId, topicId, answers })
+
   return { newMasteryScore: newScore }
+}
+
+/**
+ * Skill-level mastery (spec section 27) — and, filtered to the 'application'
+ * skill, the IEB application score (section 17) — computed from which skills
+ * the just-answered questions were tagged with (question_skills), using the
+ * same EMA approach as topic mastery. A question can carry multiple skill
+ * tags; each contributes independently, weighted by `question_skills.weight`.
+ */
+async function updateSkillMastery(params: {
+  learnerId: string
+  topicId: string
+  answers: QuestionAnswerRecord[]
+}): Promise<void> {
+  const { learnerId, topicId, answers } = params
+  if (answers.length === 0) return
+
+  const [{ data: topic }, { data: questionSkillRows }] = await Promise.all([
+    supabase.from('topics').select('subject_id').eq('id', topicId).maybeSingle(),
+    supabase
+      .from('question_skills')
+      .select('question_id, skill_id, weight')
+      .in(
+        'question_id',
+        answers.map((a) => a.questionId),
+      ),
+  ])
+  if (!topic || !questionSkillRows || questionSkillRows.length === 0) return
+
+  const isCorrectByQuestion = new Map(answers.map((a) => [a.questionId, a.isCorrect]))
+
+  const bySkill = new Map<string, { correctWeight: number; totalWeight: number }>()
+  for (const row of questionSkillRows) {
+    const isCorrect = isCorrectByQuestion.get(row.question_id)
+    if (isCorrect === undefined) continue
+    const bucket = bySkill.get(row.skill_id) ?? { correctWeight: 0, totalWeight: 0 }
+    bucket.totalWeight += row.weight
+    if (isCorrect) bucket.correctWeight += row.weight
+    bySkill.set(row.skill_id, bucket)
+  }
+
+  for (const [skillId, { correctWeight, totalWeight }] of bySkill) {
+    if (totalWeight === 0) continue
+    const scorePercent = (correctWeight / totalWeight) * 100
+
+    const { data: existing } = await supabase
+      .from('learner_skill_mastery')
+      .select('mastery_score, attempts_count')
+      .eq('learner_id', learnerId)
+      .eq('skill_id', skillId)
+      .eq('topic_id', topicId)
+      .eq('subject_id', topic.subject_id)
+      .maybeSingle()
+
+    const newScore = existing ? existing.mastery_score * 0.4 + scorePercent * 0.6 : scorePercent
+
+    await supabase.from('learner_skill_mastery').upsert(
+      {
+        learner_id: learnerId,
+        skill_id: skillId,
+        topic_id: topicId,
+        subject_id: topic.subject_id,
+        mastery_score: newScore,
+        attempts_count: (existing?.attempts_count ?? 0) + 1,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'learner_id,skill_id,topic_id,subject_id' },
+    )
+  }
 }
 
 /**

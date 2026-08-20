@@ -87,6 +87,13 @@
     "askTutor": "Ask My Tutor",
     "scanWork": "Scan My Work",
     "recommended": "Recommended For You",
+    "recommendReason": {
+      "next_in_sequence": "Next up in your syllabus",
+      "prerequisite_weakness": "This will help with something you found tricky",
+      "low_mastery": "Could use a bit more practice",
+      "upcoming_assessment": "Good to revise before your next assessment",
+      "spaced_revision": "Haven't practised this in a while"
+    },
     "switchLearner": "Switch profile",
     "noProgressYet": "No lessons started yet — pick a subject to begin!"
   },

@@ -16,6 +16,9 @@ import { MockTestPage } from '@/pages/exam/MockTestPage'
 import { ParentDashboardPage } from '@/pages/parent/ParentDashboardPage'
 import { SubscriptionPage } from '@/pages/parent/SubscriptionPage'
 import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage'
+import { CurriculumSourcesPage } from '@/pages/admin/CurriculumSourcesPage'
+import { CurriculumReviewPage } from '@/pages/admin/CurriculumReviewPage'
+import { TerminologyReviewPage } from '@/pages/admin/TerminologyReviewPage'
 import { ChildShell } from '@/components/layout/ChildShell'
 import { ParentShell } from '@/components/layout/ParentShell'
 import { AdminShell } from '@/components/layout/AdminShell'
@@ -82,6 +85,9 @@ export default function App() {
             <AdminShell>
               <Routes>
                 <Route index element={<AdminDashboardPage />} />
+                <Route path="curriculum-sources" element={<CurriculumSourcesPage />} />
+                <Route path="review-queue" element={<CurriculumReviewPage />} />
+                <Route path="terminology" element={<TerminologyReviewPage />} />
               </Routes>
             </AdminShell>
           </RequireAdmin>

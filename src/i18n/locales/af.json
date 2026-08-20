@@ -87,6 +87,13 @@
     "askTutor": "Vra My Tutor",
     "scanWork": "Skandeer My Werk",
     "recommended": "Aanbeveel Vir Jou",
+    "recommendReason": {
+      "next_in_sequence": "Volgende in jou sillabus",
+      "prerequisite_weakness": "Dit sal help met iets wat jy lastig gevind het",
+      "low_mastery": "Kan bietjie meer oefening gebruik",
+      "upcoming_assessment": "Goed om te hersien voor jou volgende assessering",
+      "spaced_revision": "Nie onlangs geoefen nie"
+    },
     "switchLearner": "Wissel profiel",
     "noProgressYet": "Nog geen lesse begin nie — kies 'n vak om te begin!"
   },

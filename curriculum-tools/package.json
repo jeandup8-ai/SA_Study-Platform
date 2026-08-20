@@ -1,0 +1,22 @@
+{
+  "name": "curriculum-tools",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Admin-run CLI for importing official DBE curriculum source documents (PDF/DOCX/TXT/HTML) into the curriculum database as REVIEW_REQUIRED records. Never runs client-side; never auto-publishes.",
+  "scripts": {
+    "import": "tsx src/importSource.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.110.8",
+    "cheerio": "^1.0.0",
+    "mammoth": "^1.8.0",
+    "pdfjs-dist": "^4.7.76"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.2",
+    "tsx": "^4.19.2",
+    "typescript": "~6.0.2"
+  }
+}

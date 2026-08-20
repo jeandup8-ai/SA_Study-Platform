@@ -1,0 +1,4 @@
+{
+  "$schema_note": "Append-only log of curriculum import runs. One entry per invocation of the importer (scripts/curriculum-import). Empty until the first real document is imported — this platform has not imported any official curriculum document yet (see manifest.json: all sources are PENDING).",
+  "runs": []
+}

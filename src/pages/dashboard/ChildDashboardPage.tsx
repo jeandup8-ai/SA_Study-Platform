@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { BookOpen, ScanLine, GraduationCap, TrendingUp, MessageCircleHeart } from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
 import { fetchContinueLearning, fetchSubjectMasterySummary, type ContinueLearningItem, type SubjectMasterySummary } from '@/lib/curriculum/dashboard'
+import { recommendNextTopic, type RecommendedTopic } from '@/lib/recommendation/nextTopic'
 import { Card, PressableCard, LearnerAvatarIcon, ProgressRing, Badge } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
 
@@ -13,11 +14,13 @@ export function ChildDashboardPage() {
   const [continueItem, setContinueItem] = useState<ContinueLearningItem | null>(null)
   const [subjects, setSubjects] = useState<SubjectMasterySummary[]>([])
   const [gradeNumber, setGradeNumber] = useState<number | null>(null)
+  const [recommended, setRecommended] = useState<RecommendedTopic | null>(null)
 
   useEffect(() => {
     if (!activeLearner) return
     fetchContinueLearning(activeLearner.id).then(setContinueItem)
     fetchSubjectMasterySummary(activeLearner.id, activeLearner.grade_id).then(setSubjects)
+    recommendNextTopic(activeLearner.id, activeLearner.grade_id).then(setRecommended)
     supabase
       .from('grades')
       .select('grade_number')
@@ -27,8 +30,6 @@ export function ChildDashboardPage() {
   }, [activeLearner])
 
   if (!activeLearner) return null
-
-  const recommended = [...subjects].sort((a, b) => a.averageMastery - b.averageMastery)[0]
 
   return (
     <div className="mx-auto max-w-lg px-4 pt-6">
@@ -100,12 +101,12 @@ export function ChildDashboardPage() {
           <h2 className="mt-8 text-sm font-bold uppercase tracking-wide text-slate-400">
             {t('dashboard.recommended')}
           </h2>
-          <Link to={`/app/subjects/${recommended.subjectId}`} className="mt-3 block">
+          <Link to={`/app/subjects/${recommended.subjectId}/topics/${recommended.topicId}`} className="mt-3 block">
             <PressableCard className="flex items-center justify-between">
               <div>
-                <p className="font-bold text-slate-900">{recommended.subjectName}</p>
+                <p className="font-bold text-slate-900">{recommended.topicName}</p>
                 <p className="text-sm text-slate-500">
-                  {Math.round(recommended.averageMastery)}% {t('subjects.mastery').toLowerCase()}
+                  {recommended.subjectName} · {t(`dashboard.recommendReason.${recommended.reason}`)}
                 </p>
               </div>
               <Badge tone="sun">{t('dashboard.recommended')}</Badge>
