@@ -60,15 +60,26 @@ export function ScanMyWorkPage() {
               inside another can make browsers handle the forwarded click inconsistently.
               Image and PDF are separate inputs deliberately: combining a forced camera
               capture with a non-image accept type on one input is a known Android Chrome
-              trap that can kill and reload the whole tab returning from the camera app. */}
+              trap that can kill and reload the whole tab returning from the camera app.
+
+              `accept` lists both a MIME type AND a file extension for the same reason:
+              on Android, picking a PDF from Google Drive/Files/a third-party file manager
+              often returns a content:// document whose reported MIME type is generic
+              (e.g. application/octet-stream) or blank rather than application/pdf. An
+              accept filter of MIME-type-only can then cause Chrome to drop the selection
+              silently — the picker closes, the input's change event fires with an empty
+              FileList, and the screen just looks like it "did nothing" and went back to
+              the upload options. Pairing the MIME type with the .pdf/.jpg/etc extension
+              is the standard fix: most Android document providers match on either. */}
           <label className="block">
             <input
               type="file"
-              accept="image/jpeg,image/png,image/webp"
+              accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
               className="sr-only"
               onChange={(e) => {
                 const file = e.target.files?.[0]
                 if (file) void handleFile(file)
+                e.target.value = ''
               }}
             />
             <span className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-brand-600 px-7 text-lg font-semibold text-white active:bg-brand-800">
@@ -78,11 +89,12 @@ export function ScanMyWorkPage() {
           <label className="block">
             <input
               type="file"
-              accept="application/pdf"
+              accept="application/pdf,.pdf"
               className="sr-only"
               onChange={(e) => {
                 const file = e.target.files?.[0]
                 if (file) void handleFile(file)
+                e.target.value = ''
               }}
             />
             <span className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border-2 border-brand-200 bg-white px-7 text-lg font-semibold text-brand-700 active:bg-brand-50">
