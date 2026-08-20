@@ -105,7 +105,9 @@
     "lessonsAvailable_other": "{{count}} lesse",
     "mastery": "Bemeestering",
     "nextLesson": "Volgende les",
-    "startTopic": "Begin"
+    "startTopic": "Begin",
+    "noTopicsYet": "Nog geen onderwerpe vir hierdie vak gepubliseer nie.",
+    "noLessonsYet": "Nog geen lesse vir hierdie onderwerp gepubliseer nie."
   },
   "lesson": {
     "step.what_are_we_learning": "Wat leer ons?",
@@ -145,7 +147,11 @@
     "approved": "Reg so! Hier is wat ek gevind het.",
     "detectedSubject": "Dit lyk soos",
     "startLesson": "Verduidelik dit vir my",
-    "generatePractice": "Gee my oefenvrae"
+    "generatePractice": "Gee my oefenvrae",
+    "safetyChecked": "Visuele veiligheidsontleding: nagegaan",
+    "safetyNotConnected": "Visuele veiligheidsontleding: nie gekoppel nie",
+    "safetyNote": "Elke oplaai word op ons bediener nagegaan voordat dit gebruik word — lêertipe, grootte, en versteekte liggingdata in die foto word altyd werklik geverifieer. Diepgaande visuele ontleding vir onveilige beelde loop ook sodra 'n visie-veiligheidsverskaffer gekoppel is; sien die wisselaar hieronder om te sien hoe 'n verwerping in albei gevalle lyk.",
+    "simulateUnsafeToggle": "Demo: simuleer die verwerping van 'n onveilige oplaai"
   },
   "parent": {
     "dashboardTitle": "{{name}} se vordering",
@@ -167,11 +173,15 @@
     "title": "Eksamenvoorbereiding",
     "selectSubject": "Kies 'n vak",
     "readinessTitle": "{{subject}} eksamengereedheid",
+    "readinessSubtitle": "CAPS-bemeestering — ken hulle die inhoud?",
+    "iebApplicationTitle": "IEB-styl toepassing",
+    "iebApplicationSubtitle": "Kan hulle toepas wat hulle weet op nuwe, onbekende probleme? 'n Platform-eie telling uit oefenvrae gemerk \"toepassing\" — nie 'n amptelike IEB-telling nie.",
     "strong": "Sterk",
     "needsRevision": "Benodig hersiening",
     "weak": "Swak",
     "startRevision": "Begin hersieningsplan",
-    "mockTest": "Doen 'n toetseksamen"
+    "mockTest": "Doen 'n toetseksamen",
+    "noQuestionsYet": "Nog geen vrae vir hierdie vak gepubliseer nie."
   },
   "admin": {
     "title": "Admin",

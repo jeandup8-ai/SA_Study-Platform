@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useLearner } from '@/context/LearnerContext'
 import { fetchTopicsWithProgress, type TopicWithProgress } from '@/lib/curriculum/topics'
+import { localizedName } from '@/lib/i18n/localizedName'
 import { supabase } from '@/lib/supabase'
 import { Card, ProgressRing, Badge } from '@/components/ui'
 
@@ -15,13 +16,15 @@ export function TopicListPage() {
 
   useEffect(() => {
     if (!activeLearner || !subjectId) return
-    fetchTopicsWithProgress(subjectId, activeLearner.grade_id, activeLearner.id).then(setTopics)
+    fetchTopicsWithProgress(subjectId, activeLearner.grade_id, activeLearner.id, activeLearner.preferred_language).then(
+      setTopics,
+    )
     supabase
       .from('subjects')
-      .select('name')
+      .select('name, name_af')
       .eq('id', subjectId)
       .maybeSingle()
-      .then(({ data }) => setSubjectName(data?.name ?? ''))
+      .then(({ data }) => setSubjectName(data ? localizedName(data, activeLearner.preferred_language) : ''))
   }, [activeLearner, subjectId])
 
   return (
@@ -48,7 +51,7 @@ export function TopicListPage() {
           </Link>
         ))}
         {topics.length === 0 && (
-          <p className="text-sm text-slate-400">No topics published for this subject yet.</p>
+          <p className="text-sm text-slate-400">{t('subjects.noTopicsYet')}</p>
         )}
       </div>
     </div>

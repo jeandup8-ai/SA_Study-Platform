@@ -17,12 +17,17 @@ export function ExamPrepPage() {
   const [iebScore, setIebScore] = useState<number | null>(null)
 
   useEffect(() => {
-    if (activeLearner) fetchSubjectsForGrade(activeLearner.grade_id).then(setSubjects)
+    if (activeLearner) fetchSubjectsForGrade(activeLearner.grade_id, activeLearner.preferred_language).then(setSubjects)
   }, [activeLearner])
 
   useEffect(() => {
     if (activeLearner && selectedSubject) {
-      computeExamReadiness(activeLearner.id, selectedSubject.id, activeLearner.grade_id).then(setReadiness)
+      computeExamReadiness(
+        activeLearner.id,
+        selectedSubject.id,
+        activeLearner.grade_id,
+        activeLearner.preferred_language,
+      ).then(setReadiness)
       computeIebApplicationScore(activeLearner.id, selectedSubject.id).then(setIebScore)
     }
   }, [activeLearner, selectedSubject])
@@ -58,7 +63,7 @@ export function ExamPrepPage() {
               <p className="font-bold text-slate-800">
                 {t('exam.readinessTitle', { subject: selectedSubject.name })}
               </p>
-              <p className="text-xs text-slate-400">CAPS mastery — do they know the content?</p>
+              <p className="text-xs text-slate-400">{t('exam.readinessSubtitle')}</p>
             </div>
           </Card>
 
@@ -66,11 +71,8 @@ export function ExamPrepPage() {
             <Card className="flex items-center gap-4 bg-coral-100/40">
               <ProgressRing value={iebScore} size={64} strokeWidth={7} />
               <div>
-                <p className="font-bold text-slate-800">IEB-style application</p>
-                <p className="text-xs text-slate-500">
-                  Can they apply what they know to new, unfamiliar problems? A platform-original score
-                  from practice questions tagged "application" — not an official IEB score.
-                </p>
+                <p className="font-bold text-slate-800">{t('exam.iebApplicationTitle')}</p>
+                <p className="text-xs text-slate-500">{t('exam.iebApplicationSubtitle')}</p>
               </div>
             </Card>
           )}

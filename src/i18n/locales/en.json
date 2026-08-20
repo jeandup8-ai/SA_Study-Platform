@@ -105,7 +105,9 @@
     "lessonsAvailable_other": "{{count}} lessons",
     "mastery": "Mastery",
     "nextLesson": "Next lesson",
-    "startTopic": "Start"
+    "startTopic": "Start",
+    "noTopicsYet": "No topics published for this subject yet.",
+    "noLessonsYet": "No lessons published for this topic yet."
   },
   "lesson": {
     "step.what_are_we_learning": "What are we learning?",
@@ -145,7 +147,11 @@
     "approved": "Got it! Here's what I found.",
     "detectedSubject": "This looks like",
     "startLesson": "Explain this to me",
-    "generatePractice": "Give me practice questions"
+    "generatePractice": "Give me practice questions",
+    "safetyChecked": "Visual safety scan: checked",
+    "safetyNotConnected": "Visual safety scan: not connected",
+    "safetyNote": "Every upload is checked on our server before it's used — file type, size, and hidden location data in the photo are always verified for real. Deep visual scanning for unsafe imagery runs too once a vision-safety provider is connected; see the toggle below to preview how a rejection looks either way.",
+    "simulateUnsafeToggle": "Demo: simulate an unsafe upload being rejected"
   },
   "parent": {
     "dashboardTitle": "{{name}}'s progress",
@@ -167,11 +173,15 @@
     "title": "Exam Preparation",
     "selectSubject": "Choose a subject",
     "readinessTitle": "{{subject}} exam readiness",
+    "readinessSubtitle": "CAPS mastery — do they know the content?",
+    "iebApplicationTitle": "IEB-style application",
+    "iebApplicationSubtitle": "Can they apply what they know to new, unfamiliar problems? A platform-original score from practice questions tagged \"application\" — not an official IEB score.",
     "strong": "Strong",
     "needsRevision": "Needs revision",
     "weak": "Weak",
     "startRevision": "Start revision plan",
-    "mockTest": "Take a mock test"
+    "mockTest": "Take a mock test",
+    "noQuestionsYet": "No questions published for this subject yet."
   },
   "admin": {
     "title": "Admin",

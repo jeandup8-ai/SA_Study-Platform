@@ -1,4 +1,6 @@
 import { supabase } from '@/lib/supabase'
+import { localizedName } from '@/lib/i18n/localizedName'
+import type { LanguageCode } from '@/types/curriculum'
 
 export interface ExamReadiness {
   readinessScore: number
@@ -7,8 +9,17 @@ export interface ExamReadiness {
   weak: { topicId: string; name: string; score: number }[]
 }
 
-export async function computeExamReadiness(learnerId: string, subjectId: string, gradeId: string): Promise<ExamReadiness> {
-  const { data: topics } = await supabase.from('topics').select('id, name').eq('subject_id', subjectId).eq('grade_id', gradeId)
+export async function computeExamReadiness(
+  learnerId: string,
+  subjectId: string,
+  gradeId: string,
+  language: LanguageCode = 'en',
+): Promise<ExamReadiness> {
+  const { data: topics } = await supabase
+    .from('topics')
+    .select('id, name, name_af')
+    .eq('subject_id', subjectId)
+    .eq('grade_id', gradeId)
   const topicList = topics ?? []
   if (topicList.length === 0) {
     return { readinessScore: 0, strong: [], needsRevision: [], weak: [] }
@@ -24,7 +35,11 @@ export async function computeExamReadiness(learnerId: string, subjectId: string,
     )
   const scoreByTopic = new Map((masteryRows ?? []).map((m) => [m.topic_id, Number(m.mastery_score)]))
 
-  const entries = topicList.map((t) => ({ topicId: t.id, name: t.name, score: scoreByTopic.get(t.id) ?? 0 }))
+  const entries = topicList.map((t) => ({
+    topicId: t.id,
+    name: localizedName(t, language),
+    score: scoreByTopic.get(t.id) ?? 0,
+  }))
   const readinessScore = entries.reduce((sum, e) => sum + e.score, 0) / entries.length
 
   return {

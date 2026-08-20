@@ -18,9 +18,9 @@ export function ChildDashboardPage() {
 
   useEffect(() => {
     if (!activeLearner) return
-    fetchContinueLearning(activeLearner.id).then(setContinueItem)
-    fetchSubjectMasterySummary(activeLearner.id, activeLearner.grade_id).then(setSubjects)
-    recommendNextTopic(activeLearner.id, activeLearner.grade_id).then(setRecommended)
+    fetchContinueLearning(activeLearner.id, activeLearner.preferred_language).then(setContinueItem)
+    fetchSubjectMasterySummary(activeLearner.id, activeLearner.grade_id, activeLearner.preferred_language).then(setSubjects)
+    recommendNextTopic(activeLearner.id, activeLearner.grade_id, activeLearner.preferred_language).then(setRecommended)
     supabase
       .from('grades')
       .select('grade_number')

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { CheckCircle2, Circle, PlayCircle } from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
 import { fetchLessonsForTopic } from '@/lib/curriculum/queries'
+import { localizedName } from '@/lib/i18n/localizedName'
 import { supabase } from '@/lib/supabase'
 import { Card } from '@/components/ui'
 import type { Lesson, LearnerProgress } from '@/types/curriculum'
@@ -29,10 +30,10 @@ export function LessonListPage() {
     })
     supabase
       .from('topics')
-      .select('name')
+      .select('name, name_af')
       .eq('id', topicId)
       .maybeSingle()
-      .then(({ data }) => setTopicName(data?.name ?? ''))
+      .then(({ data }) => setTopicName(data ? localizedName(data, activeLearner.preferred_language) : ''))
   }, [activeLearner, topicId])
 
   return (
@@ -54,7 +55,7 @@ export function LessonListPage() {
           )
         })}
         {lessons.length === 0 && (
-          <p className="text-sm text-slate-400">No lessons published for this topic yet.</p>
+          <p className="text-sm text-slate-400">{t('subjects.noLessonsYet')}</p>
         )}
       </div>
       <p className="mt-4 text-xs text-slate-400">{t('common.demoContent')}</p>

@@ -1,4 +1,6 @@
 import { supabase } from '@/lib/supabase'
+import { localizedName } from '@/lib/i18n/localizedName'
+import type { LanguageCode } from '@/types/curriculum'
 
 export interface ContinueLearningItem {
   lessonId: string
@@ -12,7 +14,10 @@ export interface ContinueLearningItem {
 // Nested PostgREST embeds are avoided here in favour of a few flat, plainly-typed
 // queries — simpler to keep correctly typed against the generated Database types
 // than relying on the query-builder's string-parsed embed inference.
-export async function fetchContinueLearning(learnerId: string): Promise<ContinueLearningItem | null> {
+export async function fetchContinueLearning(
+  learnerId: string,
+  language: LanguageCode = 'en',
+): Promise<ContinueLearningItem | null> {
   const { data: progress } = await supabase
     .from('learner_progress')
     .select('lesson_id')
@@ -32,14 +37,14 @@ export async function fetchContinueLearning(learnerId: string): Promise<Continue
 
   const { data: topic } = await supabase
     .from('topics')
-    .select('id, name, subject_id')
+    .select('id, name, name_af, subject_id')
     .eq('id', lesson.topic_id)
     .maybeSingle()
   if (!topic) return null
 
   const { data: subject } = await supabase
     .from('subjects')
-    .select('id, name')
+    .select('id, name, name_af')
     .eq('id', topic.subject_id)
     .maybeSingle()
   if (!subject) return null
@@ -48,9 +53,9 @@ export async function fetchContinueLearning(learnerId: string): Promise<Continue
     lessonId: lesson.id,
     lessonTitle: lesson.title,
     topicId: topic.id,
-    topicName: topic.name,
+    topicName: localizedName(topic, language),
     subjectId: subject.id,
-    subjectName: subject.name,
+    subjectName: localizedName(subject, language),
   }
 }
 
@@ -64,6 +69,7 @@ export interface SubjectMasterySummary {
 export async function fetchSubjectMasterySummary(
   learnerId: string,
   gradeId: string,
+  language: LanguageCode = 'en',
 ): Promise<SubjectMasterySummary[]> {
   const { data: gradeSubjects } = await supabase
     .from('grade_subjects')
@@ -73,7 +79,7 @@ export async function fetchSubjectMasterySummary(
   const subjectIds = (gradeSubjects ?? []).map((r) => r.subject_id)
   if (subjectIds.length === 0) return []
 
-  const { data: subjects } = await supabase.from('subjects').select('id, name, color_key').in('id', subjectIds)
+  const { data: subjects } = await supabase.from('subjects').select('id, name, name_af, color_key').in('id', subjectIds)
 
   const { data: topics } = await supabase.from('topics').select('id, subject_id').in('subject_id', subjectIds)
   const topicToSubject = new Map((topics ?? []).map((t) => [t.id, t.subject_id]))
@@ -97,6 +103,6 @@ export async function fetchSubjectMasterySummary(
     .map((s) => {
       const scores = bySubject.get(s.id) ?? []
       const average = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0
-      return { subjectId: s.id, subjectName: s.name, colorKey: s.color_key, averageMastery: average }
+      return { subjectId: s.id, subjectName: localizedName(s, language), colorKey: s.color_key, averageMastery: average }
     })
 }

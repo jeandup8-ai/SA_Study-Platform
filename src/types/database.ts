@@ -825,6 +825,7 @@ export type Database = {
           id: string
           is_launched: boolean
           name: string
+          name_af: string | null
           phase_id: string | null
         }
         Insert: {
@@ -834,6 +835,7 @@ export type Database = {
           id?: string
           is_launched?: boolean
           name: string
+          name_af?: string | null
           phase_id?: string | null
         }
         Update: {
@@ -843,6 +845,7 @@ export type Database = {
           id?: string
           is_launched?: boolean
           name?: string
+          name_af?: string | null
           phase_id?: string | null
         }
         Relationships: [
@@ -1817,6 +1820,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          name_af: string | null
           sort_order: number
           subject_id: string
         }
@@ -1825,6 +1829,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          name_af?: string | null
           sort_order?: number
           subject_id: string
         }
@@ -1833,6 +1838,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          name_af?: string | null
           sort_order?: number
           subject_id?: string
         }
@@ -1855,6 +1861,7 @@ export type Database = {
           icon_key: string | null
           id: string
           name: string
+          name_af: string | null
         }
         Insert: {
           code: string
@@ -1864,6 +1871,7 @@ export type Database = {
           icon_key?: string | null
           id?: string
           name: string
+          name_af?: string | null
         }
         Update: {
           code?: string
@@ -1873,6 +1881,7 @@ export type Database = {
           icon_key?: string | null
           id?: string
           name?: string
+          name_af?: string | null
         }
         Relationships: [
           {
@@ -1987,6 +1996,7 @@ export type Database = {
           description: string | null
           id: string
           name: string
+          name_af: string | null
           sort_order: number
           topic_id: string
         }
@@ -1996,6 +2006,7 @@ export type Database = {
           description?: string | null
           id?: string
           name: string
+          name_af?: string | null
           sort_order?: number
           topic_id: string
         }
@@ -2005,6 +2016,7 @@ export type Database = {
           description?: string | null
           id?: string
           name?: string
+          name_af?: string | null
           sort_order?: number
           topic_id?: string
         }
@@ -2098,6 +2110,7 @@ export type Database = {
           grade_id: string
           id: string
           name: string
+          name_af: string | null
           term_number: number
         }
         Insert: {
@@ -2105,6 +2118,7 @@ export type Database = {
           grade_id: string
           id?: string
           name: string
+          name_af?: string | null
           term_number: number
         }
         Update: {
@@ -2112,6 +2126,7 @@ export type Database = {
           grade_id?: string
           id?: string
           name?: string
+          name_af?: string | null
           term_number?: number
         }
         Relationships: [
@@ -2134,6 +2149,7 @@ export type Database = {
           id: string
           is_demo_content: boolean
           name: string
+          name_af: string | null
           sort_order: number
           source_id: string | null
           source_page: string | null
@@ -2152,6 +2168,7 @@ export type Database = {
           id?: string
           is_demo_content?: boolean
           name: string
+          name_af?: string | null
           sort_order?: number
           source_id?: string | null
           source_page?: string | null
@@ -2170,6 +2187,7 @@ export type Database = {
           id?: string
           is_demo_content?: boolean
           name?: string
+          name_af?: string | null
           sort_order?: number
           source_id?: string | null
           source_page?: string | null

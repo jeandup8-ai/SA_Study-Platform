@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
-import type { Topic } from '@/types/curriculum'
+import { localizedName } from '@/lib/i18n/localizedName'
+import type { Topic, LanguageCode } from '@/types/curriculum'
 
 export interface TopicWithProgress extends Topic {
   lessonCount: number
@@ -10,6 +11,7 @@ export async function fetchTopicsWithProgress(
   subjectId: string,
   gradeId: string,
   learnerId: string,
+  language: LanguageCode = 'en',
 ): Promise<TopicWithProgress[]> {
   const { data: topics } = await supabase
     .from('topics')
@@ -36,6 +38,7 @@ export async function fetchTopicsWithProgress(
 
   return topics.map((t) => ({
     ...t,
+    name: localizedName(t, language),
     lessonCount: lessonCountByTopic.get(t.id) ?? 0,
     masteryScore: masteryByTopic.get(t.id) ?? 0,
   }))

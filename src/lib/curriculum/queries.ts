@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase'
+import { localizedName } from '@/lib/i18n/localizedName'
 import type { Curriculum, Grade, Subject, Topic, Lesson, LessonContent, Media, LanguageCode } from '@/types/curriculum'
 
 export async function fetchActiveCurriculum(): Promise<Curriculum | null> {
@@ -16,23 +17,30 @@ export async function fetchLaunchedGrades(curriculumId: string): Promise<Grade[]
   return data ?? []
 }
 
-export async function fetchSubjectsForGrade(gradeId: string): Promise<Subject[]> {
+export async function fetchSubjectsForGrade(gradeId: string, language: LanguageCode = 'en'): Promise<Subject[]> {
   const { data } = await supabase
     .from('grade_subjects')
     .select('sort_order, subjects(*)')
     .eq('grade_id', gradeId)
     .order('sort_order')
-  return (data ?? []).map((row) => row.subjects).filter((s): s is Subject => Boolean(s))
+  return (data ?? [])
+    .map((row) => row.subjects)
+    .filter((s): s is Subject => Boolean(s))
+    .map((s) => ({ ...s, name: localizedName(s, language) }))
 }
 
-export async function fetchTopicsForSubjectAndGrade(subjectId: string, gradeId: string): Promise<Topic[]> {
+export async function fetchTopicsForSubjectAndGrade(
+  subjectId: string,
+  gradeId: string,
+  language: LanguageCode = 'en',
+): Promise<Topic[]> {
   const { data } = await supabase
     .from('topics')
     .select('*')
     .eq('subject_id', subjectId)
     .eq('grade_id', gradeId)
     .order('sort_order')
-  return data ?? []
+  return (data ?? []).map((t) => ({ ...t, name: localizedName(t, language) }))
 }
 
 export async function fetchLessonsForTopic(topicId: string, language: LanguageCode): Promise<Lesson[]> {

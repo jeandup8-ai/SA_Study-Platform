@@ -8,6 +8,7 @@ import {
 } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/context/AuthContext'
+import { applyLanguagePreference } from '@/i18n'
 import type { Learner, LearnerAvatar, LanguageCode } from '@/types/curriculum'
 
 const ACTIVE_LEARNER_KEY = 'study.activeLearnerId'
@@ -94,6 +95,10 @@ export function LearnerProvider({ children }: { children: ReactNode }) {
   }
 
   const activeLearner = learners.find((l) => l.id === activeLearnerId) ?? learners[0] ?? null
+
+  useEffect(() => {
+    if (activeLearner) applyLanguagePreference(activeLearner.preferred_language)
+  }, [activeLearner])
 
   return (
     <LearnerContext.Provider

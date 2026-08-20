@@ -173,9 +173,29 @@ needed), RLS-enforced data isolation, and a read-only admin overview.
   CAPS phase layout, but no lesson text or question has been checked against
   an official CAPS document. **Do not treat any seeded content as verified
   curriculum material.**
-- Afrikaans translations (UI strings and the one translated demo lesson) were
-  machine-translated by the author of this codebase, not reviewed by a native
-  speaker — get a review pass before shipping.
+- **Afrikaans coverage, precisely:** the UI chrome (167/167 i18n keys, every
+  page) and every structural/navigational label — grade names, term names,
+  all 10 subject names, the 3 seeded demo topic names — have an Afrikaans
+  string and switch automatically (see below). What's *not* translated at
+  scale is lesson body content: only one demo lesson ("Understanding
+  Fractions") has a full Afrikaans version; the rest of the demo lessons
+  fall back to English when a learner's language is Afrikaans
+  (`fetchLessonsForTopic`'s built-in fallback). None of this — UI strings,
+  subject/topic names, or the one Afrikaans lesson — has been reviewed by a
+  native speaker; get a review pass before shipping.
+- **How language switching actually works:** `applyLanguagePreference()`
+  (`src/i18n/index.ts`) is called whenever the signed-in parent's row loads
+  (`AuthContext`) and whenever the active child profile changes
+  (`LearnerContext`) — so the parent's own screens follow
+  `parents.preferred_language` and a child's learning screens follow that
+  specific child's `learners.preferred_language`, switching automatically
+  when a parent flips between two children who each picked a different
+  language. Structural labels (`grades.name_af`, `subjects.name_af`,
+  `topics.name_af`, etc. — migration `0021`) are a separate mechanism from
+  the per-language `lessons`/`questions` rows already in the schema, since
+  these are short platform labels, not authored content;
+  `src/lib/i18n/localizedName.ts` picks `name_af` when set, falling back to
+  `name` otherwise, so a missing translation never renders blank.
 
 **Note on this build's browser testing:** the sandbox this was built in blocks
 outbound network access to `*.supabase.co` from anything other than the

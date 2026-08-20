@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import { fetchVerifiedTerminology } from '@/lib/admin/terminology'
+import { localizedName } from '@/lib/i18n/localizedName'
 
 /**
  * Structured context for the AI tutor (spec section 26). Assembling this
@@ -44,13 +45,13 @@ export async function buildTutorContext(learnerId: string, topicId: string): Pro
   const [{ data: grade }, { data: curriculum }, { data: topic }, { data: mastery }] = await Promise.all([
     supabase.from('grades').select('grade_number').eq('id', learner.grade_id).maybeSingle(),
     supabase.from('curricula').select('code').eq('id', learner.curriculum_id).maybeSingle(),
-    supabase.from('topics').select('id, name, subject_id').eq('id', topicId).maybeSingle(),
+    supabase.from('topics').select('id, name, name_af, subject_id').eq('id', topicId).maybeSingle(),
     supabase.from('mastery').select('mastery_score').eq('learner_id', learnerId).eq('topic_id', topicId).maybeSingle(),
   ])
   if (!topic) return null
 
   const [{ data: subject }, { data: objectives }, { data: lesson }] = await Promise.all([
-    supabase.from('subjects').select('id, name').eq('id', topic.subject_id).maybeSingle(),
+    supabase.from('subjects').select('id, name, name_af').eq('id', topic.subject_id).maybeSingle(),
     supabase.from('learning_objectives').select('description').eq('topic_id', topicId),
     supabase.from('lessons').select('id, title').eq('topic_id', topicId).eq('language', learner.preferred_language).limit(1).maybeSingle(),
   ])
@@ -95,8 +96,14 @@ export async function buildTutorContext(learnerId: string, topicId: string): Pro
     gradeNumber: grade?.grade_number ?? 0,
     curriculumCode: curriculum?.code ?? 'CAPS',
     language: learner.preferred_language,
-    subject: subject ? { id: subject.id, name: subject.name } : { id: topic.subject_id, name: 'Unknown' },
-    topic: { id: topic.id, name: topic.name, masteryScore: mastery ? Number(mastery.mastery_score) : null },
+    subject: subject
+      ? { id: subject.id, name: localizedName(subject, learner.preferred_language) }
+      : { id: topic.subject_id, name: 'Unknown' },
+    topic: {
+      id: topic.id,
+      name: localizedName(topic, learner.preferred_language),
+      masteryScore: mastery ? Number(mastery.mastery_score) : null,
+    },
     lesson: lesson ? { id: lesson.id, title: lesson.title } : null,
     learningObjectives: (objectives ?? []).map((o) => o.description),
     recentErrors,

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { applyLanguagePreference } from '@/i18n'
 import type { Parent } from '@/types/curriculum'
 
 interface AuthContextValue {
@@ -28,6 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   async function loadParent(userId: string) {
     const { data } = await supabase.from('parents').select('*').eq('id', userId).maybeSingle()
     setParent(data)
+    if (data) applyLanguagePreference(data.preferred_language)
   }
 
   useEffect(() => {

@@ -1,4 +1,6 @@
 import { supabase } from '@/lib/supabase'
+import { localizedName } from '@/lib/i18n/localizedName'
+import type { LanguageCode } from '@/types/curriculum'
 
 /**
  * "What should I learn next?" (spec section 28). Priority order, each step only
@@ -36,17 +38,21 @@ const LOW_MASTERY_THRESHOLD = 60
 const SPACED_REVISION_DAYS = 14
 const UPCOMING_ASSESSMENT_WINDOW_DAYS = 14
 
-export async function recommendNextTopic(learnerId: string, gradeId: string): Promise<RecommendedTopic | null> {
+export async function recommendNextTopic(
+  learnerId: string,
+  gradeId: string,
+  language: LanguageCode = 'en',
+): Promise<RecommendedTopic | null> {
   const { data: gradeSubjects } = await supabase.from('grade_subjects').select('subject_id').eq('grade_id', gradeId)
   const subjectIds = (gradeSubjects ?? []).map((r) => r.subject_id)
   if (subjectIds.length === 0) return null
 
-  const { data: subjects } = await supabase.from('subjects').select('id, name').in('id', subjectIds)
+  const { data: subjects } = await supabase.from('subjects').select('id, name, name_af').in('id', subjectIds)
   const subjectById = new Map((subjects ?? []).map((s) => [s.id, s]))
 
   const { data: topics } = await supabase
     .from('topics')
-    .select('id, name, subject_id, term_id, sort_order')
+    .select('id, name, name_af, subject_id, term_id, sort_order')
     .eq('grade_id', gradeId)
     .in('subject_id', subjectIds)
   if (!topics || topics.length === 0) return null
@@ -68,7 +74,7 @@ export async function recommendNextTopic(learnerId: string, gradeId: string): Pr
   })
 
   const nextInSequence = sortedTopics.find((topic) => !masteryByTopicId.has(topic.id))
-  if (nextInSequence) return toRecommendation(nextInSequence, subjectById, 'next_in_sequence')
+  if (nextInSequence) return toRecommendation(nextInSequence, subjectById, 'next_in_sequence', language)
 
   const { data: weaknessSignals } = await supabase
     .from('mastery_weakness_signals')
@@ -83,7 +89,7 @@ export async function recommendNextTopic(learnerId: string, gradeId: string): Pr
     .limit(20)
   if (weaknessSignals && weaknessSignals.length > 0) {
     const weakTopic = topics.find((t) => t.id === weaknessSignals[0].topic_id)
-    if (weakTopic) return toRecommendation(weakTopic, subjectById, 'prerequisite_weakness')
+    if (weakTopic) return toRecommendation(weakTopic, subjectById, 'prerequisite_weakness', language)
   }
 
   const lowestMastery = sortedTopics
@@ -92,7 +98,7 @@ export async function recommendNextTopic(learnerId: string, gradeId: string): Pr
       return mastery !== undefined && Number(mastery.mastery_score) < LOW_MASTERY_THRESHOLD
     })
     .sort((a, b) => Number(masteryByTopicId.get(a.id)!.mastery_score) - Number(masteryByTopicId.get(b.id)!.mastery_score))[0]
-  if (lowestMastery) return toRecommendation(lowestMastery, subjectById, 'low_mastery')
+  if (lowestMastery) return toRecommendation(lowestMastery, subjectById, 'low_mastery', language)
 
   const today = new Date()
   const windowEnd = new Date(today)
@@ -111,7 +117,7 @@ export async function recommendNextTopic(learnerId: string, gradeId: string): Pr
         (a, b) =>
           Number(masteryByTopicId.get(a.id)?.mastery_score ?? 0) - Number(masteryByTopicId.get(b.id)?.mastery_score ?? 0),
       )[0]
-    if (candidate) return toRecommendation(candidate, subjectById, 'upcoming_assessment')
+    if (candidate) return toRecommendation(candidate, subjectById, 'upcoming_assessment', language)
   }
 
   const staleCutoff = new Date(today)
@@ -126,17 +132,24 @@ export async function recommendNextTopic(learnerId: string, gradeId: string): Pr
         new Date(masteryByTopicId.get(a.id)!.last_practised_at!).getTime() -
         new Date(masteryByTopicId.get(b.id)!.last_practised_at!).getTime(),
     )[0]
-  if (staleTopic) return toRecommendation(staleTopic, subjectById, 'spaced_revision')
+  if (staleTopic) return toRecommendation(staleTopic, subjectById, 'spaced_revision', language)
 
   return null
 }
 
 function toRecommendation(
-  topic: { id: string; name: string; subject_id: string },
-  subjectById: Map<string, { id: string; name: string }>,
+  topic: { id: string; name: string; name_af: string | null; subject_id: string },
+  subjectById: Map<string, { id: string; name: string; name_af: string | null }>,
   reason: RecommendationReason,
+  language: LanguageCode,
 ): RecommendedTopic | null {
   const subject = subjectById.get(topic.subject_id)
   if (!subject) return null
-  return { topicId: topic.id, topicName: topic.name, subjectId: subject.id, subjectName: subject.name, reason }
+  return {
+    topicId: topic.id,
+    topicName: localizedName(topic, language),
+    subjectId: subject.id,
+    subjectName: localizedName(subject, language),
+    reason,
+  }
 }

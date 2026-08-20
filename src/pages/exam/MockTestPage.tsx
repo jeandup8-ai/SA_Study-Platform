@@ -46,7 +46,7 @@ export function MockTestPage() {
       {!result && questions.length > 0 && <QuestionRunner questions={questions} onComplete={handleComplete} />}
 
       {!result && questions.length === 0 && (
-        <Card className="mt-6 text-center text-sm text-slate-400">No questions published for this subject yet.</Card>
+        <Card className="mt-6 text-center text-sm text-slate-400">{t('exam.noQuestionsYet')}</Card>
       )}
 
       {result && (

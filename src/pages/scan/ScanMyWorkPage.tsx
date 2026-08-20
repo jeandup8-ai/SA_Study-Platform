@@ -23,7 +23,7 @@ export function ScanMyWorkPage() {
   const [visualSafetyChecked, setVisualSafetyChecked] = useState(false)
 
   useEffect(() => {
-    if (activeLearner) fetchSubjectsForGrade(activeLearner.grade_id).then(setSubjects)
+    if (activeLearner) fetchSubjectsForGrade(activeLearner.grade_id, activeLearner.preferred_language).then(setSubjects)
   }, [activeLearner])
 
   async function handleFile(file: File) {
@@ -92,12 +92,7 @@ export function ScanMyWorkPage() {
 
           <Card className="mt-4 flex items-start gap-3 bg-slate-50">
             <ShieldCheck className="mt-0.5 shrink-0 text-brand-600" size={20} />
-            <p className="text-xs text-slate-500">
-              Every upload is checked on our server before it's used — file type, size, and hidden
-              location data in the photo are always verified for real. Deep visual scanning for unsafe
-              imagery runs too once a vision-safety provider is connected; see the toggle below to
-              preview how a rejection looks either way.
-            </p>
+            <p className="text-xs text-slate-500">{t('scan.safetyNote')}</p>
           </Card>
           <label className="flex items-center gap-2 text-xs font-medium text-slate-500">
             <input
@@ -105,7 +100,7 @@ export function ScanMyWorkPage() {
               checked={simulateUnsafe}
               onChange={(e) => setSimulateUnsafe(e.target.checked)}
             />
-            Demo: simulate an unsafe upload being rejected
+            {t('scan.simulateUnsafeToggle')}
           </label>
         </div>
       )}
@@ -136,7 +131,7 @@ export function ScanMyWorkPage() {
             <div className="flex flex-wrap gap-2">
               <Badge tone="success">{t('scan.approved')}</Badge>
               <Badge tone={visualSafetyChecked ? 'success' : 'neutral'}>
-                {visualSafetyChecked ? 'Visual safety scan: checked' : 'Visual safety scan: not connected'}
+                {visualSafetyChecked ? t('scan.safetyChecked') : t('scan.safetyNotConnected')}
               </Badge>
             </div>
             <p className="mt-3 font-semibold text-slate-800">{t('scan.detectedSubject')}...</p>
