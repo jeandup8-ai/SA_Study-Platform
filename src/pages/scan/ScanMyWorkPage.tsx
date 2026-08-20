@@ -52,42 +52,43 @@ export function ScanMyWorkPage() {
 
       {state === 'idle' && (
         <div className="mt-6 space-y-3">
-          {/* The real <input type="file"> sits directly on top of each button (opacity-0,
-              not display:none) so the tap lands on the input itself rather than going
-              through a JS .click() proxy on a hidden element. Many mobile/in-app browsers
-              silently refuse to open the file picker for a programmatic click on a
-              display:none input — this is the reliable cross-browser pattern.
+          {/* A <label> wrapping the real <input type="file"> — clicking anywhere in the
+              label natively forwards to the input with zero JS or CSS-stacking games
+              involved. This replaced a "transparent input positioned over a button" trick
+              that turned out not to be reliable enough in practice. The visual "button" is
+              a plain <span> (not a nested <button>), since nesting one interactive control
+              inside another can make browsers handle the forwarded click inconsistently.
               Image and PDF are separate inputs deliberately: combining a forced camera
               capture with a non-image accept type on one input is a known Android Chrome
               trap that can kill and reload the whole tab returning from the camera app. */}
-          <div className="relative">
+          <label className="block">
             <input
               type="file"
               accept="image/jpeg,image/png,image/webp"
-              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+              className="sr-only"
               onChange={(e) => {
                 const file = e.target.files?.[0]
                 if (file) void handleFile(file)
               }}
             />
-            <Button className="pointer-events-none w-full">
+            <span className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-brand-600 px-7 text-lg font-semibold text-white active:bg-brand-800">
               <Camera size={20} /> {t('scan.uploadCta')}
-            </Button>
-          </div>
-          <div className="relative">
+            </span>
+          </label>
+          <label className="block">
             <input
               type="file"
               accept="application/pdf"
-              className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+              className="sr-only"
               onChange={(e) => {
                 const file = e.target.files?.[0]
                 if (file) void handleFile(file)
               }}
             />
-            <Button variant="secondary" className="pointer-events-none w-full">
+            <span className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border-2 border-brand-200 bg-white px-7 text-lg font-semibold text-brand-700 active:bg-brand-50">
               <FileText size={20} /> {t('scan.uploadPdf')}
-            </Button>
-          </div>
+            </span>
+          </label>
 
           <Card className="mt-4 flex items-start gap-3 bg-slate-50">
             <ShieldCheck className="mt-0.5 shrink-0 text-brand-600" size={20} />
