@@ -117,17 +117,44 @@ interface SectionPattern {
   regex: RegExp
   termGroup: 1 | 2
   gradeGroup: 1 | 2
+  /** When set, this pattern only ever applies to a block whose own
+   * sourceLocation contains this substring — see the "Grade n term m"
+   * pattern below for why this exists. */
+  sourceLocationIncludes?: string
 }
 
 const SECTION_PATTERNS: SectionPattern[] = [
   { regex: /\bT\s?ERM\s+([1-4])\s*[–\-—]?\s*Grade\s+(\d{1,2})\b/i, termGroup: 1, gradeGroup: 2 },
   { regex: /\bGRADE\s+(\d{1,2})\s*:\s*Term\s+([1-4])\b/i, termGroup: 2, gradeGroup: 1 },
   { regex: /\bGrade\s+(\d{1,2}):\s+.{0,60}?\bTerm\s+([1-4])\b/i, termGroup: 2, gradeGroup: 1 },
+  // Natural Sciences Grade 7-9's rotated Senior Phase table (pages 18-89)
+  // marks each block with a plain, space-separated "Grade 7 term 1" —
+  // GRADE before TERM, no colon or dash separator at all — a fourth
+  // convention distinct from all three above. This is NOT restricted to
+  // that document by wording alone the way the other three patterns are:
+  // checked against real data, it also matches Mathematics Grades 4-6's own
+  // table of contents verbatim ("Grade 4 Term 1", "Grade 4 Term 2" ...
+  // "Grade 6 Term 4", one per line, with no dot-leader or page number in
+  // the extracted text at all — the exact ToC false-positive shape this
+  // file's own dropRepeatedRunningText/BARE_SECTION_4_PATTERN comments
+  // already warn about for the other patterns), which mistagged that
+  // document's entire front matter as Grade 6 Term 4. Restricting this one
+  // pattern to blocks this project's own rotated-table extractor produced
+  // (see pdfParser.ts's "rotated content table marker" sourceLocation)
+  // closes that off structurally rather than by wording, since the ToC
+  // shape and the genuine marker are textually identical.
+  {
+    regex: /\bGrade\s+(\d{1,2})\s+term\s+([1-4])\b/i,
+    termGroup: 2,
+    gradeGroup: 1,
+    sourceLocationIncludes: 'rotated content table marker',
+  },
 ]
 
-function matchSection(text: string): { termNumber: number; gradeNumber: number } | null {
-  for (const { regex, termGroup, gradeGroup } of SECTION_PATTERNS) {
-    const match = text.match(regex)
+function matchSection(block: ExtractedBlock): { termNumber: number; gradeNumber: number } | null {
+  for (const { regex, termGroup, gradeGroup, sourceLocationIncludes } of SECTION_PATTERNS) {
+    if (sourceLocationIncludes && !block.sourceLocation.includes(sourceLocationIncludes)) continue
+    const match = block.text.match(regex)
     if (match) return { termNumber: Number(match[termGroup]), gradeNumber: Number(match[gradeGroup]) }
   }
   return null
@@ -254,7 +281,7 @@ export function detectTopicCandidates(blocks: ExtractedBlock[]): TopicDetectionR
   let inAssessmentSection = false
 
   for (const block of blocks) {
-    const section = matchSection(block.text)
+    const section = matchSection(block)
     if (section) {
       currentTerm = section.termNumber
       currentGrade = section.gradeNumber
@@ -294,7 +321,18 @@ export function detectTopicCandidates(blocks: ExtractedBlock[]): TopicDetectionR
         assessmentNotes.push({
           category,
           termNumber: currentTerm,
-          gradeNumber: currentGrade,
+          // A6/A5 fix: once inAssessmentSection is true, currentGrade is
+          // just whatever grade happened to be mentioned last before the
+          // document's trailing assessment appendix started — not a claim
+          // that this note actually belongs to that grade. Checked against
+          // real V2 output: Life Skills and Natural Sciences & Technology
+          // assessment notes were tagged Grade 6 purely because Grade 6 was
+          // the last section seen before the appendix, even though the
+          // appendix itself never names a grade for these notes. Inside a
+          // still-open, genuinely grade-scoped section (inAssessmentSection
+          // false, note found via its own wording), currentGrade is still a
+          // real, trustworthy attribution and is kept as before.
+          gradeNumber: inAssessmentSection ? null : currentGrade,
           text: block.text,
           block,
           extractionMethod: 'pdf_text',
@@ -356,7 +394,12 @@ export function detectTopicCandidates(blocks: ExtractedBlock[]): TopicDetectionR
         // gradeColumnRowsToTableCells) — more reliable than ambient
         // section-marker state, which doesn't apply to this table shape
         // at all (there is no preceding "TERM n – Grade g" text for it).
-        const gradeNumber = cell.gradeNumber !== undefined ? cell.gradeNumber : currentGrade
+        // Absent that, inAssessmentSection means currentGrade is just the
+        // last grade mentioned before the trailing assessment appendix
+        // started, not this cell's real grade — see the matching fix and
+        // comment on the heading branch above (A5).
+        const gradeNumber =
+          cell.gradeNumber !== undefined ? cell.gradeNumber : inAssessmentSection ? null : currentGrade
         const termNumber = cell.termNumber !== undefined ? cell.termNumber : currentTerm
         const category = tableCategory ?? classifyBlock({ ...block, text: cell.text })
         if (category === 'TABLE_OF_CONTENTS') continue

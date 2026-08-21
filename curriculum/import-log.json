@@ -1,5 +1,5 @@
 {
-  "$schema_note": "Append-only log of curriculum import runs. One entry per source document processed. Real, hash-verified files supplied by the product owner on 2026-08-21 (SA_CAPS_Grade4-7_Source_Pack.zip) — the first real DBE documents this platform has processed. Every topic these runs created is content_workflow_status=REVIEW_REQUIRED; none is verified or published. records_created counts survive an automatic frequency-based filter that drops repeated running page headers/footers (see curriculum-tools/src/detectors/curriculumDetectors.ts:dropRepeatedRunningText) — it does not mean 213 distinct real topics, several are still assessment-appendix noise a reviewer will reject; see README for the honest breakdown.",
+  "$schema_note": "Append-only log of curriculum import runs. One entry per source document processed. Real, hash-verified files supplied by the product owner on 2026-08-21 (SA_CAPS_Grade4-7_Source_Pack.zip) \u2014 the first real DBE documents this platform has processed. Every topic these runs created is content_workflow_status=REVIEW_REQUIRED; none is verified or published. records_created counts survive an automatic frequency-based filter that drops repeated running page headers/footers (see curriculum-tools/src/detectors/curriculumDetectors.ts:dropRepeatedRunningText) \u2014 it does not mean 213 distinct real topics, several are still assessment-appendix noise a reviewer will reject; see README for the honest breakdown.",
   "runs": [
     {
       "document": "dbe-caps-math-ip",
@@ -7,7 +7,11 @@
       "checksum": "31c594425ff787a531c6ef6cceaaead09d5ad50d1b54ca36c33bcf19663068b5",
       "date_imported": "2026-08-21T00:00:00Z",
       "pages_processed": 58,
-      "grades_extracted": [4, 5, 6],
+      "grades_extracted": [
+        4,
+        5,
+        6
+      ],
       "records_created": 45,
       "records_needing_review": 45,
       "errors": [],
@@ -19,7 +23,11 @@
       "checksum": "4113b006498494cd90bc5203c88ca2d5a1a1856c42b0274a31cc3f1442412317",
       "date_imported": "2026-08-21T00:00:00Z",
       "pages_processed": 66,
-      "grades_extracted": [4, 5, 6],
+      "grades_extracted": [
+        4,
+        5,
+        6
+      ],
       "records_created": 31,
       "records_needing_review": 31,
       "errors": [],
@@ -31,11 +39,15 @@
       "checksum": "b2b62cb589a93261c665bfc4444da2d96646d0c6993e29034520242521d6bc61",
       "date_imported": "2026-08-21T00:00:00Z",
       "pages_processed": 5,
-      "grades_extracted": [4, 5, 6],
+      "grades_extracted": [
+        4,
+        5,
+        6
+      ],
       "records_created": 80,
       "records_needing_review": 80,
       "errors": [
-        "This source is a 5-page amendment/circular, not the full Natural Sciences and Technology CAPS document. A large share of the 80 records are assessment-appendix content (a cognitive-levels verb list, a formal-assessment table) mislabelled with the last grade/term section seen before them, not genuine topics — flagged for the reviewer, not silently hidden."
+        "This source is a 5-page amendment/circular, not the full Natural Sciences and Technology CAPS document. A large share of the 80 records are assessment-appendix content (a cognitive-levels verb list, a formal-assessment table) mislabelled with the last grade/term section seen before them, not genuine topics \u2014 flagged for the reviewer, not silently hidden."
       ],
       "status": "REVIEW_REQUIRED"
     },
@@ -45,11 +57,15 @@
       "checksum": "1a5865802399614b4187e0e4f499a6c866d441fdcc4a6f0c310eee2ae60d6b5c",
       "date_imported": "2026-08-21T00:00:00Z",
       "pages_processed": 48,
-      "grades_extracted": [4, 5, 6],
+      "grades_extracted": [
+        4,
+        5,
+        6
+      ],
       "records_created": 57,
       "records_needing_review": 57,
       "errors": [
-        "Most records come from an assessment-programme appendix (pages 42-44), not the main term-by-term topic tables — same last-grade/term state-leak issue as the NS&T amendment. Real topic names are mixed in with assessment scaffolding text; reviewer must sort."
+        "Most records come from an assessment-programme appendix (pages 42-44), not the main term-by-term topic tables \u2014 same last-grade/term state-leak issue as the NS&T amendment. Real topic names are mixed in with assessment scaffolding text; reviewer must sort."
       ],
       "status": "REVIEW_REQUIRED"
     },
@@ -59,11 +75,13 @@
       "checksum": "b4d8d1d7bba094444039ffe049cb4e28be420f3f4eda2f4fd3a459c34d41a9be",
       "date_imported": "2026-08-21T00:00:00Z",
       "pages_processed": 59,
-      "grades_extracted": [7],
+      "grades_extracted": [
+        7
+      ],
       "records_created": 0,
       "records_needing_review": 0,
       "errors": [
-        "Grade 7's content section (pages 21-29) is a dense 3-column table (CONTENT AREA | CONTENT | CLARIFICATION) that the PDF table-detection heuristic did not recognise as tabular — it extracted as flowing paragraph text instead, which the topic detector does not harvest from. Grade 8/9 sections elsewhere in the same document DID get detected as tables (27 Grade-9 candidates found, correctly excluded since this run only requested Grade 7). Needs a smarter table-detection heuristic or manual topic entry for this document."
+        "Grade 7's content section (pages 21-29) is a dense 3-column table (CONTENT AREA | CONTENT | CLARIFICATION) that the PDF table-detection heuristic did not recognise as tabular \u2014 it extracted as flowing paragraph text instead, which the topic detector does not harvest from. Grade 8/9 sections elsewhere in the same document DID get detected as tables (27 Grade-9 candidates found, correctly excluded since this run only requested Grade 7). Needs a smarter table-detection heuristic or manual topic entry for this document."
       ],
       "status": "PARSED"
     },
@@ -73,7 +91,9 @@
       "checksum": "8699f105ebee604a9b0a0aebcbd7e9ebac27f5e034b00559a19f8418e1615e9f",
       "date_imported": "2026-08-21T00:00:00Z",
       "pages_processed": 100,
-      "grades_extracted": [7],
+      "grades_extracted": [
+        7
+      ],
       "records_created": 0,
       "records_needing_review": 0,
       "errors": [
@@ -87,7 +107,9 @@
       "checksum": "0539b8093453d357ed9b7473dda80f2a29d5515910c46134f9088b53ba996c09",
       "date_imported": "2026-08-21T00:00:00Z",
       "pages_processed": 19,
-      "grades_extracted": [7],
+      "grades_extracted": [
+        7
+      ],
       "records_created": 0,
       "records_needing_review": 0,
       "errors": [
@@ -101,7 +123,9 @@
       "checksum": "eabc3325fc1569737f31c4e694e27bfc271bca3c2a6be4eb4de049b46cd30f14",
       "date_imported": "2026-08-21T00:00:00Z",
       "pages_processed": 98,
-      "grades_extracted": [7],
+      "grades_extracted": [
+        7
+      ],
       "records_created": 0,
       "records_needing_review": 0,
       "errors": [
@@ -115,11 +139,13 @@
       "checksum": "f53548d277d475c330a26ec04c2380917ce997b12af1dfa331bf200b84095038",
       "date_imported": "2026-08-21T00:00:00Z",
       "pages_processed": 49,
-      "grades_extracted": [7],
+      "grades_extracted": [
+        7
+      ],
       "records_created": 0,
       "records_needing_review": 0,
       "errors": [
-        "128 candidates detected (115 tagged Grade 9, 13 ungraded), zero tagged Grade 7 — this document's real grade structure is a grid table (\"Term | Grade 4 | Grade 5 | Grade 6\" / \"Term | Grade 7 | Grade 8 | Grade 9\"), not sequential section headers; the 115 Grade-9 hits are a coincidental partial match, not genuine section detection, and were excluded from this Grade-7-only run either way."
+        "128 candidates detected (115 tagged Grade 9, 13 ungraded), zero tagged Grade 7 \u2014 this document's real grade structure is a grid table (\"Term | Grade 4 | Grade 5 | Grade 6\" / \"Term | Grade 7 | Grade 8 | Grade 9\"), not sequential section headers; the 115 Grade-9 hits are a coincidental partial match, not genuine section detection, and were excluded from this Grade-7-only run either way."
       ],
       "status": "PARSED"
     },
@@ -130,7 +156,11 @@
       "checksum": "31c594425ff787a531c6ef6cceaaead09d5ad50d1b54ca36c33bcf19663068b5",
       "date_imported": "2026-08-21T00:00:00Z",
       "pages_processed": 58,
-      "grades_extracted": [4, 5, 6],
+      "grades_extracted": [
+        4,
+        5,
+        6
+      ],
       "records_created": 47,
       "records_needing_review": 47,
       "assessment_notes_created": 33,
@@ -147,12 +177,16 @@
       "checksum": "4113b006498494cd90bc5203c88ca2d5a1a1856c42b0274a31cc3f1442412317",
       "date_imported": "2026-08-21T00:00:00Z",
       "pages_processed": 66,
-      "grades_extracted": [4, 5, 6],
+      "grades_extracted": [
+        4,
+        5,
+        6
+      ],
       "records_created": 0,
       "records_needing_review": 0,
       "assessment_notes_created": 33,
       "errors": [
-        "This document's real per-topic structure (\"Topic N: name / time / resources\" followed by bullet content) renders as flowing paragraph text, not a table — none of the three structural table detectors built this session recognise it, so it produces zero genuine topic candidates. The one page read as a table by the generic fallback (PE/swimming content) produced fragmented non-topic output that was deliberately excluded rather than imported as noise. Needs a fourth, document-specific structural detector — not attempted this pass."
+        "This document's real per-topic structure (\"Topic N: name / time / resources\" followed by bullet content) renders as flowing paragraph text, not a table \u2014 none of the three structural table detectors built this session recognise it, so it produces zero genuine topic candidates. The one page read as a table by the generic fallback (PE/swimming content) produced fragmented non-topic output that was deliberately excluded rather than imported as noise. Needs a fourth, document-specific structural detector \u2014 not attempted this pass."
       ],
       "status": "REVIEW_REQUIRED",
       "note": "V2 reprocess: the v1 run's 31 'topics' were, on inspection, entirely fallback-detector fragments from the same unreliable page; none were genuine. This version honestly reports 0 rather than re-importing that noise."
@@ -164,12 +198,16 @@
       "checksum": "b2b62cb589a93261c665bfc4444da2d96646d0c6993e29034520242521d6bc61",
       "date_imported": "2026-08-21T00:00:00Z",
       "pages_processed": 5,
-      "grades_extracted": [4, 5, 6],
+      "grades_extracted": [
+        4,
+        5,
+        6
+      ],
       "records_created": 0,
       "records_needing_review": 0,
       "assessment_notes_created": 56,
       "errors": [
-        "Confirmed: this 5-page file is a content-removal amendment notice (\"the following topics to be removed...\"), not a topics listing — its only structured content is Section 4 (Assessment), now correctly classified as assessment guidance rather than curriculum topics. The full Natural Sciences & Technology CAPS document is still needed to supply genuine Grades 4-6 topics; this amendment file alone cannot."
+        "Confirmed: this 5-page file is a content-removal amendment notice (\"the following topics to be removed...\"), not a topics listing \u2014 its only structured content is Section 4 (Assessment), now correctly classified as assessment guidance rather than curriculum topics. The full Natural Sciences & Technology CAPS document is still needed to supply genuine Grades 4-6 topics; this amendment file alone cannot."
       ],
       "status": "REVIEW_REQUIRED",
       "note": "V2 reprocess: the v1 run's 80 'topics' were the same assessment-appendix content (cognitive-verb glossary, formal-assessment table), now correctly diverted to assessment_notes instead of masquerading as curriculum topics."
@@ -181,7 +219,11 @@
       "checksum": "1a5865802399614b4187e0e4f499a6c866d441fdcc4a6f0c310eee2ae60d6b5c",
       "date_imported": "2026-08-21T00:00:00Z",
       "pages_processed": 48,
-      "grades_extracted": [4, 5, 6],
+      "grades_extracted": [
+        4,
+        5,
+        6
+      ],
       "records_created": 21,
       "records_needing_review": 21,
       "assessment_notes_created": 57,
@@ -196,7 +238,9 @@
       "checksum": "b4d8d1d7bba094444039ffe049cb4e28be420f3f4eda2f4fd3a459c34d41a9be",
       "date_imported": "2026-08-21T00:00:00Z",
       "pages_processed": 59,
-      "grades_extracted": [7],
+      "grades_extracted": [
+        7
+      ],
       "records_created": 7,
       "records_needing_review": 7,
       "assessment_notes_created": 0,
@@ -211,15 +255,17 @@
       "checksum": "8699f105ebee604a9b0a0aebcbd7e9ebac27f5e034b00559a19f8418e1615e9f",
       "date_imported": "2026-08-21T00:00:00Z",
       "pages_processed": 100,
-      "grades_extracted": [7],
+      "grades_extracted": [
+        7
+      ],
       "records_created": 0,
       "records_needing_review": 0,
       "assessment_notes_created": 0,
       "errors": [
-        "Still unresolved: this document renders its grade/term section headers as 90°-rotated text. Every other document in the pack uses horizontal text; reading rotated glyph runs correctly is a materially different, harder extraction problem not attempted this pass. Flagged honestly rather than worked around."
+        "Still unresolved: this document renders its grade/term section headers as 90\u00b0-rotated text. Every other document in the pack uses horizontal text; reading rotated glyph runs correctly is a materially different, harder extraction problem not attempted this pass. Flagged honestly rather than worked around."
       ],
       "status": "PARSED",
-      "note": "V2 reprocess: no change from v1 — genuine, documented limitation, not a regression."
+      "note": "V2 reprocess: no change from v1 \u2014 genuine, documented limitation, not a regression."
     },
     {
       "import_version": "2026-08-21-v2",
@@ -228,15 +274,17 @@
       "checksum": "0539b8093453d357ed9b7473dda80f2a29d5515910c46134f9088b53ba996c09",
       "date_imported": "2026-08-21T00:00:00Z",
       "pages_processed": 19,
-      "grades_extracted": [7],
+      "grades_extracted": [
+        7
+      ],
       "records_created": 0,
       "records_needing_review": 0,
       "assessment_notes_created": 0,
       "errors": [
-        "Confirmed on inspection: this 19-page file contains only Chapter 4 (Assessment) of the real Technology CAPS document. The content chapters (1-3, where topics live) are not present in this file at all — a source-content gap, not a parser bug. The complete document is still needed."
+        "Confirmed on inspection: this 19-page file contains only Chapter 4 (Assessment) of the real Technology CAPS document. The content chapters (1-3, where topics live) are not present in this file at all \u2014 a source-content gap, not a parser bug. The complete document is still needed."
       ],
       "status": "PARSED",
-      "note": "V2 reprocess: no change from v1 — genuine source-content limitation, not a regression. The grade-as-column table detector built this session would read this document's real content correctly if the content chapters were present."
+      "note": "V2 reprocess: no change from v1 \u2014 genuine source-content limitation, not a regression. The grade-as-column table detector built this session would read this document's real content correctly if the content chapters were present."
     },
     {
       "import_version": "2026-08-21-v2",
@@ -245,7 +293,9 @@
       "checksum": "eabc3325fc1569737f31c4e694e27bfc271bca3c2a6be4eb4de049b46cd30f14",
       "date_imported": "2026-08-21T00:00:00Z",
       "pages_processed": 98,
-      "grades_extracted": [7],
+      "grades_extracted": [
+        7
+      ],
       "records_created": 45,
       "records_needing_review": 45,
       "assessment_notes_created": 3,
@@ -262,13 +312,176 @@
       "checksum": "f53548d277d475c330a26ec04c2380917ce997b12af1dfa331bf200b84095038",
       "date_imported": "2026-08-21T00:00:00Z",
       "pages_processed": 49,
-      "grades_extracted": [7],
+      "grades_extracted": [
+        7
+      ],
       "records_created": 8,
       "records_needing_review": 8,
       "assessment_notes_created": 0,
       "errors": [],
       "status": "REVIEW_REQUIRED",
       "note": "V2 reprocess: a new grade-as-column table detector reads the \"Term | Grade 7 | Grade 8 | Grade 9\" grid (pages 11-12) and correctly extracts only the Grade 7 column. 8 genuine Grade 7 topics, up from 0 in v1."
+    },
+    {
+      "import_version": "2026-08-21-v2.1",
+      "document": "dbe-caps-math-ip",
+      "file": "curriculum/sources/caps/CAPS_Mathematics_Grades4-6.pdf",
+      "checksum": "31c594425ff787a531c6ef6cceaaead09d5ad50d1b54ca36c33bcf19663068b5",
+      "date_imported": "2026-08-21T00:00:00Z",
+      "pages_processed": 58,
+      "grades_extracted": [
+        4,
+        5,
+        6
+      ],
+      "records_created": 74,
+      "records_needing_review": 74,
+      "assessment_notes_created": 33,
+      "errors": [],
+      "status": "REVIEW_REQUIRED",
+      "note": "A5 fix (assessment notes with grade=NULL now correctly surfaced instead of silently excluded) plus A1's new SECTION_PATTERN scoping bug found and fixed on this exact document: an earlier version of the new 'Grade n term m' pattern matched this document's own table-of-contents page verbatim ('Grade 4 Term 1'...'Grade 6 Term 4'), mistagging ~300 front-matter candidates as Grade 6 Term 4 before being restricted to rotated-table-marker blocks only. 74 genuine Grade 4-6 topics (up from an earlier stale count), 33 assessment notes (up from 0 \u2014 previously silently dropped by the null-grade filter)."
+    },
+    {
+      "import_version": "2026-08-21-v2.1",
+      "document": "dbe-caps-lifeskills-ip",
+      "file": "curriculum/sources/caps/CAPS_Life_Skills_Grades4-6.pdf",
+      "checksum": "4113b006498494cd90bc5203c88ca2d5a1a1856c42b0274a31cc3f1442412317",
+      "date_imported": "2026-08-21T00:00:00Z",
+      "pages_processed": 66,
+      "grades_extracted": [
+        4,
+        5,
+        6
+      ],
+      "records_created": 76,
+      "records_needing_review": 76,
+      "assessment_notes_created": 44,
+      "errors": [],
+      "status": "REVIEW_REQUIRED",
+      "note": "A2: new document-specific 3-column (TOPIC | TIME | Recommended resources) structural detector for this document's 'Personal and Social Well-being' and 'Visual Arts' components, replacing the previous 0-structured-candidates state for those sections. 76 genuine Grade 4-6 topics, 44 assessment notes (previously 0, now correctly grade=NULL where the source is grade-general). Known limitation: Physical Education's own layout (time values embedded inline, not row-aligned) remains too irregular to structure safely and falls back to the generic heuristic, producing lower-confidence (0.6) candidates for that component only; Performing Arts sub-component still yields 0 candidates (safe under-extraction, not a new problem)."
+    },
+    {
+      "import_version": "2026-08-21-v2.1",
+      "document": "dbe-caps-nst-ip-amendment",
+      "file": "curriculum/sources/caps/CAPS_Natural_Sciences_Technology_Grades4-6.pdf",
+      "checksum": "b2b62cb589a93261c665bfc4444da2d96646d0c6993e29034520242521d6bc61",
+      "date_imported": "2026-08-21T00:00:00Z",
+      "pages_processed": 5,
+      "grades_extracted": [
+        4,
+        5,
+        6
+      ],
+      "records_created": 0,
+      "records_needing_review": 0,
+      "assessment_notes_created": 56,
+      "errors": [],
+      "status": "REVIEW_REQUIRED",
+      "note": "A5 fix only (no topic-extraction change attempted for this document this pass \u2014 it remains confirmed as a 5-page CAPS amendment/circular, not the full NS&T policy document; the full document is still required). 0 topics (unchanged; this file has no real topic content to extract). 56 assessment notes, now correctly grade=NULL for the cognitive-levels verb glossary previously mislabelled Grade 6 by the 'last grade seen' ambient-state bug."
+    },
+    {
+      "import_version": "2026-08-21-v2.1",
+      "document": "dbe-caps-socsci-ip",
+      "file": "curriculum/sources/caps/CAPS_Social_Sciences_Grades4-6.pdf",
+      "checksum": "1a5865802399614b4187e0e4f499a6c866d441fdcc4a6f0c310eee2ae60d6b5c",
+      "date_imported": "2026-08-21T00:00:00Z",
+      "pages_processed": 48,
+      "grades_extracted": [
+        4,
+        5,
+        6
+      ],
+      "records_created": 21,
+      "records_needing_review": 21,
+      "assessment_notes_created": 57,
+      "errors": [],
+      "status": "REVIEW_REQUIRED",
+      "note": "A4 investigated: confirmed the grade-column boundary logic is already correct for the large majority of rows in both this document's History and Geography summary tables; a general item-based-boundary fix was tried, verified to regress previously-correct Grade 7/8/9 rows, and reverted. One known, narrow limitation remains: History Term 2's Grade 5/Grade 6 boundary is corrupted by a superscript '15th' ordinal-suffix rendering quirk on that one row, producing a genuine Grade 5 topic merged with Grade 6 overflow text and a meaningless 'th century' Grade 6 fragment \u2014 flagged for human review, not silently fixed. 21 topics, 57 assessment notes (up from 0 \u2014 grade-general notes no longer silently dropped)."
+    },
+    {
+      "import_version": "2026-08-21-v2.1",
+      "document": "dbe-caps-math-sp",
+      "file": "curriculum/sources/caps/CAPS_Mathematics_Grade7-9.pdf",
+      "checksum": "b4d8d1d7bba094444039ffe049cb4e28be420f3f4eda2f4fd3a459c34d41a9be",
+      "date_imported": "2026-08-21T00:00:00Z",
+      "pages_processed": 59,
+      "grades_extracted": [
+        7
+      ],
+      "records_created": 7,
+      "records_needing_review": 7,
+      "assessment_notes_created": 0,
+      "errors": [],
+      "status": "REVIEW_REQUIRED",
+      "note": "No targeted fix attempted this pass; Grade 7 extraction unchanged at 7 genuine topics via the existing content-outline detector. 0 assessment notes found in scope for this document."
+    },
+    {
+      "import_version": "2026-08-21-v2.1",
+      "document": "dbe-caps-natsci-sp",
+      "file": "curriculum/sources/caps/CAPS_Natural_Sciences_Grade7-9.pdf",
+      "checksum": "8699f105ebee604a9b0a0aebcbd7e9ebac27f5e034b00559a19f8418e1615e9f",
+      "date_imported": "2026-08-21T00:00:00Z",
+      "pages_processed": 100,
+      "grades_extracted": [
+        7
+      ],
+      "records_created": 10,
+      "records_needing_review": 10,
+      "assessment_notes_created": 15,
+      "errors": [],
+      "status": "REVIEW_REQUIRED",
+      "note": "A1: new rotated-text-aware extraction for this document's entirely-landscape Senior Phase section (pages 18-89, ~97% of items rotated 90\u00b0) \u2014 a real page-rotation coordinate transform (logical_x=page_y, logical_y=-page_x), a rotation-specific column-boundary fix (individual item x-starts, not line-grouped), a content-shape plausibility filter (rejects bullet-leakage and boilerplate), and a new 'Grade n term m' section-marker pattern (scoped only to this table's own marker blocks, since the same bare wording collides with an unrelated document's table of contents). Recovered 10 genuine Grade 7 topics (up from 0 in v1/v2), each capped at confidence 0.5 to reflect this table shape's own known limitation: some entries are missing their first 1-2 characters from a rotation-specific font-run split not yet fixed (e.g. 'he solar ystem' for 'The solar system'). 15 assessment notes."
+    },
+    {
+      "import_version": "2026-08-21-v2.1",
+      "document": "dbe-caps-tech-sp",
+      "file": "curriculum/sources/caps/CAPS_Technology_Grade7-9.pdf",
+      "checksum": "0539b8093453d357ed9b7473dda80f2a29d5515910c46134f9088b53ba996c09",
+      "date_imported": "2026-08-21T00:00:00Z",
+      "pages_processed": 19,
+      "grades_extracted": [
+        7
+      ],
+      "records_created": 0,
+      "records_needing_review": 0,
+      "assessment_notes_created": 32,
+      "errors": [],
+      "status": "REVIEW_REQUIRED",
+      "note": "A6: confirmed (re-verified directly against the real 19-page file) that this document is Chapter 4 (Assessment) only \u2014 no Grade 7 Technology curriculum content (topics, content areas, learning objectives) exists anywhere in it. 0 topics; no Grade 7 Technology content was invented or reconstructed. BLOCKER: SOURCE INCOMPLETE \u2014 COMPLETE OFFICIAL CAPS DOCUMENT REQUIRED (Chapters 1-3 covering actual content/topics are still needed). 32 assessment notes (this chapter's own genuine content), previously silently dropped by the null-grade filter."
+    },
+    {
+      "import_version": "2026-08-21-v2.1",
+      "document": "dbe-caps-creativearts-sp",
+      "file": "curriculum/sources/caps/CAPS_Creative_Arts_Grade7-9.pdf",
+      "checksum": "eabc3325fc1569737f31c4e694e27bfc271bca3c2a6be4eb4de049b46cd30f14",
+      "date_imported": "2026-08-21T00:00:00Z",
+      "pages_processed": 98,
+      "grades_extracted": [
+        7
+      ],
+      "records_created": 46,
+      "records_needing_review": 46,
+      "assessment_notes_created": 101,
+      "errors": [],
+      "status": "REVIEW_REQUIRED",
+      "note": "A3: fixed a real bug found in Drama's own Term 3/4 Grade 7 pages (42, 43) \u2014 one header occurrence's 'suggested contact time' label prints ~8pt below its 'topic N'/'recommended resources' row-mates (a font-rendering quirk), which the default row-match tolerance couldn't bridge, silently dropping that whole topic occurrence ('drama elements in playmaking' and a longer interpretation/performance topic were previously missing entirely). Widened tolerance for this call site only, with a dedup guard so the same occurrence isn't double-counted. 46 genuine Grade 7 topics (up from the previously-incomplete extraction), 101 assessment notes (previously 0)."
+    },
+    {
+      "import_version": "2026-08-21-v2.1",
+      "document": "dbe-caps-humansocsci-sp",
+      "file": "curriculum/sources/caps/CAPS_Human_Social_Sciences_Grade7-9.pdf",
+      "checksum": "f53548d277d475c330a26ec04c2380917ce997b12af1dfa331bf200b84095038",
+      "date_imported": "2026-08-21T00:00:00Z",
+      "pages_processed": 49,
+      "grades_extracted": [
+        7
+      ],
+      "records_created": 8,
+      "records_needing_review": 8,
+      "assessment_notes_created": 114,
+      "errors": [],
+      "status": "REVIEW_REQUIRED",
+      "note": "A4 investigated (see dbe-caps-socsci-ip note \u2014 same underlying document family/table shape): Grade 7/8/9 grade-column extraction confirmed correct for the large majority of rows in this document's own Geography table; History's Grade 5/6 boundary issue is specific to the Social Sciences Grades 4-6 file's own copy of this content and does not recur here. 8 genuine Grade 7 topics, 114 assessment notes (up from 0 \u2014 grade-general notes no longer silently dropped, and this document's own assessment-programme tables are large)."
     }
   ]
 }

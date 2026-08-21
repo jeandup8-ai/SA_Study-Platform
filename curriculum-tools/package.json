@@ -13,6 +13,7 @@
     "debug-grade-column-table": "tsx src/debugGradeColumnTable.ts",
     "debug-line-starts": "tsx src/debugLineStarts.ts",
     "debug-blocks": "tsx src/debugBlocks.ts",
+    "debug-rotated-table": "tsx src/testRotatedTable.ts",
     "inspect-raw-geometry": "tsx src/inspectRawGeometry.ts",
     "typecheck": "tsc --noEmit"
   },

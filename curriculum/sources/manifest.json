@@ -1,11 +1,11 @@
 {
-  "$schema_note": "Registry of curriculum source documents. Each entry describes ONE official document this platform intends to import. status=PENDING means the document is known to exist but has NOT been downloaded or parsed yet — no content from it exists in the database. status=IMPORTED means the real file is stored under curriculum/sources/caps/ and its checksum verified, but curriculum records extracted from it still land in content_workflow_status=REVIEW_REQUIRED until a human checks them against the source page. See ../../README.md.",
+  "$schema_note": "Registry of curriculum source documents. Each entry describes ONE official document this platform intends to import. status=PENDING means the document is known to exist but has NOT been downloaded or parsed yet \u2014 no content from it exists in the database. status=IMPORTED means the real file is stored under curriculum/sources/caps/ and its checksum verified, but curriculum records extracted from it still land in content_workflow_status=REVIEW_REQUIRED until a human checks them against the source page. See ../../README.md.",
   "generated_at": "2026-08-21T06:32:00Z",
   "sources": [
     {
       "document_id": "dbe-caps-math-ip",
       "organisation": "Department of Basic Education (South Africa)",
-      "title": "CAPS Mathematics — Intermediate Phase (Grades 4-6)",
+      "title": "CAPS Mathematics \u2014 Intermediate Phase (Grades 4-6)",
       "document_type": "caps",
       "phase": "Intermediate Phase (Grade 4-6)",
       "grade": null,
@@ -19,12 +19,12 @@
       "import_date": "2026-08-21",
       "last_verified": null,
       "status": "REVIEW_REQUIRED",
-      "note": "Real file, hash-verified. Extracted 45 Grade 4-6 topic candidates into topics (content_workflow_status=REVIEW_REQUIRED) — see curriculum/import-log.json. Not verified or published."
+      "note": "Real file, hash-verified. V2.1 (2026-08-21-v2.1): 74 genuine Grade 4-6 topic candidates and 33 assessment notes extracted (content_workflow_status=REVIEW_REQUIRED) \u2014 see curriculum/import-log.json. Not verified or published."
     },
     {
       "document_id": "dbe-caps-lifeskills-ip",
       "organisation": "Department of Basic Education (South Africa)",
-      "title": "CAPS Life Skills — Intermediate Phase (Grades 4-6)",
+      "title": "CAPS Life Skills \u2014 Intermediate Phase (Grades 4-6)",
       "document_type": "caps",
       "phase": "Intermediate Phase (Grade 4-6)",
       "grade": null,
@@ -38,12 +38,12 @@
       "import_date": "2026-08-21",
       "last_verified": null,
       "status": "REVIEW_REQUIRED",
-      "note": "Real file, hash-verified. Extracted 31 Grade 4-6 topic candidates into topics (content_workflow_status=REVIEW_REQUIRED) — see curriculum/import-log.json. Not verified or published."
+      "note": "Real file, hash-verified. V2.1 (2026-08-21-v2.1): new document-specific parser for the Personal & Social Well-being / Visual Arts topic-time-resources table recovered 76 genuine Grade 4-6 topics and 44 assessment notes (content_workflow_status=REVIEW_REQUIRED). Known limitation: Physical Education's own layout is too irregular to structure safely (falls back to the generic low-confidence heuristic); Performing Arts yields 0 candidates. See curriculum/import-log.json. Not verified or published."
     },
     {
       "document_id": "dbe-caps-nst-ip-amendment",
       "organisation": "Department of Basic Education (South Africa)",
-      "title": "CAPS Natural Sciences and Technology — Intermediate Phase (Grades 4-6) — content amendment",
+      "title": "CAPS Natural Sciences and Technology \u2014 Intermediate Phase (Grades 4-6) \u2014 content amendment",
       "document_type": "caps",
       "phase": "Intermediate Phase (Grade 4-6)",
       "grade": null,
@@ -57,12 +57,12 @@
       "import_date": "2026-08-21",
       "last_verified": null,
       "status": "REVIEW_REQUIRED",
-      "note": "IMPORTANT: this file is only 5 pages and its actual content is a CAPS amendment/circular (\"Section 3: Content... all content relating to Technology should be removed...\"), NOT the full Natural Sciences and Technology CAPS policy document — the full NS&T CAPS document is still needed. Extracted 80 candidates (content_workflow_status=REVIEW_REQUIRED); a large share is assessment-appendix noise (a cognitive-levels verb list) mislabelled with the last grade/term seen, flagged in import-log.json for the reviewer."
+      "note": "IMPORTANT: this file is only 5 pages and its actual content is a CAPS amendment/circular (\"Section 3: Content... all content relating to Technology should be removed...\"), NOT the full Natural Sciences and Technology CAPS policy document \u2014 the full NS&T CAPS document is still needed. V2.1: 0 topics (unchanged, no real topic content in this file); 56 assessment notes, now correctly grade=NULL where the source doesn't specify a grade (previously mislabelled Grade 6 by an ambient-state bug, fixed in A5). See curriculum/import-log.json."
     },
     {
       "document_id": "dbe-caps-socsci-ip",
       "organisation": "Department of Basic Education (South Africa)",
-      "title": "CAPS Social Sciences — Intermediate Phase (Grades 4-6)",
+      "title": "CAPS Social Sciences \u2014 Intermediate Phase (Grades 4-6)",
       "document_type": "caps",
       "phase": "Intermediate Phase (Grade 4-6)",
       "grade": null,
@@ -76,15 +76,15 @@
       "import_date": "2026-08-21",
       "last_verified": null,
       "status": "REVIEW_REQUIRED",
-      "note": "Real file, hash-verified. Extracted 57 Grade 4-6 topic candidates into topics (content_workflow_status=REVIEW_REQUIRED); many are from an assessment-programme appendix, not the main topic tables — flagged in import-log.json for the reviewer."
+      "note": "Real file, hash-verified. V2.1: 21 genuine Grade 4-6 topics, 57 assessment notes (content_workflow_status=REVIEW_REQUIRED). Known limitation: History Term 2's Grade 5/Grade 6 boundary is corrupted by a superscript ordinal-suffix ('15th century') rendering quirk on one row, flagged for human review \u2014 see curriculum/import-log.json."
     },
     {
       "document_id": "dbe-caps-math-sp",
       "organisation": "Department of Basic Education (South Africa)",
-      "title": "CAPS Mathematics — Senior Phase (Grades 7-9)",
+      "title": "CAPS Mathematics \u2014 Senior Phase (Grades 7-9)",
       "document_type": "caps",
       "phase": "Senior Phase (Grade 7-9)",
-      "grade": "Grade 7 only — this document covers Grades 7-9, but the product launches with Grade 7 only. Grades 8-9 content must not be extracted into this database yet.",
+      "grade": "Grade 7 only \u2014 this document covers Grades 7-9, but the product launches with Grade 7 only. Grades 8-9 content must not be extracted into this database yet.",
       "subject": "Mathematics",
       "academic_year": null,
       "publication_year": null,
@@ -94,16 +94,16 @@
       "checksum": "b4d8d1d7bba094444039ffe049cb4e28be420f3f4eda2f4fd3a459c34d41a9be",
       "import_date": "2026-08-21",
       "last_verified": null,
-      "status": "PARSED",
-      "note": "Real file, hash-verified. Grade 7 extraction produced 0 topics: the Grade 7 term tables (pages 21-29) are a dense 3-column layout the PDF table-detection heuristic did not recognise as tabular, so it extracted as flowing paragraph text the topic detector doesn't read from. See curriculum/import-log.json for detail — needs a smarter table heuristic or manual entry."
+      "status": "REVIEW_REQUIRED",
+      "note": "Real file, hash-verified. V2.1: Grade 7 extraction unchanged at 7 genuine topics via the existing content-outline detector (this document covers Grades 7-9; the product launches with Grade 7 only, so Grades 8-9 content is deliberately not extracted). See curriculum/import-log.json."
     },
     {
       "document_id": "dbe-caps-natsci-sp",
       "organisation": "Department of Basic Education (South Africa)",
-      "title": "CAPS Natural Sciences — Senior Phase (Grades 7-9)",
+      "title": "CAPS Natural Sciences \u2014 Senior Phase (Grades 7-9)",
       "document_type": "caps",
       "phase": "Senior Phase (Grade 7-9)",
-      "grade": "Grade 7 only — see note on dbe-caps-math-sp.",
+      "grade": "Grade 7 only \u2014 see note on dbe-caps-math-sp.",
       "subject": "Natural Sciences",
       "academic_year": null,
       "publication_year": null,
@@ -113,16 +113,16 @@
       "checksum": "8699f105ebee604a9b0a0aebcbd7e9ebac27f5e034b00559a19f8418e1615e9f",
       "import_date": "2026-08-21",
       "last_verified": null,
-      "status": "PARSED",
-      "note": "Real file, hash-verified. Grade 7 extraction produced 0 topics: no grade/term section marker matching any currently-implemented pattern was found anywhere in this document. This subject uses a different internal structure than the other 8 in the pack; not yet diagnosed. See curriculum/import-log.json."
+      "status": "REVIEW_REQUIRED",
+      "note": "Real file, hash-verified. V2.1 (A1): new rotated-text-aware extraction for this document's entirely-landscape Senior Phase section (pages 18-89) recovered 10 genuine Grade 7 topics (up from 0 in v1/v2) and 15 assessment notes. Known limitation: this table shape's extraction is capped at confidence 0.5 \u2014 some entries are missing their first 1-2 characters from a rotation-specific font-run split not yet fixed (e.g. \"he solar ystem\" for \"The solar system\"). See curriculum/import-log.json."
     },
     {
       "document_id": "dbe-caps-tech-sp",
       "organisation": "Department of Basic Education (South Africa)",
-      "title": "CAPS Technology — Senior Phase (Grades 7-9)",
+      "title": "CAPS Technology \u2014 Senior Phase (Grades 7-9)",
       "document_type": "caps",
       "phase": "Senior Phase (Grade 7-9)",
-      "grade": "Grade 7 only — see note on dbe-caps-math-sp.",
+      "grade": "Grade 7 only \u2014 see note on dbe-caps-math-sp.",
       "subject": "Technology",
       "academic_year": null,
       "publication_year": null,
@@ -132,16 +132,16 @@
       "checksum": "0539b8093453d357ed9b7473dda80f2a29d5515910c46134f9088b53ba996c09",
       "import_date": "2026-08-21",
       "last_verified": null,
-      "status": "PARSED",
-      "note": "Real file, hash-verified. Grade 7 extraction produced 0 topics: this document presents Grades 7-9 as a single shared table with grade columns (\"Grade 7-9 | Term 1 | Term 2 | Term 3 | Term 4\"), not repeated per-grade section headers — the current detector tracks sequential markers and can't read grade-as-column tables. See curriculum/import-log.json."
+      "status": "REVIEW_REQUIRED",
+      "note": "Real file, hash-verified. V2.1 (A6): re-confirmed this document is Chapter 4 (Assessment) only \u2014 no Grade 7 Technology curriculum content (topics, content areas, learning objectives) exists anywhere in this 19-page file. 0 topics (none invented); 32 assessment notes (this chapter's own genuine content). BLOCKER: SOURCE INCOMPLETE \u2014 the complete official CAPS Technology Senior Phase document (Chapters 1-3) is still required before any Grade 7 Technology topic content can be extracted. See curriculum/import-log.json."
     },
     {
       "document_id": "dbe-caps-creativearts-sp",
       "organisation": "Department of Basic Education (South Africa)",
-      "title": "CAPS Creative Arts — Senior Phase (Grades 7-9)",
+      "title": "CAPS Creative Arts \u2014 Senior Phase (Grades 7-9)",
       "document_type": "caps",
       "phase": "Senior Phase (Grade 7-9)",
-      "grade": "Grade 7 only — see note on dbe-caps-math-sp.",
+      "grade": "Grade 7 only \u2014 see note on dbe-caps-math-sp.",
       "subject": "Creative Arts",
       "academic_year": null,
       "publication_year": null,
@@ -151,16 +151,16 @@
       "checksum": "eabc3325fc1569737f31c4e694e27bfc271bca3c2a6be4eb4de049b46cd30f14",
       "import_date": "2026-08-21",
       "last_verified": null,
-      "status": "PARSED",
-      "note": "Real file, hash-verified. Grade 7 extraction produced 0 topics: 30 candidates were initially detected but every one was the document's own running title repeated verbatim (\"CREATIVE ARTS GRADES 7-9\") and was correctly dropped by the running-header filter. No genuine Grade 7 topic content extracted. See curriculum/import-log.json."
+      "status": "REVIEW_REQUIRED",
+      "note": "Real file, hash-verified. V2.1 (A3): fixed a real bug on Drama's own Term 3/4 Grade 7 pages \u2014 a header row-match tolerance issue silently dropped a whole topic occurrence per page (\"drama elements in playmaking\" and a longer interpretation/performance topic). 46 genuine Grade 7 topics (up from an incomplete extraction), 101 assessment notes. See curriculum/import-log.json."
     },
     {
       "document_id": "dbe-caps-humansocsci-sp",
       "organisation": "Department of Basic Education (South Africa)",
-      "title": "CAPS Social Sciences — Senior Phase (Grades 7-9)",
+      "title": "CAPS Social Sciences \u2014 Senior Phase (Grades 7-9)",
       "document_type": "caps",
       "phase": "Senior Phase (Grade 7-9)",
-      "grade": "Grade 7 only — see note on dbe-caps-math-sp.",
+      "grade": "Grade 7 only \u2014 see note on dbe-caps-math-sp.",
       "subject": "Social Sciences",
       "academic_year": null,
       "publication_year": null,
@@ -170,13 +170,13 @@
       "checksum": "f53548d277d475c330a26ec04c2380917ce997b12af1dfa331bf200b84095038",
       "import_date": "2026-08-21",
       "last_verified": null,
-      "status": "PARSED",
-      "note": "Real file, hash-verified. Grade 7 extraction produced 0 topics: this document's real grade structure is a grid table (\"Term | Grade 4 | Grade 5 | Grade 6\" / \"Term | Grade 7 | Grade 8 | Grade 9\"), not sequential section headers — 115 candidates coincidentally matched Grade 9 (excluded from this Grade-7-only run regardless), zero matched Grade 7. See curriculum/import-log.json."
+      "status": "REVIEW_REQUIRED",
+      "note": "Real file, hash-verified. V2.1: grade-column extraction confirmed correct for the large majority of rows in this document's own Geography table; 8 genuine Grade 7 topics, 114 assessment notes (content_workflow_status=REVIEW_REQUIRED). See curriculum/import-log.json."
     },
     {
       "document_id": "dbe-atp-senior-2023-index",
       "organisation": "Department of Basic Education (South Africa)",
-      "title": "Annual Teaching Plans, Senior Phase, 2023 — official document index",
+      "title": "Annual Teaching Plans, Senior Phase, 2023 \u2014 official document index",
       "document_type": "index_page",
       "phase": "Senior Phase (Grade 7-9)",
       "grade": null,
@@ -190,12 +190,12 @@
       "import_date": null,
       "last_verified": null,
       "status": "PENDING",
-      "note": "ATP = sequencing/pacing of CAPS content across the year, distinct from CAPS itself. Not included in the supplied source pack. See curriculum/sources/atp/2026/ once a current-year ATP document is supplied — do not manufacture ATP information."
+      "note": "ATP = sequencing/pacing of CAPS content across the year, distinct from CAPS itself. Not included in the supplied source pack. See curriculum/sources/atp/2026/ once a current-year ATP document is supplied \u2014 do not manufacture ATP information."
     },
     {
       "document_id": "dbe-sba-exemplars-index",
       "organisation": "Department of Basic Education (South Africa)",
-      "title": "School-Based Assessment (SBA) Exemplars — official document index",
+      "title": "School-Based Assessment (SBA) Exemplars \u2014 official document index",
       "document_type": "index_page",
       "phase": null,
       "grade": null,
@@ -209,7 +209,7 @@
       "import_date": null,
       "last_verified": null,
       "status": "PENDING",
-      "note": "Reference only, per spec section 15 — SBA exemplar papers are NOT to be reproduced as platform content unless we hold the rights. Not included in the supplied source pack."
+      "note": "Reference only, per spec section 15 \u2014 SBA exemplar papers are NOT to be reproduced as platform content unless we hold the rights. Not included in the supplied source pack."
     }
   ]
 }

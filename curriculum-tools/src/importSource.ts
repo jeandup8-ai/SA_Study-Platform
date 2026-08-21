@@ -23,7 +23,7 @@ import type { ExtractedDocument } from './parsers/types.js'
  * import version" — never patch old rows in place). Bump this string, not
  * the pipeline's actual version, when a new deliberate reprocessing pass
  * begins. */
-const IMPORT_VERSION = '2026-08-21-v2'
+const IMPORT_VERSION = '2026-08-21-v2.1'
 
 /**
  * Curriculum source importer — the executable half of spec section 10's
@@ -127,8 +127,17 @@ async function main() {
   const outOfScopeCount = allTopics.length - inScope.length
   const boilerplateCount = inScope.length - deBoilerplated.length
   const runningHeaderCount = deBoilerplated.length - topics.length
+  // Unlike topics, a null gradeNumber here is NOT "out of scope, skip it" —
+  // it's a deliberate, honest "this assessment note doesn't specify a
+  // grade" (see curriculumDetectors.ts's A5 fix: a trailing assessment
+  // appendix's ambient "last grade mentioned" is not the same as the note
+  // actually being about that grade). assessment_notes.grade_id is
+  // nullable specifically for this, and unlike topics.grade_id there's no
+  // launch-gating concern (a null grade never needs a grades-table row to
+  // exist), so every grade-general note is always in scope alongside the
+  // ones that do carry a specific, in-scope grade.
   const assessmentNotes = allAssessmentNotes.filter(
-    (n) => n.gradeNumber !== null && args.grades.includes(n.gradeNumber),
+    (n) => n.gradeNumber === null || args.grades.includes(n.gradeNumber),
   )
 
   console.log(`\nDetected (heuristic, unverified):`)

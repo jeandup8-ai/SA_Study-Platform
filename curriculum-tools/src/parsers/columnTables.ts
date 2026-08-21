@@ -114,7 +114,7 @@ function mergeWordChunks(rowItems: TextItem[]): WordChunk[] {
   return chunks.map((c) => ({ text: c.text.replace(/\s+/g, ' ').trim(), x: c.x }))
 }
 
-function groupIntoLines(items: TextItem[]): { y: number; x: number; text: string }[] {
+export function groupIntoLines(items: TextItem[]): { y: number; x: number; text: string }[] {
   const sorted = [...items].sort((a, b) => b.y - a.y || a.x - b.x)
   const lines: TextItem[][] = []
   for (const item of sorted) {
@@ -165,6 +165,7 @@ export function joinMultilineText(items: TextItem[]): string {
 export function detectHeaderRow(
   items: TextItem[],
   labelPatterns: RegExp[],
+  rowTolerance = LINE_Y_TOLERANCE,
 ): { columns: ColumnBound[]; headerY: number } | null {
   const lines = groupIntoLines(items)
   for (const line of lines) {
@@ -172,7 +173,12 @@ export function detectHeaderRow(
     // word-level chunks at this y so we get per-label x, not one blob (and
     // so a font-driven mid-word split, e.g. "t" / "opic" as separate pdfjs
     // items, still matches a "topic" label pattern — see mergeWordChunks).
-    const rowItems = items.filter((it) => Math.abs(it.y - line.y) <= LINE_Y_TOLERANCE)
+    // rowTolerance, not the module default, on this one filter: a caller
+    // whose real documents sometimes print one header label a few points
+    // off the others' baseline (see detectAllHeaderRows' doc) can widen
+    // just this match window without affecting how lines are grouped
+    // everywhere else in this file.
+    const rowItems = items.filter((it) => Math.abs(it.y - line.y) <= rowTolerance)
     const chunks = mergeWordChunks(rowItems)
     const matches: { label: string; x: number }[] = []
     for (const pattern of labelPatterns) {
@@ -211,11 +217,23 @@ export function detectHeaderRow(
 export function detectAllHeaderRows(
   items: TextItem[],
   labelPatterns: RegExp[],
+  rowTolerance = LINE_Y_TOLERANCE,
 ): { columns: ColumnBound[]; headerY: number }[] {
   const results: { columns: ColumnBound[]; headerY: number }[] = []
   const lines = groupIntoLines(items)
   for (const line of lines) {
-    const rowItems = items.filter((it) => Math.abs(it.y - line.y) <= LINE_Y_TOLERANCE)
+    // Checked against real data (Creative Arts Grade 7-9 Drama, pages 42
+    // and 43): a header occurrence's three labels don't always share one
+    // exact y — "suggested contact time" sometimes prints ~8pt below
+    // "topic N"/"recommended resources" on the same header, which the
+    // module-default LINE_Y_TOLERANCE(2pt) can't bridge, silently dropping
+    // that whole topic occurrence. A caller can pass a wider rowTolerance
+    // for exactly this; already skipped once by the guard below when a
+    // widened window means TWO of groupIntoLines' own separately-grouped
+    // lines (e.g. this y=531.3 "line" and the y=522.9 one 8.4pt below it)
+    // would otherwise both independently re-detect the same occurrence.
+    if (results.some((r) => Math.abs(r.headerY - line.y) <= rowTolerance)) continue
+    const rowItems = items.filter((it) => Math.abs(it.y - line.y) <= rowTolerance)
     const chunks = mergeWordChunks(rowItems)
     const matches: { label: string; x: number }[] = []
     for (const pattern of labelPatterns) {
@@ -405,6 +423,28 @@ export function extractGradeColumnTable(
 
   const tableTopY = termLines[0].y
   const tableBottomY = termLines[termLines.length - 1].y - SAME_ENTRY_MAX_GAP * 2
+  // Deliberately still the per-LINE x-minimum here, not individual item
+  // x-starts: tried switching this to individual items (the same fix used
+  // for this file's rotated content-outline and Life Skills detectors,
+  // since this table's rows also routinely have all three grade cells
+  // sharing one y) and checked it against real output — it made things
+  // worse, not better. This table's own header labels sit well to the
+  // RIGHT of where each column's real body text starts (Grade 7's header
+  // at x=156.0 but its real text starts at x=103.4; Grade 8 at 308.6 vs
+  // 250.1; Grade 9 at 451.2 vs 408.5 — the same "header padded away from
+  // body text" shape detectHeaderRow's own doc already warns about), so
+  // gapBasedBoundaries' per-pair search — scoped strictly between each
+  // pair's own header x — never even sees the LEFT column's real text
+  // (it sits left of "lo") once individual items are used, starving the
+  // search down to one column's own line-wrap noise and producing an
+  // erratic boundary. The line-based version happens to still work
+  // reasonably for this table specifically, because a shared-row line's
+  // reported x already collapses to the left-most column's real x, and
+  // wrapped continuation lines (which don't share a row) contribute the
+  // other columns' real x under their own line entries — imperfect, but
+  // confirmed against real output to still separate Grade 7/8/9 correctly
+  // in the large majority of rows. Left as-is per A4's own instruction not
+  // to silently alter already-correct records while chasing one bug.
   const tableBodyLines = groupIntoLines(items.filter((it) => it.y <= tableTopY && it.y > tableBottomY))
   const gradeBoundaries = gapBasedBoundaries(
     tableBodyLines.map((l) => l.x),
@@ -559,6 +599,336 @@ export function topicTimeResourceRowsToTableCells(rows: TopicTimeResourceRow[]):
     text: row.topicName,
     rowIndex: i + 1,
     colIndex: 0,
+    confidence: row.confidence,
+  }))
+}
+
+export interface RotatedTopicRow {
+  topicName: string
+  confidence: number
+}
+
+export interface RotatedTopicBlock {
+  /** This occurrence's own header row y, in logical space — the caller uses
+   * this to bound the "Grade n term m" / "strand: ..." marker text that
+   * sits above this occurrence's header and below the previous occurrence's
+   * last topic row. */
+  headerY: number
+  rows: RotatedTopicRow[]
+}
+
+/** Natural Sciences Grade7-9's rotated table repeats its own title line
+ * ("Grade 7 term 1" / "strand: liFe and livinG") directly above each
+ * TIME/TOPIC/CONTENT header occurrence, the same shape
+ * extractGradeColumnTable found for its "SUMMARY: CONTENT OVERVIEW" title
+ * line — a fixed content floor right at the next occurrence's headerY
+ * risks that title text (if it falls inside the TOPIC column's own
+ * x-range) leaking into the previous occurrence's last topic entry as a
+ * spurious trailing line. Same fix as there: floor a fixed margin below the
+ * next header instead of exactly at it. */
+const ROTATED_TABLE_FLOOR_MARGIN = 20
+
+/**
+ * Reads the TOPIC column of a rotated CAPS content table (this project's
+ * confirmed case: Natural Sciences Grade 7-9's Senior Phase section, pages
+ * 18-89, entirely authored in landscape with body text rotated 90°) — a
+ * TIME | TOPIC | CONTENT & CONCEPTS | SUGGESTED ACTIVITIES | RESOURCES
+ * table — once the caller has already converted the page's items into
+ * logical (as-if-horizontal) coordinates via the transform
+ * logical_x = pageY, logical_y = -pageX (validated against this exact
+ * document: reading order within one rotated line runs with increasing
+ * page-y, and successive lines stack with increasing page-x, which maps
+ * cleanly onto this codebase's existing "sort descending logical-y is
+ * top-to-bottom" convention used everywhere else in this file).
+ *
+ * Uses detectAllHeaderRows, not detectHeaderRow: checked against real pages,
+ * this table's header repeats multiple times down one page (once per
+ * grade/term/strand block), the same repeated-mini-table shape
+ * extractTopicTimeResourceTable already handles for Creative Arts.
+ *
+ * detectHeaderRow/detectAllHeaderRows' own boundary derivation is reused
+ * only for finding each header row itself (TIME/TOPIC/CONTENT all present
+ * on one line) — their gapBasedBoundaries call is NOT reused for the actual
+ * column split, because that call feeds gapBasedBoundaries the per-LINE
+ * x-minimum (groupIntoLines), which silently conflates columns whenever
+ * more than one column's cell shares a line's exact y. Checked against real
+ * data: this table is dense enough that this happens on almost every row
+ * (e.g. a genuine CONTENT-column line "t he concept of the biosphere"
+ * starting at x=204.3 sits on the same logical-y as a TOPIC-column "the
+ * biosphere" ending ~184.7) — a line-minimum-based boundary search picked
+ * up that CONTENT text's own leading fragment as if it were still inside
+ * TOPIC. Individual item x-start positions don't have this failure mode:
+ * each column's own items keep their own x even when they share a row, so
+ * the true TOPIC/CONTENT gap (43.6pt in the manually-verified sample) still
+ * stands out cleanly against gapBasedBoundaries' largest-gap search. This
+ * function re-runs that exact same, already-validated gapBasedBoundaries
+ * helper — just against item x-starts instead of line x-minimums, scoped to
+ * this one occurrence's own body items — rather than inventing new boundary
+ * logic, so it inherits the same fallback behaviour (header-midpoint) for
+ * an empty column.
+ */
+export function extractRotatedContentOutlineTopics(items: TextItem[]): RotatedTopicBlock[] {
+  const headers = detectAllHeaderRows(items, [/^time$/i, /^topic$/i, /^content/i])
+  if (headers.length === 0) return []
+  const sorted = [...headers].sort((a, b) => b.headerY - a.headerY)
+  const blocks: RotatedTopicBlock[] = []
+  for (let i = 0; i < sorted.length; i++) {
+    const header = sorted[i]
+    const timeCol = header.columns.find((c) => /^time$/i.test(c.label))
+    const topicCol = header.columns.find((c) => /^topic$/i.test(c.label))
+    const contentCol = header.columns.find((c) => /^content/i.test(c.label))
+    if (!timeCol || !topicCol || !contentCol) continue
+
+    const floorY = i + 1 < sorted.length ? sorted[i + 1].headerY + ROTATED_TABLE_FLOOR_MARGIN : -Infinity
+    const bodyItems = items.filter((it) => it.y < header.headerY - LINE_Y_TOLERANCE && it.y > floorY)
+    const boundaries = gapBasedBoundaries(
+      bodyItems.map((it) => it.x),
+      [timeCol.headerX, topicCol.headerX, contentCol.headerX],
+      2,
+    )
+    const correctedTopicColumn: ColumnBound = {
+      label: topicCol.label,
+      xMin: boundaries[0],
+      xMax: boundaries[1],
+      headerX: topicCol.headerX,
+    }
+
+    const entries = extractColumnEntries(bodyItems, correctedTopicColumn, header.headerY)
+      .filter((e) => isPlausibleRotatedTopicName(e.text))
+    if (entries.length > 0) {
+      blocks.push({
+        headerY: header.headerY,
+        // Confidence capped well below what extractColumnEntries computed:
+        // that score only reflects gap-cleanliness of the entry split, not
+        // this table shape's own known, separate failure mode — checked
+        // against a full run over all 71 rotated pages, a real fraction of
+        // surviving entries are missing their own first 1-2 characters
+        // (e.g. "he solar ystem", "ithosphere" for what the source page
+        // actually reads as "The solar system", "Lithosphere") from a
+        // rotation-specific font-run split this fix does not address. Every
+        // record still lands as REVIEW_REQUIRED regardless, but a reviewer
+        // should see this table shape trusted less than the other three.
+        rows: entries.map((e) => ({ topicName: e.text, confidence: Math.min(e.confidence, 0.5) })),
+      })
+    }
+  }
+  return blocks
+}
+
+/** Checked against a full run over the real document (all 71 rotated
+ * pages, 18-89): the single-boundary-per-occurrence gap search above works
+ * cleanly on some occurrences (e.g. page 22's isolated "the biosphere") but
+ * not others — the CONTENT column's own bullet-list text varies in x
+ * line-to-line (hanging-indent bullets, not one consistent left margin the
+ * way this project's other 3 table shapes have), so on a page where that
+ * variation is wide the single computed boundary lets bullet fragments
+ * ("•", "d •"), boilerplate ("Learners should read, write, draw..."), and
+ * mid-word truncations through as if they were topic names. Rather than
+ * publish those as invented/garbled topic candidates, this is a hard
+ * content-shape filter applied after the geometric extraction: a genuine
+ * topic name in this table never contains a bullet character or is
+ * dominated by non-alphabetic characters, so anything that does gets
+ * dropped here — real recall loss on this table shape, preferred over
+ * passing corrupted text through as if it were genuine CAPS content. */
+// This exact recurring note ("Learners should read, write, draw and do
+// practical tasks regularly ... learner's notebook") appears, with slightly
+// different wrap/truncation each time (so an exact-match frequency filter
+// like dropRepeatedRunningText wouldn't reliably catch every instance),
+// across many of this table's occurrences — a generic notebook-keeping
+// instruction, not a topic name. No genuine CAPS topic in this document
+// starts with this wording, so matching on its distinctive opening phrase
+// is safe.
+const ROTATED_TABLE_NOTEBOOK_BOILERPLATE = /learners should read,?\s*write,?\s*draw/i
+
+function isPlausibleRotatedTopicName(text: string): boolean {
+  if (text.includes('•')) return false
+  if (ROTATED_TABLE_NOTEBOOK_BOILERPLATE.test(text)) return false
+  const alpha = (text.match(/[a-zA-Z]/g) ?? []).length
+  if (alpha < 3) return false
+  if (alpha / text.length < 0.6) return false
+  return true
+}
+
+/** Turns rotated content-outline TOPIC-column rows into ExtractedTableCell
+ * rows (colIndex 0), left without an explicit gradeNumber/termNumber so the
+ * caller's ambient section tracking applies — this table shape always sits
+ * inside its own rotated "Grade n term m" / "strand: ..." marker, which the
+ * caller must extract and push as a preceding block for that tracking to see. */
+export function rotatedTopicRowsToTableCells(rows: RotatedTopicRow[]): ExtractedTableCell[] {
+  return rows.map((row, i) => ({
+    text: row.topicName,
+    rowIndex: i + 1,
+    colIndex: 0,
+    confidence: row.confidence,
+  }))
+}
+
+export interface LifeSkillsTopicRow {
+  termNumber: number
+  gradeNumber: number
+  topicName: string
+  confidence: number
+}
+
+const LIFE_SKILLS_HEADER_PATTERNS = [/^term\s+[1-4]$/i, /^grade\s+\d{1,2}$/i, /^recommended\s+resources?$/i]
+/** A genuine time-column value in this document is always a short duration
+ * like "3 hours" or "4½ hours" — checked against real data, this is the
+ * distinguishing shape that separates a real time-column entry from an
+ * unrelated content-column line that merely happens to land closest to the
+ * time column's x (see extractLifeSkillsTopicTable's row-boundary doc). */
+const LIFE_SKILLS_DURATION_PATTERN = /^\d+(?:[.,]\d+)?½?\s*hours?$/i
+/** A row-content line starting with a bullet or sub-bullet dash marks the
+ * end of a topic's own name text and the start of its content detail —
+ * checked against real data (this document's "Personal and Social
+ * Well-being" and "Visual Arts" sections both use "•" for a topic's
+ * top-level content points and "-" for a nested sub-point). */
+const LIFE_SKILLS_BULLET_PATTERN = /^[•\-–—]/
+
+/**
+ * Life Skills Grades 4-6 has no generic multi-subject table shape this
+ * project's other detectors already cover — checked against the real
+ * document, its "Personal and Social Well-being" and "Visual Arts"
+ * components use their own distinct 3-column layout: a header row reading
+ * "TERM n | GRADE g | Recommended resources" (this IS the whole header —
+ * the topic and time columns have no label of their own at all, only
+ * implied by position), followed by one row per topic: the topic name
+ * (e.g. "Topic 1: Development of the self", sometimes wrapping to a second
+ * line, sometimes with no "Topic n:" prefix at all for a later row in the
+ * same section), a suggested-time value ("6 hours") on the SAME row, and a
+ * resources list in the third column — then that topic's own content
+ * bullets, at the SAME x as the topic column, immediately below.
+ *
+ * Column boundaries are NOT derived by the shared gap-based search used
+ * elsewhere in this file: checked against real coordinates, this table
+ * doesn't need it and gap-search would be actively wrong here — this
+ * table's header labels ("TERM 1", "GRADE 4", "Recommended resources")
+ * happen to sit at EXACTLY the x each column's own body text starts at (no
+ * padding/centring the way Mathematics' CONTENT/CLARIFICATION headers do),
+ * so a line is simply assigned to whichever of the three header x-positions
+ * it sits closest to. The three columns are also far enough apart (~200pt
+ * and ~80pt gaps, verified against real data) that this never confuses a
+ * topic-column's own indented sub-bullets (only ~8.5pt right of the topic
+ * column's own x) for the time or resources column.
+ *
+ * A row boundary (this table has no per-row ruling/box to detect
+ * structurally) is found the same way: a topic-column line only starts a
+ * NEW topic entry when its own y lines up with a genuine time-column
+ * value's y (a bare "N hours" line) — content bullets never have a time
+ * value beside them, so this reliably tells a new topic's first line apart
+ * from the previous topic's own trailing content.
+ *
+ * Deliberately does NOT read every bullet as its own topic (the spec's own
+ * A2 requirement) — once a topic's first bullet line is seen, everything
+ * until the next real row start is content detail, not additional topics,
+ * matching the same "topic name only, not the skills/content beneath it"
+ * scope this file's extractTopicTimeResourceTable already uses for
+ * Creative Arts.
+ *
+ * Only fires where this exact header is actually found — checked against
+ * the real document, Physical Education's own pages use a much less
+ * regular layout (time values embedded inline inside wrapped resource/
+ * activity text rather than their own row-aligned column), which this
+ * detector cannot safely reconstruct without risking a wrong topic/time
+ * split; those pages are left to the generic fallback path instead of
+ * guessing, consistent with "ambiguous → REVIEW_REQUIRED", or in this case
+ * "ambiguous → don't force a structural read at all".
+ */
+export function extractLifeSkillsTopicTable(items: TextItem[]): LifeSkillsTopicRow[] {
+  const headers = detectAllHeaderRows(items, LIFE_SKILLS_HEADER_PATTERNS)
+  if (headers.length === 0) return []
+  const sorted = [...headers].sort((a, b) => b.headerY - a.headerY)
+  const rows: LifeSkillsTopicRow[] = []
+
+  for (let i = 0; i < sorted.length; i++) {
+    const header = sorted[i]
+    const termCol = header.columns.find((c) => /^term/i.test(c.label))
+    const gradeCol = header.columns.find((c) => /^grade/i.test(c.label))
+    const resourcesCol = header.columns.find((c) => /^recommended/i.test(c.label))
+    if (!termCol || !gradeCol || !resourcesCol) continue
+    const termNumber = Number(termCol.label.match(/\d+/)?.[0])
+    const gradeNumber = Number(gradeCol.label.match(/\d+/)?.[0])
+    if (!termNumber || !gradeNumber) continue
+
+    const topicX = termCol.headerX
+    const timeX = gradeCol.headerX
+    const resourcesX = resourcesCol.headerX
+
+    const floorY = i + 1 < sorted.length ? sorted[i + 1].headerY : -Infinity
+    const bodyItems = items.filter((it) => it.y < header.headerY - LINE_Y_TOLERANCE && it.y > floorY)
+
+    // Classified per ITEM, not per line: a row-start row genuinely has all
+    // three columns sharing the exact same y (confirmed against real data —
+    // "Topic 1:" / "6 hours" / "Textbook, ..." all sit at one identical y).
+    // groupIntoLines merges every item at the same y into one combined line
+    // first — doing that before column-splitting would merge all three
+    // columns' text into one blob whose own x is always the topic column's
+    // (the leftmost), so no line would ever read as "time column" and no
+    // row boundary could ever be found. Splitting by nearest column at the
+    // item level first, then grouping each column's own items into lines
+    // separately, avoids that: within one already-isolated column, sharing
+    // a y with another item is never a cross-column conflation.
+    const topicItems: TextItem[] = []
+    const timeItems: TextItem[] = []
+    for (const it of bodyItems) {
+      const dTopic = Math.abs(it.x - topicX)
+      const dTime = Math.abs(it.x - timeX)
+      const dResources = Math.abs(it.x - resourcesX)
+      const nearest = Math.min(dTopic, dTime, dResources)
+      if (nearest === dTopic) topicItems.push(it)
+      else if (nearest === dTime) timeItems.push(it)
+      // Resources-column items aren't needed for topic-name extraction.
+    }
+    const topicLines = groupIntoLines(topicItems)
+    // Only a line that actually reads as a duration counts as a real
+    // time-column value — checked against real data (Grade 6 Term 3, page
+    // 30): a wrapped content bullet that happens to spill wide enough to
+    // land closer to the time column's x than the topic column's ("flag,
+    // anthem," / "code of arms, etc.", continuing "- National symbols such
+    // as" on the same y) would otherwise manufacture a false row boundary
+    // and split a bullet's own wrapped continuation off as if it were a new
+    // topic's name.
+    const timeLineYs = groupIntoLines(timeItems)
+      .filter((l) => LIFE_SKILLS_DURATION_PATTERN.test(l.text.trim()))
+      .map((l) => l.y)
+    const isRowStart = (y: number) => timeLineYs.some((ty) => Math.abs(ty - y) <= LINE_Y_TOLERANCE)
+
+    let current: string[] | null = null
+    let sawBullet = false
+    const finish = () => {
+      if (!current || current.length === 0) return
+      const text = current.join(' ').replace(/\s+/g, ' ').trim()
+      if (text) rows.push({ termNumber, gradeNumber, topicName: text, confidence: current.length > 1 ? 0.8 : 0.75 })
+    }
+    for (const line of topicLines) {
+      if (isRowStart(line.y)) {
+        finish()
+        current = [line.text]
+        sawBullet = false
+        continue
+      }
+      if (!current || sawBullet) continue
+      if (LIFE_SKILLS_BULLET_PATTERN.test(line.text.trim())) {
+        sawBullet = true
+        continue
+      }
+      current.push(line.text)
+    }
+    finish()
+  }
+  return rows
+}
+
+/** Turns Life Skills topic rows into ExtractedTableCell rows carrying an
+ * explicit gradeNumber/termNumber per cell, since both come from the
+ * table's own header rather than a preceding ambient marker (the same
+ * reasoning as gradeColumnRowsToTableCells). */
+export function lifeSkillsTopicRowsToTableCells(rows: LifeSkillsTopicRow[]): ExtractedTableCell[] {
+  return rows.map((row, i) => ({
+    text: row.topicName,
+    rowIndex: i + 1,
+    colIndex: 0,
+    gradeNumber: row.gradeNumber,
+    termNumber: row.termNumber,
     confidence: row.confidence,
   }))
 }

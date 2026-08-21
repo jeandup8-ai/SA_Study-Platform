@@ -6,9 +6,13 @@ import {
   extractColumnEntries,
   extractGradeColumnTable,
   extractTopicTimeResourceTable,
+  extractRotatedContentOutlineTopics,
+  extractLifeSkillsTopicTable,
   contentColumnCellsToTableCells,
   gradeColumnRowsToTableCells,
   topicTimeResourceRowsToTableCells,
+  rotatedTopicRowsToTableCells,
+  lifeSkillsTopicRowsToTableCells,
   joinTextItems,
   joinMultilineText,
 } from './columnTables.js'
@@ -86,15 +90,93 @@ export async function parsePdf(filePath: string): Promise<ExtractedDocument> {
     // { includeMarkedContent: true }, which this parser never sets — every
     // element is genuinely a TextItem at runtime, so a direct cast here is
     // accurate, not a type-safety shortcut.
-    const items: TextItem[] = (content.items as unknown as PdfjsTextItem[])
-      .filter((item) => item.str.trim().length > 0)
-      .map((item) => ({
+    const rawItems = (content.items as unknown as PdfjsTextItem[]).filter((item) => item.str.trim().length > 0)
+    if (rawItems.length === 0) continue
+
+    // Some CAPS documents (confirmed: Natural Sciences Grade 7-9's Senior
+    // Phase section, pages 18-89) author their whole content table in
+    // landscape, with every text run rotated ~90°. transform[1]/[0] give
+    // the run's own rotation angle directly (checked against real data: an
+    // unrotated run has transform ≈ [fontSize,0,0,fontSize,x,y], a 90°-CCW
+    // run ≈ [0,fontSize,-fontSize,0,x,y]) — a page where most runs are
+    // rotated like this needs a coordinate transform before any of this
+    // file's x/y-based table logic can read it at all; feeding it raw
+    // page-space x/y would read 90°-rotated column text as if it were
+    // ordinary vertically-stacked characters.
+    const isRotatedItem = (item: PdfjsTextItem) => {
+      const angle = (Math.atan2(item.transform[1], item.transform[0]) * 180) / Math.PI
+      return Math.abs(angle) > 45 && Math.abs(angle) < 135
+    }
+    const rotatedRawItems = rawItems.filter(isRotatedItem)
+    const isRotatedPage = rotatedRawItems.length / rawItems.length > 0.5
+
+    if (isRotatedPage) {
+      // Logical (as-if-horizontal) coordinates for the rotated runs only —
+      // validated against the real document: reading order within one
+      // rotated line runs with increasing page-y, and successive lines
+      // stack with increasing page-x, which is exactly what
+      // logical_x = page_y, logical_y = -page_x reproduces; that also
+      // preserves this file's existing "sort descending logical-y is
+      // top-to-bottom" convention used by every other detector here.
+      const logicalItems: TextItem[] = rotatedRawItems.map((item) => ({
         str: item.str,
-        x: item.transform[4],
-        y: item.transform[5],
+        x: item.transform[5],
+        y: -item.transform[4],
         width: item.width,
         fontHeight: Math.hypot(item.transform[1], item.transform[3]) || item.transform[0],
       }))
+      const rotatedBlocks = extractRotatedContentOutlineTopics(logicalItems)
+      const sortedBlocks = [...rotatedBlocks].sort((a, b) => b.headerY - a.headerY)
+      for (let i = 0; i < sortedBlocks.length; i++) {
+        const block = sortedBlocks[i]
+        // Best-effort marker text (this table's own rotated "Grade n term m
+        // strand: ..." title line, sitting above its header) — bounded
+        // above by the previous occurrence's own header so one topic's
+        // marker can't swallow the whole rest of the page above it. Not
+        // scoped by column x: unlike the TOPIC column itself, this is only
+        // used for ambient grade/term regex matching (see
+        // curriculumDetectors.ts's new "Grade n term m" SECTION_PATTERN),
+        // where extra unrelated text alongside it is harmless.
+        const markerCeilingY = i > 0 ? sortedBlocks[i - 1].headerY : Infinity
+        const markerText = joinMultilineText(
+          logicalItems.filter((it) => it.y > block.headerY && it.y <= markerCeilingY),
+        )
+        if (markerText) {
+          blocks.push({
+            type: 'heading',
+            text: markerText,
+            page: pageNum,
+            headingLevel: 1,
+            tableCells: null,
+            sourceLocation: `Page ${pageNum}, rotated content table marker`,
+          })
+        }
+        const tableCells = rotatedTopicRowsToTableCells(block.rows)
+        if (tableCells.length > 0) {
+          blocks.push({
+            type: 'table',
+            text: tableCells.map((c) => c.text).join(' | '),
+            page: pageNum,
+            headingLevel: null,
+            tableCells,
+            sourceLocation: `Page ${pageNum}, rotated content-outline table (TOPIC column)`,
+          })
+        }
+      }
+      // This page's content is genuinely landscape/rotated end to end
+      // (>50% of its runs); the raw-coordinate generic table/paragraph
+      // logic below assumes upright text and would misread it, so this
+      // page's handling stops here rather than falling through to it.
+      continue
+    }
+
+    const items: TextItem[] = rawItems.map((item) => ({
+      str: item.str,
+      x: item.transform[4],
+      y: item.transform[5],
+      width: item.width,
+      fontHeight: Math.hypot(item.transform[1], item.transform[3]) || item.transform[0],
+    }))
 
     if (items.length === 0) continue
 
@@ -136,6 +218,25 @@ export async function parsePdf(filePath: string): Promise<ExtractedDocument> {
         })
         continue
       }
+    }
+
+    // Life Skills Grades 4-6's own "TERM n | GRADE g | Recommended
+    // resources" 3-column layout (see extractLifeSkillsTopicTable) — tried
+    // before the generic fallback, same as the two structural detectors
+    // above; harmless to try on every document, since it only fires when
+    // this exact header is actually present.
+    const lifeSkillsRows = extractLifeSkillsTopicTable(items)
+    if (lifeSkillsRows.length > 0) {
+      const tableCells = lifeSkillsTopicRowsToTableCells(lifeSkillsRows)
+      blocks.push({
+        type: 'table',
+        text: tableCells.map((c) => c.text).join(' | '),
+        page: pageNum,
+        headingLevel: null,
+        tableCells,
+        sourceLocation: `Page ${pageNum}, Life Skills topic/time/resources table`,
+      })
+      continue
     }
 
     // A single page can carry more than one grade-column table (this
@@ -260,7 +361,17 @@ export async function parsePdf(filePath: string): Promise<ExtractedDocument> {
     // pushing this table block afterward keeps it positioned after that
     // marker in the document's block order, so detectTopicCandidates' ambient
     // grade/term tracking already has the right values by the time it's read.
-    const topicTimeHeaders = detectAllHeaderRows(items, TOPIC_TIME_RESOURCE_HEADER_PATTERNS)
+    // Widened row tolerance (default is 2pt): checked against real data,
+    // Drama's own Term 3/4 Grade 7 pages (42, 43) print one header
+    // occurrence's "suggested contact time" label ~8pt below its "topic N"/
+    // "recommended resources" row-mates — a real font-rendering quirk, not
+    // a different table shape — which the default tolerance can't bridge,
+    // silently dropping that whole topic occurrence (V2's "reversed
+    // column-header layout" finding on these two pages). See
+    // detectAllHeaderRows' own doc for why this is safe to widen here
+    // without affecting its other callers or this file's other tables.
+    const TOPIC_TIME_ROW_TOLERANCE = 10
+    const topicTimeHeaders = detectAllHeaderRows(items, TOPIC_TIME_RESOURCE_HEADER_PATTERNS, TOPIC_TIME_ROW_TOLERANCE)
     if (topicTimeHeaders.length > 0) {
       const topicRows = extractTopicTimeResourceTable(items, topicTimeHeaders)
       const tableCells = topicTimeResourceRowsToTableCells(topicRows)
