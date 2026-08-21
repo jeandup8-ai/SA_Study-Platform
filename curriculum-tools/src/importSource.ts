@@ -8,8 +8,22 @@ import { parsePdf } from './parsers/pdfParser.js'
 import { parseDocx } from './parsers/docxParser.js'
 import { parseHtml } from './parsers/htmlParser.js'
 import { parseText } from './parsers/textParser.js'
-import { detectGrades, detectTerms, detectTopicCandidates, dropRepeatedRunningText } from './detectors/curriculumDetectors.js'
+import {
+  detectGrades,
+  detectTerms,
+  detectTopicCandidates,
+  dropRepeatedRunningText,
+  dropKnownBoilerplate,
+} from './detectors/curriculumDetectors.js'
 import type { ExtractedDocument } from './parsers/types.js'
+
+/** Tags every record this run creates or updates, so a later reprocessing
+ * pass can identify and replace exactly what a prior version wrote (Priority
+ * 7's explicit "delete/rebuild the imported candidate layer... create a new
+ * import version" — never patch old rows in place). Bump this string, not
+ * the pipeline's actual version, when a new deliberate reprocessing pass
+ * begins. */
+const IMPORT_VERSION = '2026-08-21-v2'
 
 /**
  * Curriculum source importer — the executable half of spec section 10's
@@ -106,18 +120,26 @@ async function main() {
 
   const grades = detectGrades(doc.blocks)
   const terms = detectTerms(doc.blocks)
-  const allTopics = detectTopicCandidates(doc.blocks)
+  const { topics: allTopics, assessmentNotes: allAssessmentNotes } = detectTopicCandidates(doc.blocks)
   const inScope = allTopics.filter((t) => t.gradeNumber !== null && args.grades.includes(t.gradeNumber))
-  const topics = dropRepeatedRunningText(inScope)
+  const deBoilerplated = dropKnownBoilerplate(inScope)
+  const topics = dropRepeatedRunningText(deBoilerplated)
   const outOfScopeCount = allTopics.length - inScope.length
-  const runningHeaderCount = inScope.length - topics.length
+  const boilerplateCount = inScope.length - deBoilerplated.length
+  const runningHeaderCount = deBoilerplated.length - topics.length
+  const assessmentNotes = allAssessmentNotes.filter(
+    (n) => n.gradeNumber !== null && args.grades.includes(n.gradeNumber),
+  )
 
   console.log(`\nDetected (heuristic, unverified):`)
   console.log(`  Grades present in document: ${[...new Set(grades.map((g) => g.gradeNumber))].join(', ') || 'none'}`)
   console.log(`  Grades this run will extract: ${args.grades.join(', ')}`)
   console.log(`  Terms:  ${[...new Set(terms.map((t) => t.termNumber))].join(', ') || 'none'}`)
   console.log(
-    `  Topic candidates in scope: ${topics.length} (${outOfScopeCount} skipped — no grade marker seen yet, or a different grade than requested; ${runningHeaderCount} skipped — repeated running header/footer text)`,
+    `  Topic candidates in scope: ${topics.length} (${outOfScopeCount} skipped — no grade marker seen yet, or a different grade than requested; ${boilerplateCount} skipped — known CAPS document boilerplate; ${runningHeaderCount} skipped — repeated running header/footer text)`,
+  )
+  console.log(
+    `  Assessment guidance/appendix notes in scope: ${assessmentNotes.length} (stored separately, never as a curriculum topic)`,
   )
   for (const t of topics.slice(0, 20)) {
     console.log(`    - [Grade ${t.gradeNumber}, Term ${t.termNumber ?? '?'}] "${t.text}" (${t.block.sourceLocation})`)
@@ -134,19 +156,32 @@ async function main() {
           checksum,
           pageCount: doc.pageCount,
           gradesRequested: args.grades,
+          importVersion: IMPORT_VERSION,
           candidates: topics.map((t) => ({
             gradeNumber: t.gradeNumber,
             termNumber: t.termNumber,
             text: t.text,
             page: t.block.page,
             sourceLocation: t.block.sourceLocation,
+            extractionMethod: t.extractionMethod,
+            confidenceScore: t.confidenceScore,
+          })),
+          assessmentNotes: assessmentNotes.map((n) => ({
+            category: n.category,
+            gradeNumber: n.gradeNumber,
+            termNumber: n.termNumber,
+            text: n.text,
+            page: n.block.page,
+            sourceLocation: n.block.sourceLocation,
+            extractionMethod: n.extractionMethod,
+            confidenceScore: n.confidenceScore,
           })),
         },
         null,
         2,
       ) + '\n',
     )
-    console.log(`\nWrote ${topics.length} candidate(s) to ${args.dumpJson}`)
+    console.log(`\nWrote ${topics.length} candidate(s) and ${assessmentNotes.length} assessment note(s) to ${args.dumpJson}`)
   }
 
   const runEntry = {
@@ -261,10 +296,46 @@ async function main() {
       source_id: source.id,
       source_page: candidate.block.page ? String(candidate.block.page) : null,
       source_section: candidate.block.sourceLocation,
+      extraction_method: candidate.extractionMethod,
+      confidence_score: candidate.confidenceScore,
+      import_version: IMPORT_VERSION,
     })
 
     if (insertError) errors.push(`"${candidate.text}": ${insertError.message}`)
     else recordsCreated++
+  }
+
+  let assessmentNotesCreated = 0
+  for (const note of assessmentNotes) {
+    const gradeId = note.gradeNumber !== null ? gradeIdByNumber.get(note.gradeNumber) : undefined
+    const termId = gradeId
+      ? (
+          await supabase
+            .from('terms')
+            .select('id')
+            .eq('grade_id', gradeId)
+            .eq('term_number', note.termNumber ?? 1)
+            .maybeSingle()
+        ).data?.id ?? null
+      : null
+
+    const { error: insertError } = await supabase.from('assessment_notes').insert({
+      subject_id: source.subject_id,
+      grade_id: gradeId ?? null,
+      term_id: termId,
+      category: note.category,
+      text: note.text,
+      content_workflow_status: 'REVIEW_REQUIRED',
+      source_id: source.id,
+      source_page: note.block.page ? String(note.block.page) : null,
+      source_section: note.block.sourceLocation,
+      extraction_method: note.extractionMethod,
+      confidence_score: note.confidenceScore,
+      import_version: IMPORT_VERSION,
+    })
+
+    if (insertError) errors.push(`assessment note "${note.text.slice(0, 40)}...": ${insertError.message}`)
+    else assessmentNotesCreated++
   }
 
   await supabase
@@ -278,7 +349,9 @@ async function main() {
   runEntry.status = errors.length > 0 && recordsCreated === 0 ? 'FAILED' : 'REVIEW_REQUIRED'
   await appendImportLog(runEntry)
 
-  console.log(`\nCreated ${recordsCreated} topic candidate(s), all content_workflow_status=REVIEW_REQUIRED.`)
+  console.log(
+    `\nCreated ${recordsCreated} topic candidate(s) and ${assessmentNotesCreated} assessment note(s), all content_workflow_status=REVIEW_REQUIRED, import_version=${IMPORT_VERSION}.`,
+  )
   if (errors.length > 0) console.log(`${errors.length} error(s) — see curriculum/import-log.json.`)
   console.log('Nothing here is visible to learners until an admin reviews and publishes it.')
 }

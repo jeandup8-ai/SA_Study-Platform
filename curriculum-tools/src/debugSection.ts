@@ -15,8 +15,9 @@ async function main() {
   const minPage = Number(process.argv[3] ?? 0)
   const maxPage = Number(process.argv[4] ?? 0)
   const doc = await parsePdf(file)
-  const candidates = detectTopicCandidates(doc.blocks)
+  const { topics: candidates, assessmentNotes } = detectTopicCandidates(doc.blocks)
   console.log(`Total candidates (any grade): ${candidates.length}`)
+  console.log(`Assessment notes diverted: ${assessmentNotes.length}`)
   const byGrade = new Map<string, number>()
   for (const c of candidates) {
     const key = `${c.gradeNumber}`

@@ -13,6 +13,19 @@ export interface ExtractedTableCell {
   text: string
   rowIndex: number
   colIndex: number
+  /** Set only by a structural table detector (e.g. a "Grade 7 | Grade 8 |
+   * Grade 9" grid, or a term-number row anchor) that already knows exactly
+   * which grade/term this cell belongs to from the table's own layout —
+   * more reliable than inferring it from a preceding "TERM n – Grade g"
+   * marker elsewhere on the page. Undefined (not just null) means "no
+   * structural answer; fall back to ambient section tracking." */
+  gradeNumber?: number | null
+  termNumber?: number | null
+  /** Extraction confidence in [0, 1], when the producing detector computed
+   * one (see columnTables.ts). Undefined for the generic per-row/column
+   * fallback table detector, which doesn't compute a real per-cell
+   * confidence — callers default that case to a fixed conservative value. */
+  confidence?: number
 }
 
 export interface ExtractedBlock {

@@ -9,6 +9,11 @@
     "inspect-grades": "tsx src/inspectGrades.ts",
     "inspect-early-pages": "tsx src/inspectEarly.ts",
     "debug-section-detection": "tsx src/debugSection.ts",
+    "debug-content-table": "tsx src/debugContentTable.ts",
+    "debug-grade-column-table": "tsx src/debugGradeColumnTable.ts",
+    "debug-line-starts": "tsx src/debugLineStarts.ts",
+    "debug-blocks": "tsx src/debugBlocks.ts",
+    "inspect-raw-geometry": "tsx src/inspectRawGeometry.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
