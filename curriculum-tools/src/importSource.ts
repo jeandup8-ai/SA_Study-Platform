@@ -8,7 +8,7 @@ import { parsePdf } from './parsers/pdfParser.js'
 import { parseDocx } from './parsers/docxParser.js'
 import { parseHtml } from './parsers/htmlParser.js'
 import { parseText } from './parsers/textParser.js'
-import { detectGrades, detectTerms, detectTopicCandidates } from './detectors/curriculumDetectors.js'
+import { detectGrades, detectTerms, detectTopicCandidates, dropRepeatedRunningText } from './detectors/curriculumDetectors.js'
 import type { ExtractedDocument } from './parsers/types.js'
 
 /**
@@ -37,6 +37,18 @@ interface Args {
   file: string
   documentId: string
   dryRun: boolean
+  /** Which CAPS grade(s) this run should extract, by grade number. Required
+   * whenever the source PDF covers more than one grade (every CAPS document
+   * in practice — a whole phase per file) so a Senior Phase (7-9) document
+   * can be told "only Grade 7" without also writing Grade 8/9 topics that
+   * have nowhere to attach (this product has no Grade 8/9 rows yet). */
+  grades: number[]
+  /** Write the full (untruncated) filtered candidate list as JSON to this
+   * path instead of / in addition to writing to the database. Useful when
+   * the caller already has privileged DB access through another path (e.g.
+   * an MCP tool) and would rather construct the inserts itself than export
+   * a service-role key into this process's environment. */
+  dumpJson?: string
 }
 
 function parseArgs(argv: string[]): Args {
@@ -46,10 +58,17 @@ function parseArgs(argv: string[]): Args {
   }
   const file = get('--file')
   const documentId = get('--document-id')
-  if (!file || !documentId) {
-    throw new Error('Usage: npm run import -- --file <path> --document-id <manifest-doc-id> [--dry-run]')
+  const gradesArg = get('--grades')
+  if (!file || !documentId || !gradesArg) {
+    throw new Error(
+      'Usage: npm run import -- --file <path> --document-id <manifest-doc-id> --grades <comma-separated-grade-numbers> [--dry-run] [--dump-json <path>]',
+    )
   }
-  return { file, documentId, dryRun: argv.includes('--dry-run') }
+  const grades = gradesArg.split(',').map((s) => Number(s.trim()))
+  if (grades.some((g) => !Number.isInteger(g) || g < 1 || g > 12)) {
+    throw new Error(`Invalid --grades value: "${gradesArg}"`)
+  }
+  return { file, documentId, dryRun: argv.includes('--dry-run'), grades, dumpJson: get('--dump-json') }
 }
 
 async function extract(filePath: string): Promise<ExtractedDocument> {
@@ -87,16 +106,48 @@ async function main() {
 
   const grades = detectGrades(doc.blocks)
   const terms = detectTerms(doc.blocks)
-  const topics = detectTopicCandidates(doc.blocks)
+  const allTopics = detectTopicCandidates(doc.blocks)
+  const inScope = allTopics.filter((t) => t.gradeNumber !== null && args.grades.includes(t.gradeNumber))
+  const topics = dropRepeatedRunningText(inScope)
+  const outOfScopeCount = allTopics.length - inScope.length
+  const runningHeaderCount = inScope.length - topics.length
 
   console.log(`\nDetected (heuristic, unverified):`)
-  console.log(`  Grades: ${[...new Set(grades.map((g) => g.gradeNumber))].join(', ') || 'none'}`)
+  console.log(`  Grades present in document: ${[...new Set(grades.map((g) => g.gradeNumber))].join(', ') || 'none'}`)
+  console.log(`  Grades this run will extract: ${args.grades.join(', ')}`)
   console.log(`  Terms:  ${[...new Set(terms.map((t) => t.termNumber))].join(', ') || 'none'}`)
-  console.log(`  Topic candidates: ${topics.length}`)
+  console.log(
+    `  Topic candidates in scope: ${topics.length} (${outOfScopeCount} skipped — no grade marker seen yet, or a different grade than requested; ${runningHeaderCount} skipped — repeated running header/footer text)`,
+  )
   for (const t of topics.slice(0, 20)) {
-    console.log(`    - [Term ${t.termNumber ?? '?'}] "${t.text}" (${t.block.sourceLocation})`)
+    console.log(`    - [Grade ${t.gradeNumber}, Term ${t.termNumber ?? '?'}] "${t.text}" (${t.block.sourceLocation})`)
   }
   if (topics.length > 20) console.log(`    ... and ${topics.length - 20} more`)
+
+  if (args.dumpJson) {
+    await writeFile(
+      args.dumpJson,
+      JSON.stringify(
+        {
+          documentId: args.documentId,
+          file: args.file,
+          checksum,
+          pageCount: doc.pageCount,
+          gradesRequested: args.grades,
+          candidates: topics.map((t) => ({
+            gradeNumber: t.gradeNumber,
+            termNumber: t.termNumber,
+            text: t.text,
+            page: t.block.page,
+            sourceLocation: t.block.sourceLocation,
+          })),
+        },
+        null,
+        2,
+      ) + '\n',
+    )
+    console.log(`\nWrote ${topics.length} candidate(s) to ${args.dumpJson}`)
+  }
 
   const runEntry = {
     document: args.documentId,
@@ -144,6 +195,36 @@ async function main() {
     await appendImportLog(runEntry)
     throw new Error(runEntry.errors[0])
   }
+  if (!source.subject_id) {
+    runEntry.status = 'FAILED'
+    runEntry.errors.push(`curriculum_sources row for "${args.documentId}" has no subject_id set.`)
+    await appendImportLog(runEntry)
+    throw new Error(runEntry.errors[0])
+  }
+
+  const { data: subjectRow } = await supabase
+    .from('subjects')
+    .select('curriculum_id')
+    .eq('id', source.subject_id)
+    .maybeSingle()
+  if (!subjectRow) {
+    runEntry.status = 'FAILED'
+    runEntry.errors.push(`Subject ${source.subject_id} not found.`)
+    await appendImportLog(runEntry)
+    throw new Error(runEntry.errors[0])
+  }
+
+  // The document may cover a whole phase (e.g. Grades 7-9 in one PDF); each
+  // topic candidate carries the specific grade its own section marker named
+  // (see detectTopicCandidates), so grade_id is resolved per-candidate here
+  // rather than once for the whole source — never from source.grade_id,
+  // which is intentionally left null on a multi-grade source record.
+  const { data: gradeRows } = await supabase
+    .from('grades')
+    .select('id, grade_number')
+    .eq('curriculum_id', subjectRow.curriculum_id)
+    .in('grade_number', args.grades)
+  const gradeIdByNumber = new Map((gradeRows ?? []).map((g) => [g.grade_number, g.id]))
 
   await supabase
     .from('curriculum_sources')
@@ -154,23 +235,24 @@ async function main() {
   const errors: string[] = []
 
   for (const candidate of topics) {
-    if (!source.subject_id || !source.grade_id) {
+    const gradeId = candidate.gradeNumber !== null ? gradeIdByNumber.get(candidate.gradeNumber) : undefined
+    if (!gradeId) {
       errors.push(
-        `Skipped "${candidate.text}": curriculum_sources row has no subject_id/grade_id set — ` +
-          'set those on the source record (they identify which subject/grade this whole document covers) before importing.',
+        `Skipped "${candidate.text}": no grades row for grade ${candidate.gradeNumber} under this curriculum — ` +
+          'this product has not launched that grade yet, or --grades was not passed correctly.',
       )
       continue
     }
     const { data: term } = await supabase
       .from('terms')
       .select('id')
-      .eq('grade_id', source.grade_id)
+      .eq('grade_id', gradeId)
       .eq('term_number', candidate.termNumber ?? 1)
       .maybeSingle()
 
     const { error: insertError } = await supabase.from('topics').insert({
       subject_id: source.subject_id,
-      grade_id: source.grade_id,
+      grade_id: gradeId,
       term_id: term?.id ?? null,
       code: candidate.text.toUpperCase().replace(/[^A-Z0-9]+/g, '_').slice(0, 40),
       name: candidate.text,

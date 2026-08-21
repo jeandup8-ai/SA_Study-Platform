@@ -1,4 +1,127 @@
 {
-  "$schema_note": "Append-only log of curriculum import runs. One entry per invocation of the importer (scripts/curriculum-import). Empty until the first real document is imported — this platform has not imported any official curriculum document yet (see manifest.json: all sources are PENDING).",
-  "runs": []
+  "$schema_note": "Append-only log of curriculum import runs. One entry per source document processed. Real, hash-verified files supplied by the product owner on 2026-08-21 (SA_CAPS_Grade4-7_Source_Pack.zip) — the first real DBE documents this platform has processed. Every topic these runs created is content_workflow_status=REVIEW_REQUIRED; none is verified or published. records_created counts survive an automatic frequency-based filter that drops repeated running page headers/footers (see curriculum-tools/src/detectors/curriculumDetectors.ts:dropRepeatedRunningText) — it does not mean 213 distinct real topics, several are still assessment-appendix noise a reviewer will reject; see README for the honest breakdown.",
+  "runs": [
+    {
+      "document": "dbe-caps-math-ip",
+      "file": "curriculum/sources/caps/CAPS_Mathematics_Grades4-6.pdf",
+      "checksum": "31c594425ff787a531c6ef6cceaaead09d5ad50d1b54ca36c33bcf19663068b5",
+      "date_imported": "2026-08-21T00:00:00Z",
+      "pages_processed": 58,
+      "grades_extracted": [4, 5, 6],
+      "records_created": 45,
+      "records_needing_review": 45,
+      "errors": [],
+      "status": "REVIEW_REQUIRED"
+    },
+    {
+      "document": "dbe-caps-lifeskills-ip",
+      "file": "curriculum/sources/caps/CAPS_Life_Skills_Grades4-6.pdf",
+      "checksum": "4113b006498494cd90bc5203c88ca2d5a1a1856c42b0274a31cc3f1442412317",
+      "date_imported": "2026-08-21T00:00:00Z",
+      "pages_processed": 66,
+      "grades_extracted": [4, 5, 6],
+      "records_created": 31,
+      "records_needing_review": 31,
+      "errors": [],
+      "status": "REVIEW_REQUIRED"
+    },
+    {
+      "document": "dbe-caps-nst-ip-amendment",
+      "file": "curriculum/sources/caps/CAPS_Natural_Sciences_Technology_Grades4-6.pdf",
+      "checksum": "b2b62cb589a93261c665bfc4444da2d96646d0c6993e29034520242521d6bc61",
+      "date_imported": "2026-08-21T00:00:00Z",
+      "pages_processed": 5,
+      "grades_extracted": [4, 5, 6],
+      "records_created": 80,
+      "records_needing_review": 80,
+      "errors": [
+        "This source is a 5-page amendment/circular, not the full Natural Sciences and Technology CAPS document. A large share of the 80 records are assessment-appendix content (a cognitive-levels verb list, a formal-assessment table) mislabelled with the last grade/term section seen before them, not genuine topics — flagged for the reviewer, not silently hidden."
+      ],
+      "status": "REVIEW_REQUIRED"
+    },
+    {
+      "document": "dbe-caps-socsci-ip",
+      "file": "curriculum/sources/caps/CAPS_Social_Sciences_Grades4-6.pdf",
+      "checksum": "1a5865802399614b4187e0e4f499a6c866d441fdcc4a6f0c310eee2ae60d6b5c",
+      "date_imported": "2026-08-21T00:00:00Z",
+      "pages_processed": 48,
+      "grades_extracted": [4, 5, 6],
+      "records_created": 57,
+      "records_needing_review": 57,
+      "errors": [
+        "Most records come from an assessment-programme appendix (pages 42-44), not the main term-by-term topic tables — same last-grade/term state-leak issue as the NS&T amendment. Real topic names are mixed in with assessment scaffolding text; reviewer must sort."
+      ],
+      "status": "REVIEW_REQUIRED"
+    },
+    {
+      "document": "dbe-caps-math-sp",
+      "file": "curriculum/sources/caps/CAPS_Mathematics_Grade7-9.pdf",
+      "checksum": "b4d8d1d7bba094444039ffe049cb4e28be420f3f4eda2f4fd3a459c34d41a9be",
+      "date_imported": "2026-08-21T00:00:00Z",
+      "pages_processed": 59,
+      "grades_extracted": [7],
+      "records_created": 0,
+      "records_needing_review": 0,
+      "errors": [
+        "Grade 7's content section (pages 21-29) is a dense 3-column table (CONTENT AREA | CONTENT | CLARIFICATION) that the PDF table-detection heuristic did not recognise as tabular — it extracted as flowing paragraph text instead, which the topic detector does not harvest from. Grade 8/9 sections elsewhere in the same document DID get detected as tables (27 Grade-9 candidates found, correctly excluded since this run only requested Grade 7). Needs a smarter table-detection heuristic or manual topic entry for this document."
+      ],
+      "status": "PARSED"
+    },
+    {
+      "document": "dbe-caps-natsci-sp",
+      "file": "curriculum/sources/caps/CAPS_Natural_Sciences_Grade7-9.pdf",
+      "checksum": "8699f105ebee604a9b0a0aebcbd7e9ebac27f5e034b00559a19f8418e1615e9f",
+      "date_imported": "2026-08-21T00:00:00Z",
+      "pages_processed": 100,
+      "grades_extracted": [7],
+      "records_created": 0,
+      "records_needing_review": 0,
+      "errors": [
+        "No grade/term section marker matching any of the currently-implemented patterns was found anywhere in this document (177 topic-like candidates detected, none attributable to a specific grade). This document uses a different internal structure than the other 8 in this pack; not yet diagnosed."
+      ],
+      "status": "PARSED"
+    },
+    {
+      "document": "dbe-caps-tech-sp",
+      "file": "curriculum/sources/caps/CAPS_Technology_Grade7-9.pdf",
+      "checksum": "0539b8093453d357ed9b7473dda80f2a29d5515910c46134f9088b53ba996c09",
+      "date_imported": "2026-08-21T00:00:00Z",
+      "pages_processed": 19,
+      "grades_extracted": [7],
+      "records_created": 0,
+      "records_needing_review": 0,
+      "errors": [
+        "This document presents Grades 7-9 as a single shared table with grade columns (\"Grade 7 - 9 | Term 1 | Term 2 | Term 3 | Term 4\"), not repeated per-grade section headers. The current detector tracks sequential section markers and cannot read grade-as-column tables; needs a column-aware extractor."
+      ],
+      "status": "PARSED"
+    },
+    {
+      "document": "dbe-caps-creativearts-sp",
+      "file": "curriculum/sources/caps/CAPS_Creative_Arts_Grade7-9.pdf",
+      "checksum": "eabc3325fc1569737f31c4e694e27bfc271bca3c2a6be4eb4de049b46cd30f14",
+      "date_imported": "2026-08-21T00:00:00Z",
+      "pages_processed": 98,
+      "grades_extracted": [7],
+      "records_created": 0,
+      "records_needing_review": 0,
+      "errors": [
+        "30 Grade-7 candidates were initially detected, but every one was the document's own running title repeated verbatim ('CREATIVE ARTS GRADES 7-9') and was correctly dropped by the running-header filter. No genuine Grade 7 topic content was extracted."
+      ],
+      "status": "PARSED"
+    },
+    {
+      "document": "dbe-caps-humansocsci-sp",
+      "file": "curriculum/sources/caps/CAPS_Human_Social_Sciences_Grade7-9.pdf",
+      "checksum": "f53548d277d475c330a26ec04c2380917ce997b12af1dfa331bf200b84095038",
+      "date_imported": "2026-08-21T00:00:00Z",
+      "pages_processed": 49,
+      "grades_extracted": [7],
+      "records_created": 0,
+      "records_needing_review": 0,
+      "errors": [
+        "128 candidates detected (115 tagged Grade 9, 13 ungraded), zero tagged Grade 7 — this document's real grade structure is a grid table (\"Term | Grade 4 | Grade 5 | Grade 6\" / \"Term | Grade 7 | Grade 8 | Grade 9\"), not sequential section headers; the 115 Grade-9 hits are a coincidental partial match, not genuine section detection, and were excluded from this Grade-7-only run either way."
+      ],
+      "status": "PARSED"
+    }
+  ]
 }

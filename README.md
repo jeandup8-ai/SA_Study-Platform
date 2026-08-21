@@ -281,19 +281,79 @@ which stays illustrative and untouched.
   object a future LLM-backed tutor call would receive; see "AI tutor actions"
   above for what exists today.
 
-**What's explicitly not done, and why:** actually importing real DBE CAPS/ATP
-documents. This sandbox's network egress blocks `education.gov.za` (confirmed
-via direct `curl`/fetch attempts returning 403, not assumed) — every doc that
-would seed `curriculum_sources` would have to be fabricated, which the task
-explicitly forbids ("Do NOT invent CAPS content"). `curriculum/sources/manifest.json`
-lists the real DBE document sets that should be imported first, each marked
-`PENDING` with an honest note on why it wasn't fetched automatically. The
-fastest path to real content: a human downloads the official PDFs from
-education.gov.za and either uploads them to `curriculum/sources/{caps,atp,sba,ieb}/`
-for `curriculum-tools/` to run against, or a future session gets network access
-to fetch them directly — the whole pipeline (parse → detect → write
-`REVIEW_REQUIRED` → admin review → `VERIFIED`) is ready and tested end-to-end
-against fixtures; it has just never touched a real document yet.
+### Real CAPS documents: imported 2026-08-21
+
+The product owner supplied 9 real DBE CAPS source PDFs
+(`SA_CAPS_Grade4-7_Source_Pack.zip`, covering Mathematics/Life Skills/Natural
+Sciences & Technology/Social Sciences for Intermediate Phase and
+Mathematics/Natural Sciences/Technology/Creative Arts/Social Sciences for
+Senior Phase) — this sandbox still cannot reach `education.gov.za` directly,
+but a locally-supplied file needs no network access to parse. Before
+extracting anything, every file was verified: SHA-256 + byte count checked
+against the supplied `SOURCE_MANIFEST.json` (9/9 passed), and independently
+re-checked with `pdfjs-dist` to confirm genuine CAPS document structure
+rather than trusting the manifest metadata alone. The files live in
+`curriculum/sources/caps/`; the `curriculum_sources` DB rows carry the real
+checksums and official URLs (migration `0022`).
+
+**Real, honest outcome of running the import pipeline against them** (see
+`curriculum/import-log.json` for the full per-document report):
+
+| Document | Grades extracted | Topic candidates | Status |
+| --- | --- | --- | --- |
+| Mathematics (Intermediate) | 4, 5, 6 | 45 | `REVIEW_REQUIRED` |
+| Life Skills (Intermediate) | 4, 5, 6 | 31 | `REVIEW_REQUIRED` |
+| Natural Sciences & Technology (Intermediate) | 4, 5, 6 | 80 | `REVIEW_REQUIRED` |
+| Social Sciences (Intermediate) | 4, 5, 6 | 57 | `REVIEW_REQUIRED` |
+| Mathematics (Senior) | 7 | 0 | `PARSED` |
+| Natural Sciences (Senior) | 7 | 0 | `PARSED` |
+| Technology (Senior) | 7 | 0 | `PARSED` |
+| Creative Arts (Senior) | 7 | 0 | `PARSED` |
+| Social Sciences (Senior) | 7 | 0 | `PARSED` |
+
+213 topic-candidate rows now exist in `topics` with
+`content_workflow_status = 'REVIEW_REQUIRED'`, `is_demo_content = false`,
+and full source attribution (`source_id`/`source_page`/`source_section`).
+**None of this is verified or visible to a learner** — every row needs a
+human reviewer at `/admin/review-queue` before it means anything, and the
+signal-to-noise ratio genuinely varies:
+
+- Every CAPS document in this pack uses a **different** internal convention
+  for marking grade/term sections (`TERM 1 – Grade 4`, `TERM 1 GRADE 4`,
+  `GRADE 4: Term 1`, `Grade 4: Intermediate Phase History Term 1`, a grid
+  table with grades as columns, or no detectable pattern at all) — there is
+  no single regex that reads all of them. The importer's detector
+  (`curriculum-tools/src/detectors/curriculumDetectors.ts`) currently
+  recognises 3 of these conventions; the 5 Senior Phase Grade-7 documents
+  that returned 0 candidates each hit a distinct, real limitation
+  (documented per-document in `import-log.json`) — a dense table the PDF
+  parser didn't recognise as tabular, a grade-as-table-column layout, or a
+  format not yet reverse-engineered.
+- Two real bugs were found and fixed while building this: an early version
+  matched a document's own contents-page listing ("Grade 4 Term 1", "Grade 4
+  Term 2", …) as if it were real section markers, mistagging front-matter
+  content with whatever grade/term happened to appear last in that list;
+  and running page headers/footers (e.g. "LIFE SKILLS GRADES 4-6" reprinted
+  on every page) were being harvested as fake topic candidates until a
+  generic repeated-text filter was added (`dropRepeatedRunningText`).
+- Even after both fixes, a meaningful share of the extracted records —
+  especially from the Natural Sciences & Technology amendment and Social
+  Sciences documents — are assessment-appendix scaffolding (cognitive-level
+  verb lists, mark-allocation tables) that inherited the last real
+  grade/term marker seen before them, not genuine topic names. This is
+  flagged explicitly in `import-log.json` rather than silently mixed in.
+
+**What this means practically:** the pipeline is genuinely working against
+real official documents end-to-end (parse → grade/term-scope → write
+`REVIEW_REQUIRED` with source attribution), but a human reviewer has real
+work ahead — sorting 213 candidates of mixed quality, and separately
+figuring out extraction for the 5 documents that yielded nothing. Improving
+the table-detection heuristic (for the dense 3-column Senior Phase layout)
+and building a grade-as-column table reader (for Technology/Human & Social
+Sciences) are the two highest-leverage next steps for getting Grade 7
+content out of this same source pack. The ATP (Annual Teaching Plan) and
+IEB reference documents were not part of this pack and remain `PENDING` in
+`curriculum/sources/manifest.json` — do not manufacture ATP information.
 
 ## Database
 
