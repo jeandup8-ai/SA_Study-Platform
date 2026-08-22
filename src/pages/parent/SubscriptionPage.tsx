@@ -33,7 +33,7 @@ export function SubscriptionPage() {
     if (!parent) return
     setStarting(planId)
     const trialEnd = new Date()
-    trialEnd.setDate(trialEnd.getDate() + 14)
+    trialEnd.setDate(trialEnd.getDate() + 3)
     const { data } = await supabase
       .from('subscriptions')
       .insert({

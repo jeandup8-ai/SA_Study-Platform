@@ -23,7 +23,7 @@ export function PricingPage() {
     <MarketingShell>
       <div className="mx-auto max-w-4xl px-4 py-16">
         <h1 className="text-center text-3xl font-extrabold text-slate-900">Simple, family-friendly pricing</h1>
-        <p className="mt-2 text-center text-slate-500">Start with a free trial — cancel anytime.</p>
+        <p className="mt-2 text-center text-slate-500">Start with a 3-day free trial — cancel anytime.</p>
         <div className="mt-10 grid gap-6 sm:grid-cols-2">
           {plans.map((plan) => (
             <Card key={plan.id}>

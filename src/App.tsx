@@ -1,6 +1,11 @@
 import { Routes, Route } from 'react-router-dom'
 import { LandingPage } from '@/pages/marketing/LandingPage'
 import { PricingPage } from '@/pages/marketing/PricingPage'
+import { TermsPage } from '@/pages/legal/TermsPage'
+import { PrivacyPage } from '@/pages/legal/PrivacyPage'
+import { RefundPolicyPage } from '@/pages/legal/RefundPolicyPage'
+import { SubscriptionCancellationPage } from '@/pages/legal/SubscriptionCancellationPage'
+import { ContactPage } from '@/pages/legal/ContactPage'
 import { SignInPage } from '@/pages/auth/SignInPage'
 import { SignUpPage } from '@/pages/auth/SignUpPage'
 import { CreateLearnerPage } from '@/pages/onboarding/CreateLearnerPage'
@@ -29,6 +34,11 @@ export default function App() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/pricing" element={<PricingPage />} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/refund-policy" element={<RefundPolicyPage />} />
+      <Route path="/subscription-cancellation" element={<SubscriptionCancellationPage />} />
+      <Route path="/contact" element={<ContactPage />} />
       <Route path="/sign-in" element={<SignInPage />} />
       <Route path="/sign-up" element={<SignUpPage />} />
 

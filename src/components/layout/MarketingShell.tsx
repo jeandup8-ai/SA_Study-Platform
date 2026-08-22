@@ -41,6 +41,23 @@ export function MarketingShell({ children }: { children: ReactNode }) {
         <div className="mx-auto max-w-6xl px-4 text-sm text-slate-500">
           <p className="font-semibold text-slate-700">{t('common.appName')}</p>
           <p className="mt-1 max-w-md">{t('landing.footer.tagline')}</p>
+          <nav className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-slate-500">
+            <Link to="/terms" className="hover:text-slate-700">
+              Terms of Service
+            </Link>
+            <Link to="/privacy" className="hover:text-slate-700">
+              Privacy Policy
+            </Link>
+            <Link to="/refund-policy" className="hover:text-slate-700">
+              Refund Policy
+            </Link>
+            <Link to="/subscription-cancellation" className="hover:text-slate-700">
+              Cancel Subscription
+            </Link>
+            <Link to="/contact" className="hover:text-slate-700">
+              Contact
+            </Link>
+          </nav>
           <p className="mt-4 text-xs text-slate-400">{t('landing.disclaimer')}</p>
         </div>
       </footer>
