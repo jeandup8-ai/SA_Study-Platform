@@ -99,6 +99,10 @@ async function checksumOf(filePath: string): Promise<string> {
   return createHash('sha256').update(buffer).digest('hex')
 }
 
+function hashOf(text: string): string {
+  return createHash('sha256').update(text).digest('hex')
+}
+
 async function appendImportLog(entry: Record<string, unknown>) {
   const logPath = path.resolve(import.meta.dirname, '../../curriculum/import-log.json')
   const log = JSON.parse(await readFile(logPath, 'utf-8')) as { runs: unknown[] }
@@ -174,6 +178,8 @@ async function main() {
             sourceLocation: t.block.sourceLocation,
             extractionMethod: t.extractionMethod,
             confidenceScore: t.confidenceScore,
+            bbox: t.bbox ?? null,
+            sourceTextHash: hashOf(t.text),
           })),
           assessmentNotes: assessmentNotes.map((n) => ({
             category: n.category,
@@ -184,6 +190,8 @@ async function main() {
             sourceLocation: n.block.sourceLocation,
             extractionMethod: n.extractionMethod,
             confidenceScore: n.confidenceScore,
+            bbox: n.bbox ?? null,
+            sourceTextHash: hashOf(n.text),
           })),
         },
         null,
@@ -308,6 +316,8 @@ async function main() {
       extraction_method: candidate.extractionMethod,
       confidence_score: candidate.confidenceScore,
       import_version: IMPORT_VERSION,
+      source_coordinates: candidate.bbox ?? null,
+      source_text_hash: hashOf(candidate.text),
     })
 
     if (insertError) errors.push(`"${candidate.text}": ${insertError.message}`)
@@ -341,6 +351,8 @@ async function main() {
       extraction_method: note.extractionMethod,
       confidence_score: note.confidenceScore,
       import_version: IMPORT_VERSION,
+      source_coordinates: note.bbox ?? null,
+      source_text_hash: hashOf(note.text),
     })
 
     if (insertError) errors.push(`assessment note "${note.text.slice(0, 40)}...": ${insertError.message}`)

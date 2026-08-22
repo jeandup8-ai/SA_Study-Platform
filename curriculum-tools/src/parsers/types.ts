@@ -9,6 +9,19 @@
 
 export type ExtractedBlockType = 'heading' | 'paragraph' | 'table' | 'list_item'
 
+/** A real bounding box in PDF point space (origin bottom-left, y grows
+ * upward), computed from the actual text items that produced a cell/entry —
+ * never invented. Coarser than a tight per-glyph box in a few callers (some
+ * detectors only have a column's derived x-range, not each item's own x, at
+ * the point the box is built), which is disclosed per-detector rather than
+ * padded out to look precise. */
+export interface BoundingBox {
+  xMin: number
+  xMax: number
+  yTop: number
+  yBottom: number
+}
+
 export interface ExtractedTableCell {
   text: string
   rowIndex: number
@@ -26,6 +39,9 @@ export interface ExtractedTableCell {
    * fallback table detector, which doesn't compute a real per-cell
    * confidence — callers default that case to a fixed conservative value. */
   confidence?: number
+  /** Real geometry for this cell, when the producing detector could compute
+   * one. Undefined, not a fabricated value, when it couldn't. */
+  bbox?: BoundingBox
 }
 
 export interface ExtractedBlock {
@@ -42,6 +58,9 @@ export interface ExtractedBlock {
    * this extracted block against the original file — e.g. "Page 12, Table 3"
    * or "Section 4.2". Never a substitute for reading the source. */
   sourceLocation: string
+  /** Real geometry for this whole block (used by heading-sourced candidates,
+   * which have no tableCells of their own). Undefined when not computed. */
+  bbox?: BoundingBox
 }
 
 export interface ExtractedDocument {

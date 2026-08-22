@@ -1,4 +1,4 @@
-import type { ExtractedBlock } from '../parsers/types.js'
+import type { ExtractedBlock, BoundingBox } from '../parsers/types.js'
 
 /**
  * Heuristic, regex/pattern-based detection — deliberately not a trained
@@ -88,6 +88,10 @@ export interface TopicCandidate {
    * detector's minimum (0.75), reflecting that neither path can verify its
    * own boundaries the way a structural detector's gap/header logic can. */
   confidenceScore: number
+  /** Real geometry, when the producing detector computed one — from the
+   * table cell for a table-sourced candidate, from the block itself for a
+   * heading-sourced one. Undefined, never fabricated, when neither did. */
+  bbox?: BoundingBox
 }
 
 const GENERIC_TABLE_CONFIDENCE = 0.6
@@ -231,6 +235,7 @@ export interface AssessmentNote {
   block: ExtractedBlock
   extractionMethod: 'pdf_table' | 'pdf_text'
   confidenceScore: number
+  bbox?: BoundingBox
 }
 
 export interface TopicDetectionResult {
@@ -316,6 +321,7 @@ export function detectTopicCandidates(blocks: ExtractedBlock[]): TopicDetectionR
           block,
           extractionMethod: 'pdf_text',
           confidenceScore: HEADING_CONFIDENCE,
+          bbox: block.bbox,
         })
       } else {
         assessmentNotes.push({
@@ -337,6 +343,7 @@ export function detectTopicCandidates(blocks: ExtractedBlock[]): TopicDetectionR
           block,
           extractionMethod: 'pdf_text',
           confidenceScore: HEADING_CONFIDENCE,
+          bbox: block.bbox,
         })
       }
       continue
@@ -406,7 +413,15 @@ export function detectTopicCandidates(blocks: ExtractedBlock[]): TopicDetectionR
         const confidenceScore = cell.confidence ?? GENERIC_TABLE_CONFIDENCE
         if (category === 'CURRICULUM_TOPIC') {
           if (cell.text.length < 100) {
-            topics.push({ termNumber, gradeNumber, text: cell.text, block, extractionMethod: 'pdf_table', confidenceScore })
+            topics.push({
+              termNumber,
+              gradeNumber,
+              text: cell.text,
+              block,
+              extractionMethod: 'pdf_table',
+              confidenceScore,
+              bbox: cell.bbox,
+            })
           }
         } else {
           assessmentNotes.push({
@@ -417,6 +432,7 @@ export function detectTopicCandidates(blocks: ExtractedBlock[]): TopicDetectionR
             block,
             extractionMethod: 'pdf_table',
             confidenceScore,
+            bbox: cell.bbox,
           })
         }
       }

@@ -324,6 +324,12 @@ export async function parsePdf(filePath: string): Promise<ExtractedDocument> {
           text: joinTextItems(col),
           rowIndex,
           colIndex,
+          bbox: {
+            xMin: Math.min(...col.map((it) => it.x)),
+            xMax: Math.max(...col.map((it) => it.x + it.width)),
+            yTop: Math.max(...col.map((it) => it.y)),
+            yBottom: Math.min(...col.map((it) => it.y)),
+          },
         })),
       )
       blocks.push({
@@ -351,6 +357,12 @@ export async function parsePdf(filePath: string): Promise<ExtractedDocument> {
         headingLevel: isHeading ? 1 : null,
         tableCells: null,
         sourceLocation: `Page ${pageNum}`,
+        bbox: {
+          xMin: Math.min(...row.map((it) => it.x)),
+          xMax: Math.max(...row.map((it) => it.x + it.width)),
+          yTop: Math.max(...row.map((it) => it.y)),
+          yBottom: Math.min(...row.map((it) => it.y)),
+        },
       })
     }
 

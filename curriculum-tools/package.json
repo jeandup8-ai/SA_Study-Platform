@@ -15,7 +15,9 @@
     "debug-blocks": "tsx src/debugBlocks.ts",
     "debug-rotated-table": "tsx src/testRotatedTable.ts",
     "inspect-raw-geometry": "tsx src/inspectRawGeometry.ts",
-    "typecheck": "tsc --noEmit"
+    "validate": "tsx src/validation/runValidation.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.110.8",
@@ -26,6 +28,7 @@
   "devDependencies": {
     "@types/node": "^24.13.2",
     "tsx": "^4.19.2",
-    "typescript": "~6.0.2"
+    "typescript": "~6.0.2",
+    "vitest": "^3.2.4"
   }
 }

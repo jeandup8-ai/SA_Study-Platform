@@ -1,4 +1,4 @@
-import type { ExtractedTableCell } from './types.js'
+import type { ExtractedTableCell, BoundingBox } from './types.js'
 
 /**
  * Structured, geometry-aware table reading for the two real CAPS table
@@ -73,6 +73,20 @@ const SAME_ENTRY_MAX_GAP = 20
  * between the two — so a gap under 1.9pt means "same word, no space",
  * anything wider gets a space. */
 const WORD_SPLIT_GAP_THRESHOLD = 1.9
+
+/** Real bounding box over the given items' own x/y/width — null when there's
+ * nothing to bound. Used everywhere a detector wants to record where on the
+ * page an entry actually came from, rather than the column's whole (often
+ * much wider) allotted strip. */
+function bboxOfItems(items: { x: number; y: number; width: number }[]): BoundingBox | null {
+  if (items.length === 0) return null
+  return {
+    xMin: Math.min(...items.map((it) => it.x)),
+    xMax: Math.max(...items.map((it) => it.x + it.width)),
+    yTop: Math.max(...items.map((it) => it.y)),
+    yBottom: Math.min(...items.map((it) => it.y)),
+  }
+}
 
 export function joinTextItems(items: { x: number; width: number; str: string }[]): string {
   const sorted = [...items].sort((a, b) => a.x - b.x)
@@ -302,6 +316,7 @@ export interface ColumnEntry {
    * gaps well above/below SAME_ENTRY_MAX_GAP on both sides, lower when a
    * boundary was ambiguous (close to the threshold). */
   confidence: number
+  bbox?: BoundingBox
 }
 
 /** Reconstructs one column's own list of distinct entries below a header,
@@ -331,32 +346,39 @@ export function extractColumnEntries(items: TextItem[], column: ColumnBound, bel
       current.yBottom = line.y
       current.gaps.push(gap)
     } else {
-      entries.push(finishEntry(current))
+      entries.push(finishEntry(current, colItems))
       current = { texts: [line.text], yTop: line.y, yBottom: line.y, gaps: [] }
     }
   }
-  if (current) entries.push(finishEntry(current))
+  if (current) entries.push(finishEntry(current, colItems))
   return entries
 }
 
-function finishEntry(current: { texts: string[]; yTop: number; yBottom: number; gaps: number[] }): ColumnEntry {
+function finishEntry(
+  current: { texts: string[]; yTop: number; yBottom: number; gaps: number[] },
+  columnItems: TextItem[],
+): ColumnEntry {
   // Confidence reflects how unambiguous the gap-based split was: entries
   // built from tightly-clustered lines (small internal gaps, well under the
   // threshold) score higher than a single unwrapped line, which can't be
   // cross-checked against a gap at all.
   const maxInternalGap = current.gaps.length > 0 ? Math.max(...current.gaps) : null
   const confidence = maxInternalGap === null ? 0.75 : maxInternalGap < SAME_ENTRY_MAX_GAP * 0.7 ? 0.9 : 0.8
+  const region = columnItems.filter(
+    (it) => it.y <= current.yTop + LINE_Y_TOLERANCE && it.y >= current.yBottom - LINE_Y_TOLERANCE,
+  )
   return {
     text: current.texts.join(' ').replace(/\s+/g, ' ').trim(),
     yTop: current.yTop,
     yBottom: current.yBottom,
     confidence,
+    bbox: bboxOfItems(region) ?? undefined,
   }
 }
 
 export interface GradeColumnRow {
   termNumber: number
-  cellsByGrade: Map<number, { text: string; confidence: number }>
+  cellsByGrade: Map<number, { text: string; confidence: number; bbox?: BoundingBox }>
 }
 
 /**
@@ -471,7 +493,7 @@ export function extractGradeColumnTable(
     const rowTopY = termLines[i].y
     const rowBottomY = i + 1 < termLines.length ? termLines[i + 1].y : floorY
 
-    const cellsByGrade = new Map<number, { text: string; confidence: number }>()
+    const cellsByGrade = new Map<number, { text: string; confidence: number; bbox?: BoundingBox }>()
     for (const { gradeNumber, bound } of gradeColumns) {
       const cellItems = items.filter(
         (it) => it.x >= bound.xMin && it.x < bound.xMax && it.y <= rowTopY && it.y > rowBottomY,
@@ -479,7 +501,13 @@ export function extractGradeColumnTable(
       const lines = groupIntoLines(cellItems)
       if (lines.length === 0) continue
       const text = lines.map((l) => l.text).join(' ').replace(/\s+/g, ' ').trim()
-      if (text) cellsByGrade.set(gradeNumber, { text, confidence: lines.length > 1 ? 0.85 : 0.75 })
+      if (text) {
+        cellsByGrade.set(gradeNumber, {
+          text,
+          confidence: lines.length > 1 ? 0.85 : 0.75,
+          bbox: bboxOfItems(cellItems) ?? undefined,
+        })
+      }
     }
     if (cellsByGrade.size > 0) rows.push({ termNumber, cellsByGrade })
   }
@@ -497,6 +525,7 @@ export function contentColumnCellsToTableCells(entries: ColumnEntry[]): Extracte
     rowIndex: i + 1,
     colIndex: 0,
     confidence: entry.confidence,
+    bbox: entry.bbox,
   }))
 }
 
@@ -515,6 +544,7 @@ export function gradeColumnRowsToTableCells(rows: GradeColumnRow[]): ExtractedTa
         gradeNumber,
         termNumber: row.termNumber,
         confidence: cell.confidence,
+        bbox: cell.bbox,
       })
     }
   }
@@ -524,6 +554,7 @@ export function gradeColumnRowsToTableCells(rows: GradeColumnRow[]): ExtractedTa
 export interface TopicTimeResourceRow {
   topicName: string
   confidence: number
+  bbox?: BoundingBox
 }
 
 /**
@@ -577,14 +608,18 @@ export function extractTopicTimeResourceTable(
     )
     const lines = groupIntoLines(colItems)
     const nameLines: string[] = []
+    const nameLineYs: number[] = []
     for (const line of lines) {
       if (/^content\/concepts\/skills$/i.test(line.text)) break
       nameLines.push(line.text)
+      nameLineYs.push(line.y)
     }
     if (nameLines.length === 0) continue
+    const region = colItems.filter((it) => nameLineYs.some((y) => Math.abs(y - it.y) <= LINE_Y_TOLERANCE))
     rows.push({
       topicName: nameLines.join(' ').replace(/\s+/g, ' ').trim(),
       confidence: nameLines.length > 1 ? 0.85 : 0.8,
+      bbox: bboxOfItems(region) ?? undefined,
     })
   }
   return rows
@@ -600,12 +635,17 @@ export function topicTimeResourceRowsToTableCells(rows: TopicTimeResourceRow[]):
     rowIndex: i + 1,
     colIndex: 0,
     confidence: row.confidence,
+    bbox: row.bbox,
   }))
 }
 
 export interface RotatedTopicRow {
   topicName: string
   confidence: number
+  /** Bounding box in the same LOGICAL (as-if-horizontal) coordinate space the
+   * caller already transformed rotated items into — not raw page space. See
+   * pdfParser.ts's rotated-page transform for how to map back if ever needed. */
+  bbox?: BoundingBox
 }
 
 export interface RotatedTopicBlock {
@@ -708,7 +748,7 @@ export function extractRotatedContentOutlineTopics(items: TextItem[]): RotatedTo
         // rotation-specific font-run split this fix does not address. Every
         // record still lands as REVIEW_REQUIRED regardless, but a reviewer
         // should see this table shape trusted less than the other three.
-        rows: entries.map((e) => ({ topicName: e.text, confidence: Math.min(e.confidence, 0.5) })),
+        rows: entries.map((e) => ({ topicName: e.text, confidence: Math.min(e.confidence, 0.5), bbox: e.bbox })),
       })
     }
   }
@@ -760,6 +800,7 @@ export function rotatedTopicRowsToTableCells(rows: RotatedTopicRow[]): Extracted
     rowIndex: i + 1,
     colIndex: 0,
     confidence: row.confidence,
+    bbox: row.bbox,
   }))
 }
 
@@ -768,6 +809,7 @@ export interface LifeSkillsTopicRow {
   gradeNumber: number
   topicName: string
   confidence: number
+  bbox?: BoundingBox
 }
 
 const LIFE_SKILLS_HEADER_PATTERNS = [/^term\s+[1-4]$/i, /^grade\s+\d{1,2}$/i, /^recommended\s+resources?$/i]
@@ -893,16 +935,27 @@ export function extractLifeSkillsTopicTable(items: TextItem[]): LifeSkillsTopicR
     const isRowStart = (y: number) => timeLineYs.some((ty) => Math.abs(ty - y) <= LINE_Y_TOLERANCE)
 
     let current: string[] | null = null
+    let currentYs: number[] = []
     let sawBullet = false
     const finish = () => {
       if (!current || current.length === 0) return
       const text = current.join(' ').replace(/\s+/g, ' ').trim()
-      if (text) rows.push({ termNumber, gradeNumber, topicName: text, confidence: current.length > 1 ? 0.8 : 0.75 })
+      if (text) {
+        const region = topicItems.filter((it) => currentYs.some((y) => Math.abs(y - it.y) <= LINE_Y_TOLERANCE))
+        rows.push({
+          termNumber,
+          gradeNumber,
+          topicName: text,
+          confidence: current.length > 1 ? 0.8 : 0.75,
+          bbox: bboxOfItems(region) ?? undefined,
+        })
+      }
     }
     for (const line of topicLines) {
       if (isRowStart(line.y)) {
         finish()
         current = [line.text]
+        currentYs = [line.y]
         sawBullet = false
         continue
       }
@@ -912,6 +965,7 @@ export function extractLifeSkillsTopicTable(items: TextItem[]): LifeSkillsTopicR
         continue
       }
       current.push(line.text)
+      currentYs.push(line.y)
     }
     finish()
   }
@@ -930,5 +984,6 @@ export function lifeSkillsTopicRowsToTableCells(rows: LifeSkillsTopicRow[]): Ext
     gradeNumber: row.gradeNumber,
     termNumber: row.termNumber,
     confidence: row.confidence,
+    bbox: row.bbox,
   }))
 }

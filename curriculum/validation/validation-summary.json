@@ -1,0 +1,13 @@
+{
+  "validationVersion": "2026-08-22-v2.2-validation",
+  "generatedAt": "2026-08-22T15:28:31.939Z",
+  "totalRecords": 694,
+  "summary": {
+    "AUTO_VERIFIED": 138,
+    "AUTO_VALIDATED": 21,
+    "REVIEW_REQUIRED": 417,
+    "SOURCE_INCOMPLETE": 88,
+    "NON_CURRICULUM": 0,
+    "CONFLICTING": 30
+  }
+}
