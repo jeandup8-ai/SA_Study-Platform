@@ -6,6 +6,7 @@
   "description": "Admin-run CLI for importing official DBE curriculum source documents (PDF/DOCX/TXT/HTML) into the curriculum database as REVIEW_REQUIRED records. Never runs client-side; never auto-publishes.",
   "scripts": {
     "import": "tsx src/importSource.ts",
+    "import-lessons-v2": "tsx src/importLessonsV2.ts",
     "inspect-grades": "tsx src/inspectGrades.ts",
     "inspect-early-pages": "tsx src/inspectEarly.ts",
     "debug-section-detection": "tsx src/debugSection.ts",
