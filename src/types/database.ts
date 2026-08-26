@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.15"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
@@ -125,6 +125,116 @@ export type Database = {
             columns: ["learner_id"]
             isOneToOne: false
             referencedRelation: "learners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      assessment_notes: {
+        Row: {
+          category: string
+          confidence_score: number | null
+          content_workflow_status: Database["public"]["Enums"]["content_workflow_status"]
+          created_at: string
+          extraction_method: string | null
+          grade_id: string | null
+          id: string
+          import_version: string | null
+          secondary_extraction_match: boolean | null
+          source_coordinates: Json | null
+          source_id: string | null
+          source_page: string | null
+          source_section: string | null
+          source_snippet: string | null
+          source_text_hash: string | null
+          subject_id: string
+          term_id: string | null
+          text: string
+          validation_confidence: number | null
+          validation_method: string[] | null
+          validation_reason: string | null
+          validation_status: Database["public"]["Enums"]["curriculum_validation_status"]
+          validation_timestamp: string | null
+          validation_version: string | null
+        }
+        Insert: {
+          category: string
+          confidence_score?: number | null
+          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
+          created_at?: string
+          extraction_method?: string | null
+          grade_id?: string | null
+          id?: string
+          import_version?: string | null
+          secondary_extraction_match?: boolean | null
+          source_coordinates?: Json | null
+          source_id?: string | null
+          source_page?: string | null
+          source_section?: string | null
+          source_snippet?: string | null
+          source_text_hash?: string | null
+          subject_id: string
+          term_id?: string | null
+          text: string
+          validation_confidence?: number | null
+          validation_method?: string[] | null
+          validation_reason?: string | null
+          validation_status?: Database["public"]["Enums"]["curriculum_validation_status"]
+          validation_timestamp?: string | null
+          validation_version?: string | null
+        }
+        Update: {
+          category?: string
+          confidence_score?: number | null
+          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
+          created_at?: string
+          extraction_method?: string | null
+          grade_id?: string | null
+          id?: string
+          import_version?: string | null
+          secondary_extraction_match?: boolean | null
+          source_coordinates?: Json | null
+          source_id?: string | null
+          source_page?: string | null
+          source_section?: string | null
+          source_snippet?: string | null
+          source_text_hash?: string | null
+          subject_id?: string
+          term_id?: string | null
+          text?: string
+          validation_confidence?: number | null
+          validation_method?: string[] | null
+          validation_reason?: string | null
+          validation_status?: Database["public"]["Enums"]["curriculum_validation_status"]
+          validation_timestamp?: string | null
+          validation_version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assessment_notes_grade_id_fkey"
+            columns: ["grade_id"]
+            isOneToOne: false
+            referencedRelation: "grades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_notes_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_sources"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_notes_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "assessment_notes_term_id_fkey"
+            columns: ["term_id"]
+            isOneToOne: false
+            referencedRelation: "terms"
             referencedColumns: ["id"]
           },
         ]
@@ -481,6 +591,8 @@ export type Database = {
           organisation: string
           phase_id: string | null
           publication_year: number | null
+          source_scope: string | null
+          source_status: Database["public"]["Enums"]["curriculum_source_completeness"]
           status: Database["public"]["Enums"]["source_verification_status"]
           subject_id: string | null
           title: string
@@ -502,6 +614,8 @@ export type Database = {
           organisation?: string
           phase_id?: string | null
           publication_year?: number | null
+          source_scope?: string | null
+          source_status?: Database["public"]["Enums"]["curriculum_source_completeness"]
           status?: Database["public"]["Enums"]["source_verification_status"]
           subject_id?: string | null
           title: string
@@ -523,6 +637,8 @@ export type Database = {
           organisation?: string
           phase_id?: string | null
           publication_year?: number | null
+          source_scope?: string | null
+          source_status?: Database["public"]["Enums"]["curriculum_source_completeness"]
           status?: Database["public"]["Enums"]["source_verification_status"]
           subject_id?: string | null
           title?: string
@@ -1146,46 +1262,79 @@ export type Database = {
       }
       lessons: {
         Row: {
+          afrikaans_narration_script: string | null
+          afrikaans_practice_questions: Json | null
+          afrikaans_visual_storyboard: Json | null
+          afrikaans_worked_example: Json | null
           content_workflow_status: Database["public"]["Enums"]["content_workflow_status"]
           created_at: string
           estimated_minutes: number
           id: string
           is_demo_content: boolean
           language: Database["public"]["Enums"]["language_code"]
+          narration_script: string | null
+          practice_questions: Json | null
+          reviewed_at: string | null
+          reviewed_by: string | null
           slug: string
           sort_order: number
+          source_trace: Json | null
           subtopic_id: string | null
           title: string
           topic_id: string
           translation_status: Database["public"]["Enums"]["translation_status"]
+          visual_storyboard: Json | null
+          worked_example: Json | null
         }
         Insert: {
+          afrikaans_narration_script?: string | null
+          afrikaans_practice_questions?: Json | null
+          afrikaans_visual_storyboard?: Json | null
+          afrikaans_worked_example?: Json | null
           content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
           created_at?: string
           estimated_minutes?: number
           id?: string
           is_demo_content?: boolean
           language?: Database["public"]["Enums"]["language_code"]
+          narration_script?: string | null
+          practice_questions?: Json | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           slug: string
           sort_order?: number
+          source_trace?: Json | null
           subtopic_id?: string | null
           title: string
           topic_id: string
           translation_status?: Database["public"]["Enums"]["translation_status"]
+          visual_storyboard?: Json | null
+          worked_example?: Json | null
         }
         Update: {
+          afrikaans_narration_script?: string | null
+          afrikaans_practice_questions?: Json | null
+          afrikaans_visual_storyboard?: Json | null
+          afrikaans_worked_example?: Json | null
           content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
           created_at?: string
           estimated_minutes?: number
           id?: string
           is_demo_content?: boolean
           language?: Database["public"]["Enums"]["language_code"]
+          narration_script?: string | null
+          practice_questions?: Json | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
           slug?: string
           sort_order?: number
+          source_trace?: Json | null
           subtopic_id?: string | null
           title?: string
           topic_id?: string
           translation_status?: Database["public"]["Enums"]["translation_status"]
+          visual_storyboard?: Json | null
+          worked_example?: Json | null
         }
         Relationships: [
           {
@@ -2142,60 +2291,99 @@ export type Database = {
       topics: {
         Row: {
           code: string
+          confidence_score: number | null
           content_workflow_status: Database["public"]["Enums"]["content_workflow_status"]
           created_at: string
           description: string | null
+          extraction_method: string | null
           grade_id: string
           id: string
+          import_version: string | null
           is_demo_content: boolean
           name: string
           name_af: string | null
+          secondary_extraction_match: boolean | null
           sort_order: number
+          source_coordinates: Json | null
           source_id: string | null
           source_page: string | null
           source_section: string | null
+          source_snippet: string | null
+          source_text_hash: string | null
           strand_id: string | null
           subject_component_id: string | null
           subject_id: string
           term_id: string | null
+          validation_confidence: number | null
+          validation_method: string[] | null
+          validation_reason: string | null
+          validation_status: Database["public"]["Enums"]["curriculum_validation_status"]
+          validation_timestamp: string | null
+          validation_version: string | null
         }
         Insert: {
           code: string
+          confidence_score?: number | null
           content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
           created_at?: string
           description?: string | null
+          extraction_method?: string | null
           grade_id: string
           id?: string
+          import_version?: string | null
           is_demo_content?: boolean
           name: string
           name_af?: string | null
+          secondary_extraction_match?: boolean | null
           sort_order?: number
+          source_coordinates?: Json | null
           source_id?: string | null
           source_page?: string | null
           source_section?: string | null
+          source_snippet?: string | null
+          source_text_hash?: string | null
           strand_id?: string | null
           subject_component_id?: string | null
           subject_id: string
           term_id?: string | null
+          validation_confidence?: number | null
+          validation_method?: string[] | null
+          validation_reason?: string | null
+          validation_status?: Database["public"]["Enums"]["curriculum_validation_status"]
+          validation_timestamp?: string | null
+          validation_version?: string | null
         }
         Update: {
           code?: string
+          confidence_score?: number | null
           content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
           created_at?: string
           description?: string | null
+          extraction_method?: string | null
           grade_id?: string
           id?: string
+          import_version?: string | null
           is_demo_content?: boolean
           name?: string
           name_af?: string | null
+          secondary_extraction_match?: boolean | null
           sort_order?: number
+          source_coordinates?: Json | null
           source_id?: string | null
           source_page?: string | null
           source_section?: string | null
+          source_snippet?: string | null
+          source_text_hash?: string | null
           strand_id?: string | null
           subject_component_id?: string | null
           subject_id?: string
           term_id?: string | null
+          validation_confidence?: number | null
+          validation_method?: string[] | null
+          validation_reason?: string | null
+          validation_status?: Database["public"]["Enums"]["curriculum_validation_status"]
+          validation_timestamp?: string | null
+          validation_version?: string | null
         }
         Relationships: [
           {
@@ -2262,6 +2450,19 @@ export type Database = {
         | "VERIFIED"
         | "PUBLISHED"
         | "ARCHIVED"
+      curriculum_source_completeness:
+        | "COMPLETE"
+        | "INCOMPLETE"
+        | "AMENDMENT_ONLY"
+        | "UNKNOWN"
+      curriculum_validation_status:
+        | "NOT_VALIDATED"
+        | "AUTO_VALIDATED"
+        | "AUTO_VERIFIED"
+        | "REVIEW_REQUIRED"
+        | "SOURCE_INCOMPLETE"
+        | "NON_CURRICULUM"
+        | "CONFLICTING"
       language_code:
         | "en"
         | "af"
@@ -2337,6 +2538,7 @@ export type Database = {
       translation_status:
         | "original"
         | "machine_translated"
+        | "ai_reviewed"
         | "human_reviewed"
         | "verified"
     }
@@ -2479,6 +2681,21 @@ export const Constants = {
         "PUBLISHED",
         "ARCHIVED",
       ],
+      curriculum_source_completeness: [
+        "COMPLETE",
+        "INCOMPLETE",
+        "AMENDMENT_ONLY",
+        "UNKNOWN",
+      ],
+      curriculum_validation_status: [
+        "NOT_VALIDATED",
+        "AUTO_VALIDATED",
+        "AUTO_VERIFIED",
+        "REVIEW_REQUIRED",
+        "SOURCE_INCOMPLETE",
+        "NON_CURRICULUM",
+        "CONFLICTING",
+      ],
       language_code: [
         "en",
         "af",
@@ -2562,6 +2779,7 @@ export const Constants = {
       translation_status: [
         "original",
         "machine_translated",
+        "ai_reviewed",
         "human_reviewed",
         "verified",
       ],

@@ -128,7 +128,13 @@
     "showExample": "Wys my 'n voorbeeld",
     "anotherQuestion": "Gee my nog 'n vraag",
     "finishLesson": "Voltooi les",
-    "backToSubject": "Terug na vak"
+    "backToSubject": "Terug na vak",
+    "showWorking": "Wys werk",
+    "showHint": "Wys wenk",
+    "showAnswer": "Wys antwoord",
+    "nextQuestion": "Volgende vraag",
+    "questionOf": "Vraag {{current}} van {{total}}",
+    "aiGeneratedNotice": "Hierdie les is met KI-hulp uit die amptelike kurrikulum geskryf, en is nog nie deur 'n onderwyser nagegaan nie."
   },
   "quiz": {
     "questionOf": "Vraag {{current}} van {{total}}",

@@ -128,7 +128,13 @@
     "showExample": "Show me an example",
     "anotherQuestion": "Give me another question",
     "finishLesson": "Finish lesson",
-    "backToSubject": "Back to subject"
+    "backToSubject": "Back to subject",
+    "showWorking": "Show working",
+    "showHint": "Show hint",
+    "showAnswer": "Show answer",
+    "nextQuestion": "Next question",
+    "questionOf": "Question {{current}} of {{total}}",
+    "aiGeneratedNotice": "This lesson was written with AI assistance from the official curriculum, and hasn't been reviewed by a teacher yet."
   },
   "quiz": {
     "questionOf": "Question {{current}} of {{total}}",

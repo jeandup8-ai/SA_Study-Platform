@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ChevronLeft, RotateCcw, Wand2, Lightbulb } from 'lucide-react'
@@ -6,12 +6,25 @@ import { useLearner } from '@/context/LearnerContext'
 import { fetchLesson, fetchLessonContent, fetchLessonMedia } from '@/lib/curriculum/queries'
 import { fetchQuestionsForTopic, fetchMiniQuizForLesson } from '@/lib/curriculum/questions'
 import { recordQuizResult } from '@/lib/mastery/engine'
+import {
+  isV2Lesson,
+  getNarration,
+  getStoryboard,
+  getWorkedExample,
+  getPracticeQuestions,
+  paragraphize,
+} from '@/lib/curriculum/lessonV2'
 import { supabase } from '@/lib/supabase'
 import { Button, Card, ProgressRing } from '@/components/ui'
 import { LessonVisual } from '@/components/lesson/LessonVisual'
+import { StoryboardSlides } from '@/components/lesson/StoryboardSlides'
+import { WorkedExampleCard } from '@/components/lesson/WorkedExampleCard'
+import { PracticeSelfCheck } from '@/components/lesson/PracticeSelfCheck'
 import { QuestionRunner, type QuestionWithOptions } from '@/components/lesson/QuestionRunner'
 import type { Lesson, LessonContent, Media, LessonSectionType } from '@/types/curriculum'
 
+// Legacy demo lessons: narrative content lives in lesson_content rows, visuals
+// in media rows, and questions come from the graded question bank.
 const STEPS: LessonSectionType[] = [
   'what_are_we_learning',
   'simple_explanation',
@@ -22,6 +35,18 @@ const STEPS: LessonSectionType[] = [
   'mini_quiz',
   'what_did_you_learn',
   'mastery_result',
+  'next_step',
+]
+
+// V2.3 lessons store narration/storyboard/worked-example/practice content
+// directly on the lessons row (lib/curriculum/lessonV2.ts), not in
+// lesson_content/media/questions — and have no graded quiz bank yet, so they
+// walk a shorter path through the same step vocabulary.
+const V2_STEPS: LessonSectionType[] = [
+  'simple_explanation',
+  'visual_explanation',
+  'example',
+  'practice_questions',
   'next_step',
 ]
 
@@ -68,12 +93,16 @@ export function LessonPage() {
 
   useEffect(() => {
     if (!lesson || !activeLearner) return
-    if (STEPS[stepIndex] === 'practice_questions' && practiceQuestions.length === 0) {
+    const v2 = isV2Lesson(lesson)
+    const currentSteps = v2 ? V2_STEPS : STEPS
+    const currentStep = currentSteps[stepIndex]
+
+    if (!v2 && currentStep === 'practice_questions' && practiceQuestions.length === 0) {
       fetchQuestionsForTopic({ topicId: lesson.topic_id, language: activeLearner.preferred_language, limit: 3 }).then(
         setPracticeQuestions,
       )
     }
-    if (STEPS[stepIndex] === 'mini_quiz' && quiz.questions.length === 0) {
+    if (!v2 && currentStep === 'mini_quiz' && quiz.questions.length === 0) {
       fetchMiniQuizForLesson(lesson.id, activeLearner.preferred_language).then(async (result) => {
         if (result.questions.length > 0) {
           setQuiz(result)
@@ -87,7 +116,7 @@ export function LessonPage() {
         }
       })
     }
-    if (STEPS[stepIndex] === 'next_step') {
+    if (currentStep === 'next_step') {
       supabase
         .from('lessons')
         .select('*')
@@ -113,13 +142,6 @@ export function LessonPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stepIndex, lesson, activeLearner])
 
-  const currentContent = useMemo(() => {
-    const step = STEPS[stepIndex]
-    const rows = content.filter((c) => c.section_type === step).sort((a, b) => a.sort_order - b.sort_order)
-    if (step === 'simple_explanation' && simplified && rows.length > 1) return rows[1]
-    return rows[0]
-  }, [content, stepIndex, simplified])
-
   if (!lesson || !activeLearner) {
     return (
       <div className="flex min-h-dvh items-center justify-center">
@@ -128,7 +150,20 @@ export function LessonPage() {
     )
   }
 
-  const step = STEPS[stepIndex]
+  const isV2 = isV2Lesson(lesson)
+  const steps = isV2 ? V2_STEPS : STEPS
+  const step = steps[stepIndex]
+
+  const narrationParagraphs = isV2 ? paragraphize(getNarration(lesson, activeLearner.preferred_language)) : []
+  const storyboard = isV2 ? getStoryboard(lesson, activeLearner.preferred_language) : []
+  const workedExample = isV2 ? getWorkedExample(lesson, activeLearner.preferred_language) : null
+  const v2PracticeQuestions = isV2 ? getPracticeQuestions(lesson, activeLearner.preferred_language) : []
+
+  const currentContent = (() => {
+    const rows = content.filter((c) => c.section_type === step).sort((a, b) => a.sort_order - b.sort_order)
+    if (step === 'simple_explanation' && simplified && rows.length > 1) return rows[1]
+    return rows[0]
+  })()
 
   async function handleQuizComplete(result: { correctCount: number; total: number; answers: import('@/components/lesson/QuestionRunner').QuestionAnswerRecord[] }) {
     if (!lesson || !activeLearner) return
@@ -147,7 +182,7 @@ export function LessonPage() {
   }
 
   function goNext() {
-    setStepIndex((i) => Math.min(i + 1, STEPS.length - 1))
+    setStepIndex((i) => Math.min(i + 1, steps.length - 1))
   }
   function goBack() {
     if (stepIndex === 0) navigate(-1)
@@ -164,46 +199,82 @@ export function LessonPage() {
           <div className="h-2 overflow-hidden rounded-full bg-slate-200">
             <div
               className="h-full rounded-full bg-brand-500 transition-all"
-              style={{ width: `${((stepIndex + 1) / STEPS.length) * 100}%` }}
+              style={{ width: `${((stepIndex + 1) / steps.length) * 100}%` }}
             />
           </div>
         </div>
       </div>
 
       <h1 className="mt-4 text-lg font-extrabold text-slate-900">{t(`lesson.step.${step}`)}</h1>
+      {isV2 && <p className="mt-1 text-xs text-slate-400">{t('lesson.aiGeneratedNotice')}</p>}
 
       <div className="mt-4 flex-1">
-        {(step === 'what_are_we_learning' ||
-          step === 'simple_explanation' ||
-          step === 'example' ||
-          step === 'try_it_yourself' ||
-          step === 'what_did_you_learn') && (
+        {isV2 && step === 'simple_explanation' && (
           <Card>
-            {currentContent?.heading && <p className="font-bold text-slate-800">{currentContent.heading}</p>}
-            <p className="mt-2 whitespace-pre-line text-slate-700">
-              {currentContent?.body_markdown ?? '—'}
-            </p>
-            {step === 'simple_explanation' && (
-              <div className="mt-4 flex flex-wrap gap-2">
-                <TutorChip icon={RotateCcw} label={t('lesson.explainAgain')} onClick={() => setSimplified(false)} />
-                <TutorChip icon={Wand2} label={t('lesson.makeEasier')} onClick={() => setSimplified(true)} />
-                <TutorChip
-                  icon={Lightbulb}
-                  label={t('lesson.showExample')}
-                  onClick={() => setStepIndex(STEPS.indexOf('example'))}
-                />
-              </div>
-            )}
+            <div className="space-y-3 text-slate-700">
+              {narrationParagraphs.length > 0
+                ? narrationParagraphs.map((paragraph, i) => <p key={i}>{paragraph}</p>)
+                : '—'}
+            </div>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <TutorChip
+                icon={Lightbulb}
+                label={t('lesson.showExample')}
+                onClick={() => setStepIndex(steps.indexOf('example'))}
+              />
+            </div>
           </Card>
         )}
 
-        {step === 'visual_explanation' && (
+        {isV2 && step === 'visual_explanation' && (
+          <Card>
+            <StoryboardSlides slides={storyboard} />
+          </Card>
+        )}
+
+        {isV2 && step === 'example' && (workedExample ? <WorkedExampleCard example={workedExample} /> : <LoadingCard />)}
+
+        {isV2 &&
+          step === 'practice_questions' &&
+          (v2PracticeQuestions.length > 0 ? (
+            <PracticeSelfCheck questions={v2PracticeQuestions} onComplete={goNext} />
+          ) : (
+            <LoadingCard />
+          ))}
+
+        {!isV2 &&
+          (step === 'what_are_we_learning' ||
+            step === 'simple_explanation' ||
+            step === 'example' ||
+            step === 'try_it_yourself' ||
+            step === 'what_did_you_learn') && (
+            <Card>
+              {currentContent?.heading && <p className="font-bold text-slate-800">{currentContent.heading}</p>}
+              <p className="mt-2 whitespace-pre-line text-slate-700">
+                {currentContent?.body_markdown ?? '—'}
+              </p>
+              {step === 'simple_explanation' && (
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <TutorChip icon={RotateCcw} label={t('lesson.explainAgain')} onClick={() => setSimplified(false)} />
+                  <TutorChip icon={Wand2} label={t('lesson.makeEasier')} onClick={() => setSimplified(true)} />
+                  <TutorChip
+                    icon={Lightbulb}
+                    label={t('lesson.showExample')}
+                    onClick={() => setStepIndex(steps.indexOf('example'))}
+                  />
+                </div>
+              )}
+            </Card>
+          )}
+
+        {!isV2 && step === 'visual_explanation' && (
           <Card>
             <LessonVisual media={media[0] ?? null} fallbackLabel={lesson.title} />
           </Card>
         )}
 
-        {step === 'practice_questions' &&
+        {!isV2 &&
+          step === 'practice_questions' &&
           (practiceQuestions.length > 0 ? (
             <QuestionRunner questions={practiceQuestions} onComplete={() => goNext()} />
           ) : (
