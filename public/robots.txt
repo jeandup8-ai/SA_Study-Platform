@@ -1,2 +1,7 @@
 User-agent: *
 Allow: /
+Disallow: /app/
+Disallow: /parent/
+Disallow: /admin/
+
+Sitemap: https://studylegends.co.za/sitemap.xml

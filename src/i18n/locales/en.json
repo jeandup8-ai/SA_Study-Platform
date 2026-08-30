@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Study",
+    "appName": "StudyLegends",
     "loading": "Loading...",
     "save": "Save",
     "cancel": "Cancel",
@@ -43,7 +43,7 @@
     "feature.progress.body": "A parent dashboard showing strengths, weak spots, and what to focus on next.",
     "feature.safety.title": "Built for child safety",
     "feature.safety.body": "No chat with strangers, no public profiles, no social feed — ever.",
-    "disclaimer": "Study supports learning; it does not guarantee improved marks.",
+    "disclaimer": "StudyLegends supports learning; it does not guarantee improved marks.",
     "footer.tagline": "A safe, curriculum-aligned learning companion for South African families.",
     "footer.parents": "For parents",
     "footer.pricing": "Pricing",

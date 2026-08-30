@@ -1,6 +1,6 @@
 {
   "common": {
-    "appName": "Study",
+    "appName": "StudyLegends",
     "loading": "Laai tans...",
     "save": "Stoor",
     "cancel": "Kanselleer",
@@ -43,7 +43,7 @@
     "feature.progress.body": "'n Ouerskerm wat sterk- en swakpunte wys, en waarop om volgende te fokus.",
     "feature.safety.title": "Gebou vir kinderveiligheid",
     "feature.safety.body": "Geen klets met vreemdelinge, geen openbare profiele, geen sosiale voer nie — nooit.",
-    "disclaimer": "Study ondersteun leer; dit waarborg nie beter punte nie.",
+    "disclaimer": "StudyLegends ondersteun leer; dit waarborg nie beter punte nie.",
     "footer.tagline": "'n Veilige, kurrikulum-belynde leermaat vir Suid-Afrikaanse gesinne.",
     "footer.parents": "Vir ouers",
     "footer.pricing": "Pryse",

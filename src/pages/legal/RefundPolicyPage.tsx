@@ -2,9 +2,9 @@ import { LegalPageLayout } from './LegalPageLayout'
 
 export function RefundPolicyPage() {
   return (
-    <LegalPageLayout title="Refund Policy" lastUpdated="22 August 2026">
+    <LegalPageLayout title="Refund Policy" lastUpdated="30 August 2026">
       <p>
-        <strong>No payment provider is connected to Study yet, so no real payments are being taken
+        <strong>No payment provider is connected to StudyLegends yet, so no real payments are being taken
         today and there is currently nothing to refund.</strong> This page describes the refund
         policy we intend to apply once real billing (via a South African payment provider such as
         PayFast) goes live. It has not yet been reviewed by a qualified attorney and should be

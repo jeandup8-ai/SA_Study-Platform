@@ -4,7 +4,7 @@ export function TermsPage() {
   return (
     <LegalPageLayout title="Terms of Service" lastUpdated="30 August 2026">
       <p>
-        These terms govern use of Study, a mobile-first learning app for South African learners in
+        These terms govern use of StudyLegends, a mobile-first learning app for South African learners in
         Grade 4–7, built around the CAPS curriculum. <strong>These terms have not yet been
         reviewed by a qualified attorney</strong> and are provided as a working draft to be
         checked before this product is opened to real, paying users. Placeholders below marked in
@@ -14,9 +14,9 @@ export function TermsPage() {
 
       <h2>1. The company</h2>
       <p>
-        Study is operated by [LEGAL ENTITY NAME — TO BE CONFIRMED], registration number
+        StudyLegends is operated by [LEGAL ENTITY NAME — TO BE CONFIRMED], registration number
         [COMPANY REGISTRATION NUMBER — TO BE CONFIRMED], of [REGISTERED BUSINESS ADDRESS — TO BE
-        CONFIRMED] ("we," "us," "Study"). These details must be completed with the real,
+        CONFIRMED] ("we," "us," "StudyLegends"). These details must be completed with the real,
         registered business information before this page is published.
       </p>
 
@@ -31,7 +31,7 @@ export function TermsPage() {
 
       <h2>3. The service</h2>
       <p>
-        Study provides lesson content, practice questions, and progress tracking structured around
+        StudyLegends provides lesson content, practice questions, and progress tracking structured around
         the South African CAPS curriculum for Grades 4–7. <strong>Lesson content is generated with
         AI assistance from the official CAPS curriculum documents, but has not yet been reviewed by
         a qualified teacher or curriculum specialist.</strong> Each lesson generated this way is
@@ -47,7 +47,7 @@ export function TermsPage() {
 
       <h2>4. Subscriptions, trial, and billing</h2>
       <p>
-        Study is offered on a single Family Plan at R129 per month or R1,099 per year, each
+        StudyLegends is offered on a single Family Plan at R129 per month or R1,099 per year, each
         starting with a 3-day free trial. You can use the plan during the trial at no charge;
         after the trial ends, the subscription is intended to renew automatically at the listed
         price until cancelled, unless you cancel before the trial ends.
@@ -83,7 +83,7 @@ export function TermsPage() {
 
       <h2>7. No guarantee of results</h2>
       <p>
-        Study is a study aid, not a substitute for a qualified teacher or an official assessment.
+        StudyLegends is a study aid, not a substitute for a qualified teacher or an official assessment.
         We do not guarantee any particular exam result, grade, or curriculum outcome from using
         this product.
       </p>
@@ -98,7 +98,7 @@ export function TermsPage() {
 
       <h2>9. Limitation of liability</h2>
       <p>
-        To the fullest extent permitted by law, Study is provided "as is" without warranties of
+        To the fullest extent permitted by law, StudyLegends is provided "as is" without warranties of
         any kind, and we are not liable for indirect or consequential loss arising from your use
         of the product. Nothing in these terms limits liability that cannot lawfully be excluded
         under South African law.

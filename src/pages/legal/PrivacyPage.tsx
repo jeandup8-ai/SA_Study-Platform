@@ -2,9 +2,9 @@ import { LegalPageLayout } from './LegalPageLayout'
 
 export function PrivacyPage() {
   return (
-    <LegalPageLayout title="Privacy Policy" lastUpdated="22 August 2026">
+    <LegalPageLayout title="Privacy Policy" lastUpdated="30 August 2026">
       <p>
-        This policy explains what personal information Study collects, why, and what actually
+        This policy explains what personal information StudyLegends collects, why, and what actually
         happens to it in this product today. It is written to describe the platform's real,
         current behaviour — not aspirational or planned behaviour — and has been prepared with
         South Africa's Protection of Personal Information Act (POPIA) in mind. <strong>It has not
@@ -15,7 +15,7 @@ export function PrivacyPage() {
 
       <h2>Who this applies to</h2>
       <p>
-        Study is a parent-owned account. A parent or guardian ("Parent") creates the account and
+        StudyLegends is a parent-owned account. A parent or guardian ("Parent") creates the account and
         adds one or more child learner profiles ("Learner"). <strong>Learners never have their own
         login credentials</strong> — a Learner's profile is only ever accessed through their
         Parent's signed-in session, switched locally like a "which child is using this device"
@@ -148,7 +148,7 @@ export function PrivacyPage() {
 
       <h2>Children's information</h2>
       <p>
-        Study is built for use by children under a Parent's supervision, and every Learner profile
+        StudyLegends is built for use by children under a Parent's supervision, and every Learner profile
         is created and controlled by a Parent, not by the child directly. We rely on Parents to
         provide consent for their child's use of the product, consistent with POPIA's approach to
         processing a child's personal information with the consent of a competent person
