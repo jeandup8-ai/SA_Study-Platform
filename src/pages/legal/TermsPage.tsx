@@ -2,7 +2,7 @@ import { LegalPageLayout } from './LegalPageLayout'
 
 export function TermsPage() {
   return (
-    <LegalPageLayout title="Terms of Service" lastUpdated="22 August 2026">
+    <LegalPageLayout title="Terms of Service" lastUpdated="30 August 2026">
       <p>
         These terms govern use of Study, a mobile-first learning app for South African learners in
         Grade 4–7, built around the CAPS curriculum. <strong>These terms have not yet been
@@ -32,11 +32,12 @@ export function TermsPage() {
       <h2>3. The service</h2>
       <p>
         Study provides lesson content, practice questions, and progress tracking structured around
-        the South African CAPS curriculum for Grades 4–7. <strong>Curriculum structure (grade,
-        term, and subject layout) follows the publicly known CAPS phase structure, but individual
-        lesson and question content is demonstration content and has not been checked against an
-        official CAPS document.</strong> Do not treat any content in this product as verified,
-        exam-accurate curriculum material until it has been reviewed and marked as such.
+        the South African CAPS curriculum for Grades 4–7. <strong>Lesson content is generated with
+        AI assistance from the official CAPS curriculum documents, but has not yet been reviewed by
+        a qualified teacher or curriculum specialist.</strong> Each lesson generated this way is
+        clearly marked as AI-assisted and pending review inside the app itself. Do not treat any
+        content in this product as verified, exam-accurate curriculum material until it has been
+        reviewed and marked as such.
       </p>
       <p>
         Features described as "AI tutor" actions (such as "explain again" or "make it easier")
