@@ -2,7 +2,7 @@ import { LegalPageLayout } from './LegalPageLayout'
 
 export function PrivacyPage() {
   return (
-    <LegalPageLayout title="Privacy Policy" lastUpdated="30 August 2026">
+    <LegalPageLayout title="Privacy Policy" lastUpdated="2 September 2026">
       <p>
         This policy explains what personal information StudyLegends collects, why, and what actually
         happens to it in this product today. It is written to describe the platform's real,
@@ -85,16 +85,21 @@ export function PrivacyPage() {
           advertising, or tracking scripts of any kind integrated.
         </li>
         <li>
-          <strong>No AI/LLM processing of your data.</strong> There is no third-party AI language
-          model integrated anywhere in this product. Features that sound AI-driven ("explain
-          again," "make it easier") work by showing a second, pre-written version of a lesson —
-          your data is never sent to an AI provider.
+          <strong>Limited, narrow AI/LLM use.</strong> "Explain again" and "make it easier" work by
+          showing a second, pre-written version of a lesson — no AI provider is involved. Separately,
+          "explain a different way" sends a third-party AI language model (Anthropic's Claude) only
+          the current topic's curriculum content (topic name, learning objectives, subject
+          terminology), the Learner's grade and language preference, and — if relevant — the text of
+          a recent practice question they answered incorrectly. No name, email address, or other
+          identifying information is ever included in that request. This feature does not accept
+          free-text input from a Learner and cannot be used to ask about anything outside the
+          current lesson topic.
         </li>
         <li>
-          <strong>No marketing emails.</strong> No email-sending provider is currently integrated,
-          so no automated emails — marketing or otherwise — are sent by this product today, beyond
-          the account-related emails Supabase (our database provider) can send directly, which are
-          currently switched off (see "Account emails" below).
+          <strong>No marketing emails.</strong> No marketing or promotional emails are sent by this
+          product. A transactional email provider (Resend) is integrated solely to deliver
+          account-related emails — sign-up confirmation, password reset — triggered by actions you
+          take; see "Account emails" below.
         </li>
         <li>
           <strong>No sale of personal information</strong> to any third party, ever.
@@ -108,11 +113,10 @@ export function PrivacyPage() {
 
       <h2>Account emails</h2>
       <p>
-        Email address confirmation is currently switched off for new sign-ups at the
-        infrastructure level, as an interim measure. This means a new account is not currently
-        verified by an email link. This will be re-enabled, with a proper email provider
-        connected, before this product is opened to real users — it is flagged here for
-        transparency in the meantime.
+        New sign-ups must confirm their email address via a link before signing in. That
+        confirmation email, and any future password-reset email, is sent through Resend, our
+        transactional email provider — no marketing, promotional, or unsolicited email is ever
+        sent through this channel.
       </p>
 
       <h2>Where your data is stored</h2>

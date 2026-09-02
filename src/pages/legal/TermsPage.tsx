@@ -2,7 +2,7 @@ import { LegalPageLayout } from './LegalPageLayout'
 
 export function TermsPage() {
   return (
-    <LegalPageLayout title="Terms of Service" lastUpdated="30 August 2026">
+    <LegalPageLayout title="Terms of Service" lastUpdated="2 September 2026">
       <p>
         These terms govern use of StudyLegends, a mobile-first learning app for South African learners in
         Grade 4–7, built around the CAPS curriculum. <strong>These terms have not yet been
@@ -40,14 +40,18 @@ export function TermsPage() {
         reviewed and marked as such.
       </p>
       <p>
-        Features described as "AI tutor" actions (such as "explain again" or "make it easier")
-        currently work by showing a second, pre-written version of a lesson. There is no
-        general-purpose AI chatbot or third-party AI language model in this product today.
+        Features described as "explain again" or "make it easier" work by showing a second,
+        pre-written version of a lesson. Separately, "explain a different way" uses a third-party AI
+        language model (Anthropic's Claude) to generate one additional explanation, grounded only in
+        that lesson's own curriculum content — it does not answer open-ended questions, cannot be
+        asked about anything outside the current topic, and does not accept free-text input from
+        your child. There is no general-purpose AI chatbot in this product, and your child cannot
+        type messages to an AI at any point in the app.
       </p>
 
       <h2>4. Subscriptions, trial, and billing</h2>
       <p>
-        StudyLegends is offered on a single Family Plan at R129 per month or R1,099 per year, each
+        StudyLegends is offered on a single Family Plan at R149 per month or R1,150 per year, each
         starting with a 3-day free trial. You can use the plan during the trial at no charge;
         after the trial ends, the subscription is intended to renew automatically at the listed
         price until cancelled, unless you cancel before the trial ends.

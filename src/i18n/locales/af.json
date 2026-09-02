@@ -134,7 +134,18 @@
     "showAnswer": "Wys antwoord",
     "nextQuestion": "Volgende vraag",
     "questionOf": "Vraag {{current}} van {{total}}",
-    "aiGeneratedNotice": "Hierdie les is met KI-hulp uit die amptelike kurrikulum geskryf, en is nog nie deur 'n onderwyser nagegaan nie."
+    "aiGeneratedNotice": "Hierdie les is met KI-hulp uit die amptelike kurrikulum geskryf, en is nog nie deur 'n onderwyser nagegaan nie.",
+    "explainDifferently": "Verduidelik op 'n ander manier",
+    "aiExplanationLoading": "Dink aan 'n nuwe manier om dit te verduidelik...",
+    "aiFraming.analogy": "'n Ander manier om daaraan te dink",
+    "aiFraming.story": "'n Klein storie",
+    "aiFraming.steps": "Stap vir stap",
+    "aiFraming.visual": "Stel jou dit so voor",
+    "aiExplanationError.daily_limit_reached": "Jy het vandag se ekstra verduidelikings klaar gebruik — goeie moeite vir vandag! Probeer weer môre, of vra 'n ouer om te help.",
+    "aiExplanationError.feature_not_configured": "Hierdie funksie is nog nie aangeskakel nie — probeer solank die ander knoppies hierbo.",
+    "aiExplanationError.explanation_unavailable": "Kon nie nou 'n nuwe verduideliking kry nie — probeer asseblief weer oor 'n oomblik.",
+    "aiExplanationError.model_output_invalid": "Kon nie nou 'n nuwe verduideliking kry nie — probeer asseblief weer oor 'n oomblik.",
+    "aiExplanationError.unknown": "Iets het verkeerd geloop — probeer asseblief weer oor 'n oomblik."
   },
   "quiz": {
     "questionOf": "Vraag {{current}} van {{total}}",

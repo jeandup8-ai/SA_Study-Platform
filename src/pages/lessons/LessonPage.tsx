@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronLeft, RotateCcw, Wand2, Lightbulb } from 'lucide-react'
+import { ChevronLeft, RotateCcw, Wand2, Lightbulb, Sparkles } from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
 import { fetchLesson, fetchLessonContent, fetchLessonMedia } from '@/lib/curriculum/queries'
 import { fetchQuestionsForTopic, fetchMiniQuizForLesson } from '@/lib/curriculum/questions'
 import { recordQuizResult } from '@/lib/mastery/engine'
+import { requestAlternateExplanation, type AlternateExplanation } from '@/lib/tutor/explainDifferently'
+import { AlternateExplanationCard } from '@/components/lesson/AlternateExplanationCard'
 import {
   isV2Lesson,
   getNarration,
@@ -69,6 +71,9 @@ export function LessonPage() {
   const [quizResult, setQuizResult] = useState<{ correctCount: number; total: number } | null>(null)
   const [nextLesson, setNextLesson] = useState<Lesson | null>(null)
   const [sessionStartedAt] = useState(() => new Date())
+  const [aiExplanation, setAiExplanation] = useState<AlternateExplanation | null>(null)
+  const [aiLoading, setAiLoading] = useState(false)
+  const [aiError, setAiError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!lessonId || !activeLearner) return
@@ -182,11 +187,28 @@ export function LessonPage() {
   }
 
   function goNext() {
+    setAiExplanation(null)
+    setAiError(null)
     setStepIndex((i) => Math.min(i + 1, steps.length - 1))
   }
   function goBack() {
+    setAiExplanation(null)
+    setAiError(null)
     if (stepIndex === 0) navigate(-1)
     else setStepIndex((i) => i - 1)
+  }
+
+  async function handleRequestAlternateExplanation() {
+    if (!activeLearner || !lesson) return
+    setAiLoading(true)
+    setAiError(null)
+    const result = await requestAlternateExplanation(activeLearner.id, lesson.topic_id)
+    if (result.ok) {
+      setAiExplanation(result.explanation)
+    } else {
+      setAiError(result.error)
+    }
+    setAiLoading(false)
   }
 
   return (
@@ -222,7 +244,9 @@ export function LessonPage() {
                 label={t('lesson.showExample')}
                 onClick={() => setStepIndex(steps.indexOf('example'))}
               />
+              <TutorChip icon={Sparkles} label={t('lesson.explainDifferently')} onClick={handleRequestAlternateExplanation} />
             </div>
+            <AiExplanationPanel loading={aiLoading} error={aiError} explanation={aiExplanation} />
           </Card>
         )}
 
@@ -262,7 +286,11 @@ export function LessonPage() {
                     label={t('lesson.showExample')}
                     onClick={() => setStepIndex(steps.indexOf('example'))}
                   />
+                  <TutorChip icon={Sparkles} label={t('lesson.explainDifferently')} onClick={handleRequestAlternateExplanation} />
                 </div>
+              )}
+              {step === 'simple_explanation' && (
+                <AiExplanationPanel loading={aiLoading} error={aiError} explanation={aiExplanation} />
               )}
             </Card>
           )}
@@ -341,6 +369,34 @@ function TutorChip({ icon: Icon, label, onClick }: { icon: typeof RotateCcw; lab
       {label}
     </button>
   )
+}
+
+function AiExplanationPanel({
+  loading,
+  error,
+  explanation,
+}: {
+  loading: boolean
+  error: string | null
+  explanation: AlternateExplanation | null
+}) {
+  const { t } = useTranslation()
+
+  if (loading) {
+    return (
+      <div className="mt-3 flex items-center gap-2 text-sm text-slate-500">
+        <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" />
+        {t('lesson.aiExplanationLoading')}
+      </div>
+    )
+  }
+  if (error) {
+    return <p className="mt-3 text-sm text-slate-500">{t(`lesson.aiExplanationError.${error}`)}</p>
+  }
+  if (explanation) {
+    return <AlternateExplanationCard explanation={explanation} />
+  }
+  return null
 }
 
 function LoadingCard() {

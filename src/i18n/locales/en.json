@@ -134,7 +134,18 @@
     "showAnswer": "Show answer",
     "nextQuestion": "Next question",
     "questionOf": "Question {{current}} of {{total}}",
-    "aiGeneratedNotice": "This lesson was written with AI assistance from the official curriculum, and hasn't been reviewed by a teacher yet."
+    "aiGeneratedNotice": "This lesson was written with AI assistance from the official curriculum, and hasn't been reviewed by a teacher yet.",
+    "explainDifferently": "Explain a different way",
+    "aiExplanationLoading": "Thinking of a new way to explain this...",
+    "aiFraming.analogy": "A different way to think about it",
+    "aiFraming.story": "A little story",
+    "aiFraming.steps": "Step by step",
+    "aiFraming.visual": "Picture it like this",
+    "aiExplanationError.daily_limit_reached": "You've used up today's extra explanations — great effort for today! Try again tomorrow, or ask a parent for help.",
+    "aiExplanationError.feature_not_configured": "This feature isn't switched on yet — try the other buttons above for now.",
+    "aiExplanationError.explanation_unavailable": "Couldn't get a new explanation right now — please try again in a moment.",
+    "aiExplanationError.model_output_invalid": "Couldn't get a new explanation right now — please try again in a moment.",
+    "aiExplanationError.unknown": "Something went wrong — please try again in a moment."
   },
   "quiz": {
     "questionOf": "Question {{current}} of {{total}}",

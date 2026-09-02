@@ -1,16 +1,11 @@
 export type Json =
-  | string
-  | number
-  | boolean
-  | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+  string | number | boolean | null | { [key: string]: Json | undefined } | Json[]
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.17"
+    PostgrestVersion: '14.5'
   }
   public: {
     Tables: {
@@ -18,17 +13,17 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          role: Database["public"]["Enums"]["admin_role"]
+          role: Database['public']['Enums']['admin_role']
         }
         Insert: {
           created_at?: string
           id: string
-          role?: Database["public"]["Enums"]["admin_role"]
+          role?: Database['public']['Enums']['admin_role']
         }
         Update: {
           created_at?: string
           id?: string
-          role?: Database["public"]["Enums"]["admin_role"]
+          role?: Database['public']['Enums']['admin_role']
         }
         Relationships: []
       }
@@ -62,25 +57,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "assessment_answers_attempt_id_fkey"
-            columns: ["attempt_id"]
+            foreignKeyName: 'assessment_answers_attempt_id_fkey'
+            columns: ['attempt_id']
             isOneToOne: false
-            referencedRelation: "assessment_attempts"
-            referencedColumns: ["id"]
+            referencedRelation: 'assessment_attempts'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "assessment_answers_question_id_fkey"
-            columns: ["question_id"]
+            foreignKeyName: 'assessment_answers_question_id_fkey'
+            columns: ['question_id']
             isOneToOne: false
-            referencedRelation: "questions"
-            referencedColumns: ["id"]
+            referencedRelation: 'questions'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "assessment_answers_selected_option_id_fkey"
-            columns: ["selected_option_id"]
+            foreignKeyName: 'assessment_answers_selected_option_id_fkey'
+            columns: ['selected_option_id']
             isOneToOne: false
-            referencedRelation: "question_options"
-            referencedColumns: ["id"]
+            referencedRelation: 'question_options'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -114,18 +109,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "assessment_attempts_assessment_id_fkey"
-            columns: ["assessment_id"]
+            foreignKeyName: 'assessment_attempts_assessment_id_fkey'
+            columns: ['assessment_id']
             isOneToOne: false
-            referencedRelation: "assessments"
-            referencedColumns: ["id"]
+            referencedRelation: 'assessments'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "assessment_attempts_learner_id_fkey"
-            columns: ["learner_id"]
+            foreignKeyName: 'assessment_attempts_learner_id_fkey'
+            columns: ['learner_id']
             isOneToOne: false
-            referencedRelation: "learners"
-            referencedColumns: ["id"]
+            referencedRelation: 'learners'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -133,7 +128,7 @@ export type Database = {
         Row: {
           category: string
           confidence_score: number | null
-          content_workflow_status: Database["public"]["Enums"]["content_workflow_status"]
+          content_workflow_status: Database['public']['Enums']['content_workflow_status']
           created_at: string
           extraction_method: string | null
           grade_id: string | null
@@ -152,14 +147,14 @@ export type Database = {
           validation_confidence: number | null
           validation_method: string[] | null
           validation_reason: string | null
-          validation_status: Database["public"]["Enums"]["curriculum_validation_status"]
+          validation_status: Database['public']['Enums']['curriculum_validation_status']
           validation_timestamp: string | null
           validation_version: string | null
         }
         Insert: {
           category: string
           confidence_score?: number | null
-          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
+          content_workflow_status?: Database['public']['Enums']['content_workflow_status']
           created_at?: string
           extraction_method?: string | null
           grade_id?: string | null
@@ -178,14 +173,14 @@ export type Database = {
           validation_confidence?: number | null
           validation_method?: string[] | null
           validation_reason?: string | null
-          validation_status?: Database["public"]["Enums"]["curriculum_validation_status"]
+          validation_status?: Database['public']['Enums']['curriculum_validation_status']
           validation_timestamp?: string | null
           validation_version?: string | null
         }
         Update: {
           category?: string
           confidence_score?: number | null
-          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
+          content_workflow_status?: Database['public']['Enums']['content_workflow_status']
           created_at?: string
           extraction_method?: string | null
           grade_id?: string | null
@@ -204,38 +199,38 @@ export type Database = {
           validation_confidence?: number | null
           validation_method?: string[] | null
           validation_reason?: string | null
-          validation_status?: Database["public"]["Enums"]["curriculum_validation_status"]
+          validation_status?: Database['public']['Enums']['curriculum_validation_status']
           validation_timestamp?: string | null
           validation_version?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "assessment_notes_grade_id_fkey"
-            columns: ["grade_id"]
+            foreignKeyName: 'assessment_notes_grade_id_fkey'
+            columns: ['grade_id']
             isOneToOne: false
-            referencedRelation: "grades"
-            referencedColumns: ["id"]
+            referencedRelation: 'grades'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "assessment_notes_source_id_fkey"
-            columns: ["source_id"]
+            foreignKeyName: 'assessment_notes_source_id_fkey'
+            columns: ['source_id']
             isOneToOne: false
-            referencedRelation: "curriculum_sources"
-            referencedColumns: ["id"]
+            referencedRelation: 'curriculum_sources'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "assessment_notes_subject_id_fkey"
-            columns: ["subject_id"]
+            foreignKeyName: 'assessment_notes_subject_id_fkey'
+            columns: ['subject_id']
             isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
+            referencedRelation: 'subjects'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "assessment_notes_term_id_fkey"
-            columns: ["term_id"]
+            foreignKeyName: 'assessment_notes_term_id_fkey'
+            columns: ['term_id']
             isOneToOne: false
-            referencedRelation: "terms"
-            referencedColumns: ["id"]
+            referencedRelation: 'terms'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -257,106 +252,106 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "assessment_questions_assessment_id_fkey"
-            columns: ["assessment_id"]
+            foreignKeyName: 'assessment_questions_assessment_id_fkey'
+            columns: ['assessment_id']
             isOneToOne: false
-            referencedRelation: "assessments"
-            referencedColumns: ["id"]
+            referencedRelation: 'assessments'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "assessment_questions_question_id_fkey"
-            columns: ["question_id"]
+            foreignKeyName: 'assessment_questions_question_id_fkey'
+            columns: ['question_id']
             isOneToOne: false
-            referencedRelation: "questions"
-            referencedColumns: ["id"]
+            referencedRelation: 'questions'
+            referencedColumns: ['id']
           },
         ]
       }
       assessments: {
         Row: {
-          assessment_style: Database["public"]["Enums"]["assessment_style"]
+          assessment_style: Database['public']['Enums']['assessment_style']
           created_at: string
           grade_id: string
           id: string
           is_demo_content: boolean
-          language: Database["public"]["Enums"]["language_code"]
+          language: Database['public']['Enums']['language_code']
           lesson_id: string | null
           subject_id: string
           term_id: string | null
           title: string
           topic_id: string | null
-          type: Database["public"]["Enums"]["assessment_type"]
+          type: Database['public']['Enums']['assessment_type']
         }
         Insert: {
-          assessment_style?: Database["public"]["Enums"]["assessment_style"]
+          assessment_style?: Database['public']['Enums']['assessment_style']
           created_at?: string
           grade_id: string
           id?: string
           is_demo_content?: boolean
-          language?: Database["public"]["Enums"]["language_code"]
+          language?: Database['public']['Enums']['language_code']
           lesson_id?: string | null
           subject_id: string
           term_id?: string | null
           title: string
           topic_id?: string | null
-          type: Database["public"]["Enums"]["assessment_type"]
+          type: Database['public']['Enums']['assessment_type']
         }
         Update: {
-          assessment_style?: Database["public"]["Enums"]["assessment_style"]
+          assessment_style?: Database['public']['Enums']['assessment_style']
           created_at?: string
           grade_id?: string
           id?: string
           is_demo_content?: boolean
-          language?: Database["public"]["Enums"]["language_code"]
+          language?: Database['public']['Enums']['language_code']
           lesson_id?: string | null
           subject_id?: string
           term_id?: string | null
           title?: string
           topic_id?: string | null
-          type?: Database["public"]["Enums"]["assessment_type"]
+          type?: Database['public']['Enums']['assessment_type']
         }
         Relationships: [
           {
-            foreignKeyName: "assessments_grade_id_fkey"
-            columns: ["grade_id"]
+            foreignKeyName: 'assessments_grade_id_fkey'
+            columns: ['grade_id']
             isOneToOne: false
-            referencedRelation: "grades"
-            referencedColumns: ["id"]
+            referencedRelation: 'grades'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "assessments_lesson_id_fkey"
-            columns: ["lesson_id"]
+            foreignKeyName: 'assessments_lesson_id_fkey'
+            columns: ['lesson_id']
             isOneToOne: false
-            referencedRelation: "lessons"
-            referencedColumns: ["id"]
+            referencedRelation: 'lessons'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "assessments_subject_id_fkey"
-            columns: ["subject_id"]
+            foreignKeyName: 'assessments_subject_id_fkey'
+            columns: ['subject_id']
             isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
+            referencedRelation: 'subjects'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "assessments_term_id_fkey"
-            columns: ["term_id"]
+            foreignKeyName: 'assessments_term_id_fkey'
+            columns: ['term_id']
             isOneToOne: false
-            referencedRelation: "terms"
-            referencedColumns: ["id"]
+            referencedRelation: 'terms'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "assessments_topic_id_fkey"
-            columns: ["topic_id"]
+            foreignKeyName: 'assessments_topic_id_fkey'
+            columns: ['topic_id']
             isOneToOne: false
-            referencedRelation: "topics"
-            referencedColumns: ["id"]
+            referencedRelation: 'topics'
+            referencedColumns: ['id']
           },
         ]
       }
       atp_entries: {
         Row: {
           academic_year: string
-          content_workflow_status: Database["public"]["Enums"]["content_workflow_status"]
+          content_workflow_status: Database['public']['Enums']['content_workflow_status']
           created_at: string
           id: string
           sequence_order: number
@@ -368,7 +363,7 @@ export type Database = {
         }
         Insert: {
           academic_year: string
-          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
+          content_workflow_status?: Database['public']['Enums']['content_workflow_status']
           created_at?: string
           id?: string
           sequence_order?: number
@@ -380,7 +375,7 @@ export type Database = {
         }
         Update: {
           academic_year?: string
-          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
+          content_workflow_status?: Database['public']['Enums']['content_workflow_status']
           created_at?: string
           id?: string
           sequence_order?: number
@@ -392,25 +387,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "atp_entries_source_id_fkey"
-            columns: ["source_id"]
+            foreignKeyName: 'atp_entries_source_id_fkey'
+            columns: ['source_id']
             isOneToOne: false
-            referencedRelation: "curriculum_sources"
-            referencedColumns: ["id"]
+            referencedRelation: 'curriculum_sources'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "atp_entries_term_id_fkey"
-            columns: ["term_id"]
+            foreignKeyName: 'atp_entries_term_id_fkey'
+            columns: ['term_id']
             isOneToOne: false
-            referencedRelation: "terms"
-            referencedColumns: ["id"]
+            referencedRelation: 'terms'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "atp_entries_topic_id_fkey"
-            columns: ["topic_id"]
+            foreignKeyName: 'atp_entries_topic_id_fkey'
+            columns: ['topic_id']
             isOneToOne: false
-            referencedRelation: "topics"
-            referencedColumns: ["id"]
+            referencedRelation: 'topics'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -418,7 +413,7 @@ export type Database = {
         Row: {
           action: string
           actor_id: string | null
-          actor_type: Database["public"]["Enums"]["audit_actor_type"]
+          actor_type: Database['public']['Enums']['audit_actor_type']
           created_at: string
           entity_id: string | null
           entity_type: string
@@ -428,7 +423,7 @@ export type Database = {
         Insert: {
           action: string
           actor_id?: string | null
-          actor_type: Database["public"]["Enums"]["audit_actor_type"]
+          actor_type: Database['public']['Enums']['audit_actor_type']
           created_at?: string
           entity_id?: string | null
           entity_type: string
@@ -438,7 +433,7 @@ export type Database = {
         Update: {
           action?: string
           actor_id?: string | null
-          actor_type?: Database["public"]["Enums"]["audit_actor_type"]
+          actor_type?: Database['public']['Enums']['audit_actor_type']
           created_at?: string
           entity_id?: string | null
           entity_type?: string
@@ -510,25 +505,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "curriculum_outcomes_phase_id_fkey"
-            columns: ["phase_id"]
+            foreignKeyName: 'curriculum_outcomes_phase_id_fkey'
+            columns: ['phase_id']
             isOneToOne: false
-            referencedRelation: "phases"
-            referencedColumns: ["id"]
+            referencedRelation: 'phases'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "curriculum_outcomes_source_fk"
-            columns: ["source_id"]
+            foreignKeyName: 'curriculum_outcomes_source_fk'
+            columns: ['source_id']
             isOneToOne: false
-            referencedRelation: "curriculum_sources"
-            referencedColumns: ["id"]
+            referencedRelation: 'curriculum_sources'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "curriculum_outcomes_subject_id_fkey"
-            columns: ["subject_id"]
+            foreignKeyName: 'curriculum_outcomes_subject_id_fkey'
+            columns: ['subject_id']
             isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
+            referencedRelation: 'subjects'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -553,25 +548,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "curriculum_skills_learning_objective_id_fkey"
-            columns: ["learning_objective_id"]
+            foreignKeyName: 'curriculum_skills_learning_objective_id_fkey'
+            columns: ['learning_objective_id']
             isOneToOne: false
-            referencedRelation: "learning_objectives"
-            referencedColumns: ["id"]
+            referencedRelation: 'learning_objectives'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "curriculum_skills_skill_id_fkey"
-            columns: ["skill_id"]
+            foreignKeyName: 'curriculum_skills_skill_id_fkey'
+            columns: ['skill_id']
             isOneToOne: false
-            referencedRelation: "skills"
-            referencedColumns: ["id"]
+            referencedRelation: 'skills'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "curriculum_skills_topic_id_fkey"
-            columns: ["topic_id"]
+            foreignKeyName: 'curriculum_skills_topic_id_fkey'
+            columns: ['topic_id']
             isOneToOne: false
-            referencedRelation: "topics"
-            referencedColumns: ["id"]
+            referencedRelation: 'topics'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -581,7 +576,7 @@ export type Database = {
           checksum: string | null
           created_at: string
           document_id: string
-          document_type: Database["public"]["Enums"]["source_document_type"]
+          document_type: Database['public']['Enums']['source_document_type']
           grade_id: string | null
           id: string
           import_date: string | null
@@ -592,8 +587,8 @@ export type Database = {
           phase_id: string | null
           publication_year: number | null
           source_scope: string | null
-          source_status: Database["public"]["Enums"]["curriculum_source_completeness"]
-          status: Database["public"]["Enums"]["source_verification_status"]
+          source_status: Database['public']['Enums']['curriculum_source_completeness']
+          status: Database['public']['Enums']['source_verification_status']
           subject_id: string | null
           title: string
           updated_at: string
@@ -604,7 +599,7 @@ export type Database = {
           checksum?: string | null
           created_at?: string
           document_id: string
-          document_type: Database["public"]["Enums"]["source_document_type"]
+          document_type: Database['public']['Enums']['source_document_type']
           grade_id?: string | null
           id?: string
           import_date?: string | null
@@ -615,8 +610,8 @@ export type Database = {
           phase_id?: string | null
           publication_year?: number | null
           source_scope?: string | null
-          source_status?: Database["public"]["Enums"]["curriculum_source_completeness"]
-          status?: Database["public"]["Enums"]["source_verification_status"]
+          source_status?: Database['public']['Enums']['curriculum_source_completeness']
+          status?: Database['public']['Enums']['source_verification_status']
           subject_id?: string | null
           title: string
           updated_at?: string
@@ -627,7 +622,7 @@ export type Database = {
           checksum?: string | null
           created_at?: string
           document_id?: string
-          document_type?: Database["public"]["Enums"]["source_document_type"]
+          document_type?: Database['public']['Enums']['source_document_type']
           grade_id?: string | null
           id?: string
           import_date?: string | null
@@ -638,8 +633,8 @@ export type Database = {
           phase_id?: string | null
           publication_year?: number | null
           source_scope?: string | null
-          source_status?: Database["public"]["Enums"]["curriculum_source_completeness"]
-          status?: Database["public"]["Enums"]["source_verification_status"]
+          source_status?: Database['public']['Enums']['curriculum_source_completeness']
+          status?: Database['public']['Enums']['source_verification_status']
           subject_id?: string | null
           title?: string
           updated_at?: string
@@ -647,25 +642,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "curriculum_sources_grade_id_fkey"
-            columns: ["grade_id"]
+            foreignKeyName: 'curriculum_sources_grade_id_fkey'
+            columns: ['grade_id']
             isOneToOne: false
-            referencedRelation: "grades"
-            referencedColumns: ["id"]
+            referencedRelation: 'grades'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "curriculum_sources_phase_id_fkey"
-            columns: ["phase_id"]
+            foreignKeyName: 'curriculum_sources_phase_id_fkey'
+            columns: ['phase_id']
             isOneToOne: false
-            referencedRelation: "phases"
-            referencedColumns: ["id"]
+            referencedRelation: 'phases'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "curriculum_sources_subject_id_fkey"
-            columns: ["subject_id"]
+            foreignKeyName: 'curriculum_sources_subject_id_fkey'
+            columns: ['subject_id']
             isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
+            referencedRelation: 'subjects'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -702,18 +697,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "curriculum_versions_source_id_fkey"
-            columns: ["source_id"]
+            foreignKeyName: 'curriculum_versions_source_id_fkey'
+            columns: ['source_id']
             isOneToOne: false
-            referencedRelation: "curriculum_sources"
-            referencedColumns: ["id"]
+            referencedRelation: 'curriculum_sources'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "curriculum_versions_supersedes_version_id_fkey"
-            columns: ["supersedes_version_id"]
+            foreignKeyName: 'curriculum_versions_supersedes_version_id_fkey'
+            columns: ['supersedes_version_id']
             isOneToOne: false
-            referencedRelation: "curriculum_versions"
-            referencedColumns: ["id"]
+            referencedRelation: 'curriculum_versions'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -750,25 +745,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "exam_periods_grade_id_fkey"
-            columns: ["grade_id"]
+            foreignKeyName: 'exam_periods_grade_id_fkey'
+            columns: ['grade_id']
             isOneToOne: false
-            referencedRelation: "grades"
-            referencedColumns: ["id"]
+            referencedRelation: 'grades'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "exam_periods_subject_id_fkey"
-            columns: ["subject_id"]
+            foreignKeyName: 'exam_periods_subject_id_fkey'
+            columns: ['subject_id']
             isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
+            referencedRelation: 'subjects'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "exam_periods_term_id_fkey"
-            columns: ["term_id"]
+            foreignKeyName: 'exam_periods_term_id_fkey'
+            columns: ['term_id']
             isOneToOne: false
-            referencedRelation: "terms"
-            referencedColumns: ["id"]
+            referencedRelation: 'terms'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -814,25 +809,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "exam_plans_learner_id_fkey"
-            columns: ["learner_id"]
+            foreignKeyName: 'exam_plans_learner_id_fkey'
+            columns: ['learner_id']
             isOneToOne: false
-            referencedRelation: "learners"
-            referencedColumns: ["id"]
+            referencedRelation: 'learners'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "exam_plans_subject_id_fkey"
-            columns: ["subject_id"]
+            foreignKeyName: 'exam_plans_subject_id_fkey'
+            columns: ['subject_id']
             isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
+            referencedRelation: 'subjects'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "exam_plans_term_id_fkey"
-            columns: ["term_id"]
+            foreignKeyName: 'exam_plans_term_id_fkey'
+            columns: ['term_id']
             isOneToOne: false
-            referencedRelation: "terms"
-            referencedColumns: ["id"]
+            referencedRelation: 'terms'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -878,25 +873,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "exam_readiness_learner_id_fkey"
-            columns: ["learner_id"]
+            foreignKeyName: 'exam_readiness_learner_id_fkey'
+            columns: ['learner_id']
             isOneToOne: false
-            referencedRelation: "learners"
-            referencedColumns: ["id"]
+            referencedRelation: 'learners'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "exam_readiness_subject_id_fkey"
-            columns: ["subject_id"]
+            foreignKeyName: 'exam_readiness_subject_id_fkey'
+            columns: ['subject_id']
             isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
+            referencedRelation: 'subjects'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "exam_readiness_term_id_fkey"
-            columns: ["term_id"]
+            foreignKeyName: 'exam_readiness_term_id_fkey'
+            columns: ['term_id']
             isOneToOne: false
-            referencedRelation: "terms"
-            referencedColumns: ["id"]
+            referencedRelation: 'terms'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -918,18 +913,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "grade_subjects_grade_id_fkey"
-            columns: ["grade_id"]
+            foreignKeyName: 'grade_subjects_grade_id_fkey'
+            columns: ['grade_id']
             isOneToOne: false
-            referencedRelation: "grades"
-            referencedColumns: ["id"]
+            referencedRelation: 'grades'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "grade_subjects_subject_id_fkey"
-            columns: ["subject_id"]
+            foreignKeyName: 'grade_subjects_subject_id_fkey'
+            columns: ['subject_id']
             isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
+            referencedRelation: 'subjects'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -966,18 +961,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "grades_curriculum_id_fkey"
-            columns: ["curriculum_id"]
+            foreignKeyName: 'grades_curriculum_id_fkey'
+            columns: ['curriculum_id']
             isOneToOne: false
-            referencedRelation: "curricula"
-            referencedColumns: ["id"]
+            referencedRelation: 'curricula'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "grades_phase_id_fkey"
-            columns: ["phase_id"]
+            foreignKeyName: 'grades_phase_id_fkey'
+            columns: ['phase_id']
             isOneToOne: false
-            referencedRelation: "phases"
-            referencedColumns: ["id"]
+            referencedRelation: 'phases'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -989,7 +984,7 @@ export type Database = {
           lesson_id: string
           score: number | null
           started_at: string | null
-          status: Database["public"]["Enums"]["progress_status"]
+          status: Database['public']['Enums']['progress_status']
           updated_at: string
         }
         Insert: {
@@ -999,7 +994,7 @@ export type Database = {
           lesson_id: string
           score?: number | null
           started_at?: string | null
-          status?: Database["public"]["Enums"]["progress_status"]
+          status?: Database['public']['Enums']['progress_status']
           updated_at?: string
         }
         Update: {
@@ -1009,23 +1004,23 @@ export type Database = {
           lesson_id?: string
           score?: number | null
           started_at?: string | null
-          status?: Database["public"]["Enums"]["progress_status"]
+          status?: Database['public']['Enums']['progress_status']
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "learner_progress_learner_id_fkey"
-            columns: ["learner_id"]
+            foreignKeyName: 'learner_progress_learner_id_fkey'
+            columns: ['learner_id']
             isOneToOne: false
-            referencedRelation: "learners"
-            referencedColumns: ["id"]
+            referencedRelation: 'learners'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "learner_progress_lesson_id_fkey"
-            columns: ["lesson_id"]
+            foreignKeyName: 'learner_progress_lesson_id_fkey'
+            columns: ['lesson_id']
             isOneToOne: false
-            referencedRelation: "lessons"
-            referencedColumns: ["id"]
+            referencedRelation: 'lessons'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1062,38 +1057,38 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "learner_skill_mastery_learner_id_fkey"
-            columns: ["learner_id"]
+            foreignKeyName: 'learner_skill_mastery_learner_id_fkey'
+            columns: ['learner_id']
             isOneToOne: false
-            referencedRelation: "learners"
-            referencedColumns: ["id"]
+            referencedRelation: 'learners'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "learner_skill_mastery_skill_id_fkey"
-            columns: ["skill_id"]
+            foreignKeyName: 'learner_skill_mastery_skill_id_fkey'
+            columns: ['skill_id']
             isOneToOne: false
-            referencedRelation: "skills"
-            referencedColumns: ["id"]
+            referencedRelation: 'skills'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "learner_skill_mastery_subject_id_fkey"
-            columns: ["subject_id"]
+            foreignKeyName: 'learner_skill_mastery_subject_id_fkey'
+            columns: ['subject_id']
             isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
+            referencedRelation: 'subjects'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "learner_skill_mastery_topic_id_fkey"
-            columns: ["topic_id"]
+            foreignKeyName: 'learner_skill_mastery_topic_id_fkey'
+            columns: ['topic_id']
             isOneToOne: false
-            referencedRelation: "topics"
-            referencedColumns: ["id"]
+            referencedRelation: 'topics'
+            referencedColumns: ['id']
           },
         ]
       }
       learners: {
         Row: {
-          avatar: Database["public"]["Enums"]["learner_avatar"]
+          avatar: Database['public']['Enums']['learner_avatar']
           birth_year: number | null
           created_at: string
           curriculum_id: string
@@ -1101,11 +1096,11 @@ export type Database = {
           grade_id: string
           id: string
           parent_id: string
-          preferred_language: Database["public"]["Enums"]["language_code"]
+          preferred_language: Database['public']['Enums']['language_code']
           updated_at: string
         }
         Insert: {
-          avatar?: Database["public"]["Enums"]["learner_avatar"]
+          avatar?: Database['public']['Enums']['learner_avatar']
           birth_year?: number | null
           created_at?: string
           curriculum_id: string
@@ -1113,11 +1108,11 @@ export type Database = {
           grade_id: string
           id?: string
           parent_id: string
-          preferred_language?: Database["public"]["Enums"]["language_code"]
+          preferred_language?: Database['public']['Enums']['language_code']
           updated_at?: string
         }
         Update: {
-          avatar?: Database["public"]["Enums"]["learner_avatar"]
+          avatar?: Database['public']['Enums']['learner_avatar']
           birth_year?: number | null
           created_at?: string
           curriculum_id?: string
@@ -1125,40 +1120,40 @@ export type Database = {
           grade_id?: string
           id?: string
           parent_id?: string
-          preferred_language?: Database["public"]["Enums"]["language_code"]
+          preferred_language?: Database['public']['Enums']['language_code']
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "learners_curriculum_id_fkey"
-            columns: ["curriculum_id"]
+            foreignKeyName: 'learners_curriculum_id_fkey'
+            columns: ['curriculum_id']
             isOneToOne: false
-            referencedRelation: "curricula"
-            referencedColumns: ["id"]
+            referencedRelation: 'curricula'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "learners_grade_id_fkey"
-            columns: ["grade_id"]
+            foreignKeyName: 'learners_grade_id_fkey'
+            columns: ['grade_id']
             isOneToOne: false
-            referencedRelation: "grades"
-            referencedColumns: ["id"]
+            referencedRelation: 'grades'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "learners_parent_id_fkey"
-            columns: ["parent_id"]
+            foreignKeyName: 'learners_parent_id_fkey'
+            columns: ['parent_id']
             isOneToOne: false
-            referencedRelation: "parents"
-            referencedColumns: ["id"]
+            referencedRelation: 'parents'
+            referencedColumns: ['id']
           },
         ]
       }
       learning_objectives: {
         Row: {
-          content_workflow_status: Database["public"]["Enums"]["content_workflow_status"]
+          content_workflow_status: Database['public']['Enums']['content_workflow_status']
           created_at: string
           description: string
           id: string
-          language: Database["public"]["Enums"]["language_code"]
+          language: Database['public']['Enums']['language_code']
           sort_order: number
           source_id: string | null
           source_page: string | null
@@ -1167,11 +1162,11 @@ export type Database = {
           topic_id: string
         }
         Insert: {
-          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
+          content_workflow_status?: Database['public']['Enums']['content_workflow_status']
           created_at?: string
           description: string
           id?: string
-          language?: Database["public"]["Enums"]["language_code"]
+          language?: Database['public']['Enums']['language_code']
           sort_order?: number
           source_id?: string | null
           source_page?: string | null
@@ -1180,11 +1175,11 @@ export type Database = {
           topic_id: string
         }
         Update: {
-          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
+          content_workflow_status?: Database['public']['Enums']['content_workflow_status']
           created_at?: string
           description?: string
           id?: string
-          language?: Database["public"]["Enums"]["language_code"]
+          language?: Database['public']['Enums']['language_code']
           sort_order?: number
           source_id?: string | null
           source_page?: string | null
@@ -1194,25 +1189,25 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "learning_objectives_source_id_fkey"
-            columns: ["source_id"]
+            foreignKeyName: 'learning_objectives_source_id_fkey'
+            columns: ['source_id']
             isOneToOne: false
-            referencedRelation: "curriculum_sources"
-            referencedColumns: ["id"]
+            referencedRelation: 'curriculum_sources'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "learning_objectives_subtopic_id_fkey"
-            columns: ["subtopic_id"]
+            foreignKeyName: 'learning_objectives_subtopic_id_fkey'
+            columns: ['subtopic_id']
             isOneToOne: false
-            referencedRelation: "subtopics"
-            referencedColumns: ["id"]
+            referencedRelation: 'subtopics'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "learning_objectives_topic_id_fkey"
-            columns: ["topic_id"]
+            foreignKeyName: 'learning_objectives_topic_id_fkey'
+            columns: ['topic_id']
             isOneToOne: false
-            referencedRelation: "topics"
-            referencedColumns: ["id"]
+            referencedRelation: 'topics'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1222,41 +1217,41 @@ export type Database = {
           created_at: string
           heading: string | null
           id: string
-          language: Database["public"]["Enums"]["language_code"]
+          language: Database['public']['Enums']['language_code']
           lesson_id: string
-          section_type: Database["public"]["Enums"]["lesson_section_type"]
+          section_type: Database['public']['Enums']['lesson_section_type']
           sort_order: number
-          translation_status: Database["public"]["Enums"]["translation_status"]
+          translation_status: Database['public']['Enums']['translation_status']
         }
         Insert: {
           body_markdown?: string | null
           created_at?: string
           heading?: string | null
           id?: string
-          language?: Database["public"]["Enums"]["language_code"]
+          language?: Database['public']['Enums']['language_code']
           lesson_id: string
-          section_type: Database["public"]["Enums"]["lesson_section_type"]
+          section_type: Database['public']['Enums']['lesson_section_type']
           sort_order?: number
-          translation_status?: Database["public"]["Enums"]["translation_status"]
+          translation_status?: Database['public']['Enums']['translation_status']
         }
         Update: {
           body_markdown?: string | null
           created_at?: string
           heading?: string | null
           id?: string
-          language?: Database["public"]["Enums"]["language_code"]
+          language?: Database['public']['Enums']['language_code']
           lesson_id?: string
-          section_type?: Database["public"]["Enums"]["lesson_section_type"]
+          section_type?: Database['public']['Enums']['lesson_section_type']
           sort_order?: number
-          translation_status?: Database["public"]["Enums"]["translation_status"]
+          translation_status?: Database['public']['Enums']['translation_status']
         }
         Relationships: [
           {
-            foreignKeyName: "lesson_content_lesson_id_fkey"
-            columns: ["lesson_id"]
+            foreignKeyName: 'lesson_content_lesson_id_fkey'
+            columns: ['lesson_id']
             isOneToOne: false
-            referencedRelation: "lessons"
-            referencedColumns: ["id"]
+            referencedRelation: 'lessons'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1266,12 +1261,12 @@ export type Database = {
           afrikaans_practice_questions: Json | null
           afrikaans_visual_storyboard: Json | null
           afrikaans_worked_example: Json | null
-          content_workflow_status: Database["public"]["Enums"]["content_workflow_status"]
+          content_workflow_status: Database['public']['Enums']['content_workflow_status']
           created_at: string
           estimated_minutes: number
           id: string
           is_demo_content: boolean
-          language: Database["public"]["Enums"]["language_code"]
+          language: Database['public']['Enums']['language_code']
           narration_script: string | null
           practice_questions: Json | null
           reviewed_at: string | null
@@ -1282,7 +1277,7 @@ export type Database = {
           subtopic_id: string | null
           title: string
           topic_id: string
-          translation_status: Database["public"]["Enums"]["translation_status"]
+          translation_status: Database['public']['Enums']['translation_status']
           visual_storyboard: Json | null
           worked_example: Json | null
         }
@@ -1291,12 +1286,12 @@ export type Database = {
           afrikaans_practice_questions?: Json | null
           afrikaans_visual_storyboard?: Json | null
           afrikaans_worked_example?: Json | null
-          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
+          content_workflow_status?: Database['public']['Enums']['content_workflow_status']
           created_at?: string
           estimated_minutes?: number
           id?: string
           is_demo_content?: boolean
-          language?: Database["public"]["Enums"]["language_code"]
+          language?: Database['public']['Enums']['language_code']
           narration_script?: string | null
           practice_questions?: Json | null
           reviewed_at?: string | null
@@ -1307,7 +1302,7 @@ export type Database = {
           subtopic_id?: string | null
           title: string
           topic_id: string
-          translation_status?: Database["public"]["Enums"]["translation_status"]
+          translation_status?: Database['public']['Enums']['translation_status']
           visual_storyboard?: Json | null
           worked_example?: Json | null
         }
@@ -1316,12 +1311,12 @@ export type Database = {
           afrikaans_practice_questions?: Json | null
           afrikaans_visual_storyboard?: Json | null
           afrikaans_worked_example?: Json | null
-          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
+          content_workflow_status?: Database['public']['Enums']['content_workflow_status']
           created_at?: string
           estimated_minutes?: number
           id?: string
           is_demo_content?: boolean
-          language?: Database["public"]["Enums"]["language_code"]
+          language?: Database['public']['Enums']['language_code']
           narration_script?: string | null
           practice_questions?: Json | null
           reviewed_at?: string | null
@@ -1332,24 +1327,24 @@ export type Database = {
           subtopic_id?: string | null
           title?: string
           topic_id?: string
-          translation_status?: Database["public"]["Enums"]["translation_status"]
+          translation_status?: Database['public']['Enums']['translation_status']
           visual_storyboard?: Json | null
           worked_example?: Json | null
         }
         Relationships: [
           {
-            foreignKeyName: "lessons_subtopic_id_fkey"
-            columns: ["subtopic_id"]
+            foreignKeyName: 'lessons_subtopic_id_fkey'
+            columns: ['subtopic_id']
             isOneToOne: false
-            referencedRelation: "subtopics"
-            referencedColumns: ["id"]
+            referencedRelation: 'subtopics'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "lessons_topic_id_fkey"
-            columns: ["topic_id"]
+            foreignKeyName: 'lessons_topic_id_fkey'
+            columns: ['topic_id']
             isOneToOne: false
-            referencedRelation: "topics"
-            referencedColumns: ["id"]
+            referencedRelation: 'topics'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1383,18 +1378,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "mastery_learner_id_fkey"
-            columns: ["learner_id"]
+            foreignKeyName: 'mastery_learner_id_fkey'
+            columns: ['learner_id']
             isOneToOne: false
-            referencedRelation: "learners"
-            referencedColumns: ["id"]
+            referencedRelation: 'learners'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "mastery_topic_id_fkey"
-            columns: ["topic_id"]
+            foreignKeyName: 'mastery_topic_id_fkey'
+            columns: ['topic_id']
             isOneToOne: false
-            referencedRelation: "topics"
-            referencedColumns: ["id"]
+            referencedRelation: 'topics'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1428,34 +1423,34 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "mastery_weakness_signals_learner_id_fkey"
-            columns: ["learner_id"]
+            foreignKeyName: 'mastery_weakness_signals_learner_id_fkey'
+            columns: ['learner_id']
             isOneToOne: false
-            referencedRelation: "learners"
-            referencedColumns: ["id"]
+            referencedRelation: 'learners'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "mastery_weakness_signals_topic_id_fkey"
-            columns: ["topic_id"]
+            foreignKeyName: 'mastery_weakness_signals_topic_id_fkey'
+            columns: ['topic_id']
             isOneToOne: false
-            referencedRelation: "topics"
-            referencedColumns: ["id"]
+            referencedRelation: 'topics'
+            referencedColumns: ['id']
           },
         ]
       }
       media: {
         Row: {
           age_rating: string
-          approval_status: Database["public"]["Enums"]["media_approval_status"]
+          approval_status: Database['public']['Enums']['media_approval_status']
           created_at: string
           duration_seconds: number | null
           embed_url: string | null
           grade_id: string | null
           id: string
-          language: Database["public"]["Enums"]["language_code"]
+          language: Database['public']['Enums']['language_code']
           lesson_id: string | null
           license_status: string | null
-          media_type: Database["public"]["Enums"]["media_type"]
+          media_type: Database['public']['Enums']['media_type']
           provider: string
           source: string | null
           subject_id: string | null
@@ -1464,16 +1459,16 @@ export type Database = {
         }
         Insert: {
           age_rating?: string
-          approval_status?: Database["public"]["Enums"]["media_approval_status"]
+          approval_status?: Database['public']['Enums']['media_approval_status']
           created_at?: string
           duration_seconds?: number | null
           embed_url?: string | null
           grade_id?: string | null
           id?: string
-          language?: Database["public"]["Enums"]["language_code"]
+          language?: Database['public']['Enums']['language_code']
           lesson_id?: string | null
           license_status?: string | null
-          media_type: Database["public"]["Enums"]["media_type"]
+          media_type: Database['public']['Enums']['media_type']
           provider?: string
           source?: string | null
           subject_id?: string | null
@@ -1482,16 +1477,16 @@ export type Database = {
         }
         Update: {
           age_rating?: string
-          approval_status?: Database["public"]["Enums"]["media_approval_status"]
+          approval_status?: Database['public']['Enums']['media_approval_status']
           created_at?: string
           duration_seconds?: number | null
           embed_url?: string | null
           grade_id?: string | null
           id?: string
-          language?: Database["public"]["Enums"]["language_code"]
+          language?: Database['public']['Enums']['language_code']
           lesson_id?: string | null
           license_status?: string | null
-          media_type?: Database["public"]["Enums"]["media_type"]
+          media_type?: Database['public']['Enums']['media_type']
           provider?: string
           source?: string | null
           subject_id?: string | null
@@ -1500,40 +1495,40 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "media_grade_id_fkey"
-            columns: ["grade_id"]
+            foreignKeyName: 'media_grade_id_fkey'
+            columns: ['grade_id']
             isOneToOne: false
-            referencedRelation: "grades"
-            referencedColumns: ["id"]
+            referencedRelation: 'grades'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "media_lesson_id_fkey"
-            columns: ["lesson_id"]
+            foreignKeyName: 'media_lesson_id_fkey'
+            columns: ['lesson_id']
             isOneToOne: false
-            referencedRelation: "lessons"
-            referencedColumns: ["id"]
+            referencedRelation: 'lessons'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "media_subject_id_fkey"
-            columns: ["subject_id"]
+            foreignKeyName: 'media_subject_id_fkey'
+            columns: ['subject_id']
             isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
+            referencedRelation: 'subjects'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "media_topic_id_fkey"
-            columns: ["topic_id"]
+            foreignKeyName: 'media_topic_id_fkey'
+            columns: ['topic_id']
             isOneToOne: false
-            referencedRelation: "topics"
-            referencedColumns: ["id"]
+            referencedRelation: 'topics'
+            referencedColumns: ['id']
           },
         ]
       }
       moderation_logs: {
         Row: {
-          content_type: Database["public"]["Enums"]["moderation_content_type"]
+          content_type: Database['public']['Enums']['moderation_content_type']
           created_at: string
-          decision: Database["public"]["Enums"]["moderation_decision"]
+          decision: Database['public']['Enums']['moderation_decision']
           id: string
           learner_id: string | null
           parent_id: string | null
@@ -1542,9 +1537,9 @@ export type Database = {
           visual_safety_checked: boolean
         }
         Insert: {
-          content_type: Database["public"]["Enums"]["moderation_content_type"]
+          content_type: Database['public']['Enums']['moderation_content_type']
           created_at?: string
-          decision?: Database["public"]["Enums"]["moderation_decision"]
+          decision?: Database['public']['Enums']['moderation_decision']
           id?: string
           learner_id?: string | null
           parent_id?: string | null
@@ -1553,9 +1548,9 @@ export type Database = {
           visual_safety_checked?: boolean
         }
         Update: {
-          content_type?: Database["public"]["Enums"]["moderation_content_type"]
+          content_type?: Database['public']['Enums']['moderation_content_type']
           created_at?: string
-          decision?: Database["public"]["Enums"]["moderation_decision"]
+          decision?: Database['public']['Enums']['moderation_decision']
           id?: string
           learner_id?: string | null
           parent_id?: string | null
@@ -1565,18 +1560,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "moderation_logs_learner_id_fkey"
-            columns: ["learner_id"]
+            foreignKeyName: 'moderation_logs_learner_id_fkey'
+            columns: ['learner_id']
             isOneToOne: false
-            referencedRelation: "learners"
-            referencedColumns: ["id"]
+            referencedRelation: 'learners'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "moderation_logs_parent_id_fkey"
-            columns: ["parent_id"]
+            foreignKeyName: 'moderation_logs_parent_id_fkey'
+            columns: ['parent_id']
             isOneToOne: false
-            referencedRelation: "parents"
-            referencedColumns: ["id"]
+            referencedRelation: 'parents'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1587,7 +1582,7 @@ export type Database = {
           full_name: string
           id: string
           phone: string | null
-          preferred_language: Database["public"]["Enums"]["language_code"]
+          preferred_language: Database['public']['Enums']['language_code']
           updated_at: string
         }
         Insert: {
@@ -1596,7 +1591,7 @@ export type Database = {
           full_name: string
           id: string
           phone?: string | null
-          preferred_language?: Database["public"]["Enums"]["language_code"]
+          preferred_language?: Database['public']['Enums']['language_code']
           updated_at?: string
         }
         Update: {
@@ -1605,7 +1600,7 @@ export type Database = {
           full_name?: string
           id?: string
           phone?: string | null
-          preferred_language?: Database["public"]["Enums"]["language_code"]
+          preferred_language?: Database['public']['Enums']['language_code']
           updated_at?: string
         }
         Relationships: []
@@ -1643,11 +1638,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "phases_curriculum_id_fkey"
-            columns: ["curriculum_id"]
+            foreignKeyName: 'phases_curriculum_id_fkey'
+            columns: ['curriculum_id']
             isOneToOne: false
-            referencedRelation: "curricula"
-            referencedColumns: ["id"]
+            referencedRelation: 'curricula'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1675,11 +1670,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "question_options_question_id_fkey"
-            columns: ["question_id"]
+            foreignKeyName: 'question_options_question_id_fkey'
+            columns: ['question_id']
             isOneToOne: false
-            referencedRelation: "questions"
-            referencedColumns: ["id"]
+            referencedRelation: 'questions'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1701,134 +1696,134 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "question_skills_question_id_fkey"
-            columns: ["question_id"]
+            foreignKeyName: 'question_skills_question_id_fkey'
+            columns: ['question_id']
             isOneToOne: false
-            referencedRelation: "questions"
-            referencedColumns: ["id"]
+            referencedRelation: 'questions'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "question_skills_skill_id_fkey"
-            columns: ["skill_id"]
+            foreignKeyName: 'question_skills_skill_id_fkey'
+            columns: ['skill_id']
             isOneToOne: false
-            referencedRelation: "skills"
-            referencedColumns: ["id"]
+            referencedRelation: 'skills'
+            referencedColumns: ['id']
           },
         ]
       }
       questions: {
         Row: {
-          assessment_style: Database["public"]["Enums"]["assessment_style"]
-          content_workflow_status: Database["public"]["Enums"]["content_workflow_status"]
+          assessment_style: Database['public']['Enums']['assessment_style']
+          content_workflow_status: Database['public']['Enums']['content_workflow_status']
           correct_answer: string
           created_at: string
-          difficulty: Database["public"]["Enums"]["question_difficulty"]
+          difficulty: Database['public']['Enums']['question_difficulty']
           explanation: string | null
           grade_id: string
           id: string
           is_demo_content: boolean
-          language: Database["public"]["Enums"]["language_code"]
+          language: Database['public']['Enums']['language_code']
           learning_objective_id: string | null
           prompt: string
-          question_type: Database["public"]["Enums"]["question_type"]
+          question_type: Database['public']['Enums']['question_type']
           source_id: string | null
           subject_id: string
           subtopic_id: string | null
           term_id: string | null
           topic_id: string
-          translation_status: Database["public"]["Enums"]["translation_status"]
+          translation_status: Database['public']['Enums']['translation_status']
         }
         Insert: {
-          assessment_style?: Database["public"]["Enums"]["assessment_style"]
-          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
+          assessment_style?: Database['public']['Enums']['assessment_style']
+          content_workflow_status?: Database['public']['Enums']['content_workflow_status']
           correct_answer: string
           created_at?: string
-          difficulty?: Database["public"]["Enums"]["question_difficulty"]
+          difficulty?: Database['public']['Enums']['question_difficulty']
           explanation?: string | null
           grade_id: string
           id?: string
           is_demo_content?: boolean
-          language?: Database["public"]["Enums"]["language_code"]
+          language?: Database['public']['Enums']['language_code']
           learning_objective_id?: string | null
           prompt: string
-          question_type?: Database["public"]["Enums"]["question_type"]
+          question_type?: Database['public']['Enums']['question_type']
           source_id?: string | null
           subject_id: string
           subtopic_id?: string | null
           term_id?: string | null
           topic_id: string
-          translation_status?: Database["public"]["Enums"]["translation_status"]
+          translation_status?: Database['public']['Enums']['translation_status']
         }
         Update: {
-          assessment_style?: Database["public"]["Enums"]["assessment_style"]
-          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
+          assessment_style?: Database['public']['Enums']['assessment_style']
+          content_workflow_status?: Database['public']['Enums']['content_workflow_status']
           correct_answer?: string
           created_at?: string
-          difficulty?: Database["public"]["Enums"]["question_difficulty"]
+          difficulty?: Database['public']['Enums']['question_difficulty']
           explanation?: string | null
           grade_id?: string
           id?: string
           is_demo_content?: boolean
-          language?: Database["public"]["Enums"]["language_code"]
+          language?: Database['public']['Enums']['language_code']
           learning_objective_id?: string | null
           prompt?: string
-          question_type?: Database["public"]["Enums"]["question_type"]
+          question_type?: Database['public']['Enums']['question_type']
           source_id?: string | null
           subject_id?: string
           subtopic_id?: string | null
           term_id?: string | null
           topic_id?: string
-          translation_status?: Database["public"]["Enums"]["translation_status"]
+          translation_status?: Database['public']['Enums']['translation_status']
         }
         Relationships: [
           {
-            foreignKeyName: "questions_grade_id_fkey"
-            columns: ["grade_id"]
+            foreignKeyName: 'questions_grade_id_fkey'
+            columns: ['grade_id']
             isOneToOne: false
-            referencedRelation: "grades"
-            referencedColumns: ["id"]
+            referencedRelation: 'grades'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "questions_learning_objective_id_fkey"
-            columns: ["learning_objective_id"]
+            foreignKeyName: 'questions_learning_objective_id_fkey'
+            columns: ['learning_objective_id']
             isOneToOne: false
-            referencedRelation: "learning_objectives"
-            referencedColumns: ["id"]
+            referencedRelation: 'learning_objectives'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "questions_source_id_fkey"
-            columns: ["source_id"]
+            foreignKeyName: 'questions_source_id_fkey'
+            columns: ['source_id']
             isOneToOne: false
-            referencedRelation: "curriculum_sources"
-            referencedColumns: ["id"]
+            referencedRelation: 'curriculum_sources'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "questions_subject_id_fkey"
-            columns: ["subject_id"]
+            foreignKeyName: 'questions_subject_id_fkey'
+            columns: ['subject_id']
             isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
+            referencedRelation: 'subjects'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "questions_subtopic_id_fkey"
-            columns: ["subtopic_id"]
+            foreignKeyName: 'questions_subtopic_id_fkey'
+            columns: ['subtopic_id']
             isOneToOne: false
-            referencedRelation: "subtopics"
-            referencedColumns: ["id"]
+            referencedRelation: 'subtopics'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "questions_term_id_fkey"
-            columns: ["term_id"]
+            foreignKeyName: 'questions_term_id_fkey'
+            columns: ['term_id']
             isOneToOne: false
-            referencedRelation: "terms"
-            referencedColumns: ["id"]
+            referencedRelation: 'terms'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "questions_topic_id_fkey"
-            columns: ["topic_id"]
+            foreignKeyName: 'questions_topic_id_fkey'
+            columns: ['topic_id']
             isOneToOne: false
-            referencedRelation: "topics"
-            referencedColumns: ["id"]
+            referencedRelation: 'topics'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1886,18 +1881,18 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "strands_phase_id_fkey"
-            columns: ["phase_id"]
+            foreignKeyName: 'strands_phase_id_fkey'
+            columns: ['phase_id']
             isOneToOne: false
-            referencedRelation: "phases"
-            referencedColumns: ["id"]
+            referencedRelation: 'phases'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "strands_subject_id_fkey"
-            columns: ["subject_id"]
+            foreignKeyName: 'strands_subject_id_fkey'
+            columns: ['subject_id']
             isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
+            referencedRelation: 'subjects'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1934,32 +1929,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "study_sessions_learner_id_fkey"
-            columns: ["learner_id"]
+            foreignKeyName: 'study_sessions_learner_id_fkey'
+            columns: ['learner_id']
             isOneToOne: false
-            referencedRelation: "learners"
-            referencedColumns: ["id"]
+            referencedRelation: 'learners'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "study_sessions_lesson_id_fkey"
-            columns: ["lesson_id"]
+            foreignKeyName: 'study_sessions_lesson_id_fkey'
+            columns: ['lesson_id']
             isOneToOne: false
-            referencedRelation: "lessons"
-            referencedColumns: ["id"]
+            referencedRelation: 'lessons'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "study_sessions_subject_id_fkey"
-            columns: ["subject_id"]
+            foreignKeyName: 'study_sessions_subject_id_fkey'
+            columns: ['subject_id']
             isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
+            referencedRelation: 'subjects'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "study_sessions_topic_id_fkey"
-            columns: ["topic_id"]
+            foreignKeyName: 'study_sessions_topic_id_fkey'
+            columns: ['topic_id']
             isOneToOne: false
-            referencedRelation: "topics"
-            referencedColumns: ["id"]
+            referencedRelation: 'topics'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -1993,11 +1988,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "subject_components_subject_id_fkey"
-            columns: ["subject_id"]
+            foreignKeyName: 'subject_components_subject_id_fkey'
+            columns: ['subject_id']
             isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
+            referencedRelation: 'subjects'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2034,17 +2029,17 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "subjects_curriculum_id_fkey"
-            columns: ["curriculum_id"]
+            foreignKeyName: 'subjects_curriculum_id_fkey'
+            columns: ['curriculum_id']
             isOneToOne: false
-            referencedRelation: "curricula"
-            referencedColumns: ["id"]
+            referencedRelation: 'curricula'
+            referencedColumns: ['id']
           },
         ]
       }
       subscription_plans: {
         Row: {
-          billing_interval: Database["public"]["Enums"]["billing_interval"]
+          billing_interval: Database['public']['Enums']['billing_interval']
           code: string
           created_at: string
           currency: string
@@ -2055,7 +2050,7 @@ export type Database = {
           price_cents: number | null
         }
         Insert: {
-          billing_interval: Database["public"]["Enums"]["billing_interval"]
+          billing_interval: Database['public']['Enums']['billing_interval']
           code: string
           created_at?: string
           currency?: string
@@ -2066,7 +2061,7 @@ export type Database = {
           price_cents?: number | null
         }
         Update: {
-          billing_interval?: Database["public"]["Enums"]["billing_interval"]
+          billing_interval?: Database['public']['Enums']['billing_interval']
           code?: string
           created_at?: string
           currency?: string
@@ -2089,7 +2084,7 @@ export type Database = {
           provider: string | null
           provider_customer_id: string | null
           provider_subscription_id: string | null
-          status: Database["public"]["Enums"]["subscription_status"]
+          status: Database['public']['Enums']['subscription_status']
           trial_ends_at: string | null
           updated_at: string
         }
@@ -2103,7 +2098,7 @@ export type Database = {
           provider?: string | null
           provider_customer_id?: string | null
           provider_subscription_id?: string | null
-          status?: Database["public"]["Enums"]["subscription_status"]
+          status?: Database['public']['Enums']['subscription_status']
           trial_ends_at?: string | null
           updated_at?: string
         }
@@ -2117,30 +2112,30 @@ export type Database = {
           provider?: string | null
           provider_customer_id?: string | null
           provider_subscription_id?: string | null
-          status?: Database["public"]["Enums"]["subscription_status"]
+          status?: Database['public']['Enums']['subscription_status']
           trial_ends_at?: string | null
           updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "subscriptions_parent_id_fkey"
-            columns: ["parent_id"]
+            foreignKeyName: 'subscriptions_parent_id_fkey'
+            columns: ['parent_id']
             isOneToOne: false
-            referencedRelation: "parents"
-            referencedColumns: ["id"]
+            referencedRelation: 'parents'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "subscriptions_plan_id_fkey"
-            columns: ["plan_id"]
+            foreignKeyName: 'subscriptions_plan_id_fkey'
+            columns: ['plan_id']
             isOneToOne: false
-            referencedRelation: "subscription_plans"
-            referencedColumns: ["id"]
+            referencedRelation: 'subscription_plans'
+            referencedColumns: ['id']
           },
         ]
       }
       subtopics: {
         Row: {
-          content_workflow_status: Database["public"]["Enums"]["content_workflow_status"]
+          content_workflow_status: Database['public']['Enums']['content_workflow_status']
           created_at: string
           description: string | null
           id: string
@@ -2150,7 +2145,7 @@ export type Database = {
           topic_id: string
         }
         Insert: {
-          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
+          content_workflow_status?: Database['public']['Enums']['content_workflow_status']
           created_at?: string
           description?: string | null
           id?: string
@@ -2160,7 +2155,7 @@ export type Database = {
           topic_id: string
         }
         Update: {
-          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
+          content_workflow_status?: Database['public']['Enums']['content_workflow_status']
           created_at?: string
           description?: string | null
           id?: string
@@ -2171,11 +2166,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "subtopics_topic_id_fkey"
-            columns: ["topic_id"]
+            foreignKeyName: 'subtopics_topic_id_fkey'
+            columns: ['topic_id']
             isOneToOne: false
-            referencedRelation: "topics"
-            referencedColumns: ["id"]
+            referencedRelation: 'topics'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2185,7 +2180,7 @@ export type Database = {
           definition: string | null
           grade_id: string | null
           id: string
-          language: Database["public"]["Enums"]["language_code"]
+          language: Database['public']['Enums']['language_code']
           reviewer_id: string | null
           source_id: string | null
           subject_id: string | null
@@ -2199,7 +2194,7 @@ export type Database = {
           definition?: string | null
           grade_id?: string | null
           id?: string
-          language: Database["public"]["Enums"]["language_code"]
+          language: Database['public']['Enums']['language_code']
           reviewer_id?: string | null
           source_id?: string | null
           subject_id?: string | null
@@ -2213,7 +2208,7 @@ export type Database = {
           definition?: string | null
           grade_id?: string | null
           id?: string
-          language?: Database["public"]["Enums"]["language_code"]
+          language?: Database['public']['Enums']['language_code']
           reviewer_id?: string | null
           source_id?: string | null
           subject_id?: string | null
@@ -2224,32 +2219,32 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "terminology_grade_id_fkey"
-            columns: ["grade_id"]
+            foreignKeyName: 'terminology_grade_id_fkey'
+            columns: ['grade_id']
             isOneToOne: false
-            referencedRelation: "grades"
-            referencedColumns: ["id"]
+            referencedRelation: 'grades'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "terminology_reviewer_id_fkey"
-            columns: ["reviewer_id"]
+            foreignKeyName: 'terminology_reviewer_id_fkey'
+            columns: ['reviewer_id']
             isOneToOne: false
-            referencedRelation: "admins"
-            referencedColumns: ["id"]
+            referencedRelation: 'admins'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "terminology_source_id_fkey"
-            columns: ["source_id"]
+            foreignKeyName: 'terminology_source_id_fkey'
+            columns: ['source_id']
             isOneToOne: false
-            referencedRelation: "curriculum_sources"
-            referencedColumns: ["id"]
+            referencedRelation: 'curriculum_sources'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "terminology_subject_id_fkey"
-            columns: ["subject_id"]
+            foreignKeyName: 'terminology_subject_id_fkey'
+            columns: ['subject_id']
             isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
+            referencedRelation: 'subjects'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2280,11 +2275,11 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "terms_grade_id_fkey"
-            columns: ["grade_id"]
+            foreignKeyName: 'terms_grade_id_fkey'
+            columns: ['grade_id']
             isOneToOne: false
-            referencedRelation: "grades"
-            referencedColumns: ["id"]
+            referencedRelation: 'grades'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2292,7 +2287,7 @@ export type Database = {
         Row: {
           code: string
           confidence_score: number | null
-          content_workflow_status: Database["public"]["Enums"]["content_workflow_status"]
+          content_workflow_status: Database['public']['Enums']['content_workflow_status']
           created_at: string
           description: string | null
           extraction_method: string | null
@@ -2317,14 +2312,14 @@ export type Database = {
           validation_confidence: number | null
           validation_method: string[] | null
           validation_reason: string | null
-          validation_status: Database["public"]["Enums"]["curriculum_validation_status"]
+          validation_status: Database['public']['Enums']['curriculum_validation_status']
           validation_timestamp: string | null
           validation_version: string | null
         }
         Insert: {
           code: string
           confidence_score?: number | null
-          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
+          content_workflow_status?: Database['public']['Enums']['content_workflow_status']
           created_at?: string
           description?: string | null
           extraction_method?: string | null
@@ -2349,14 +2344,14 @@ export type Database = {
           validation_confidence?: number | null
           validation_method?: string[] | null
           validation_reason?: string | null
-          validation_status?: Database["public"]["Enums"]["curriculum_validation_status"]
+          validation_status?: Database['public']['Enums']['curriculum_validation_status']
           validation_timestamp?: string | null
           validation_version?: string | null
         }
         Update: {
           code?: string
           confidence_score?: number | null
-          content_workflow_status?: Database["public"]["Enums"]["content_workflow_status"]
+          content_workflow_status?: Database['public']['Enums']['content_workflow_status']
           created_at?: string
           description?: string | null
           extraction_method?: string | null
@@ -2381,52 +2376,103 @@ export type Database = {
           validation_confidence?: number | null
           validation_method?: string[] | null
           validation_reason?: string | null
-          validation_status?: Database["public"]["Enums"]["curriculum_validation_status"]
+          validation_status?: Database['public']['Enums']['curriculum_validation_status']
           validation_timestamp?: string | null
           validation_version?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "topics_grade_id_fkey"
-            columns: ["grade_id"]
+            foreignKeyName: 'topics_grade_id_fkey'
+            columns: ['grade_id']
             isOneToOne: false
-            referencedRelation: "grades"
-            referencedColumns: ["id"]
+            referencedRelation: 'grades'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "topics_source_id_fkey"
-            columns: ["source_id"]
+            foreignKeyName: 'topics_source_id_fkey'
+            columns: ['source_id']
             isOneToOne: false
-            referencedRelation: "curriculum_sources"
-            referencedColumns: ["id"]
+            referencedRelation: 'curriculum_sources'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "topics_strand_id_fkey"
-            columns: ["strand_id"]
+            foreignKeyName: 'topics_strand_id_fkey'
+            columns: ['strand_id']
             isOneToOne: false
-            referencedRelation: "strands"
-            referencedColumns: ["id"]
+            referencedRelation: 'strands'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "topics_subject_component_id_fkey"
-            columns: ["subject_component_id"]
+            foreignKeyName: 'topics_subject_component_id_fkey'
+            columns: ['subject_component_id']
             isOneToOne: false
-            referencedRelation: "subject_components"
-            referencedColumns: ["id"]
+            referencedRelation: 'subject_components'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "topics_subject_id_fkey"
-            columns: ["subject_id"]
+            foreignKeyName: 'topics_subject_id_fkey'
+            columns: ['subject_id']
             isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
+            referencedRelation: 'subjects'
+            referencedColumns: ['id']
           },
           {
-            foreignKeyName: "topics_term_id_fkey"
-            columns: ["term_id"]
+            foreignKeyName: 'topics_term_id_fkey'
+            columns: ['term_id']
             isOneToOne: false
-            referencedRelation: "terms"
-            referencedColumns: ["id"]
+            referencedRelation: 'terms'
+            referencedColumns: ['id']
+          },
+        ]
+      }
+      tutor_explanations: {
+        Row: {
+          created_at: string
+          explanation: Json
+          framing: string
+          id: string
+          input_tokens: number
+          learner_id: string
+          model: string
+          output_tokens: number
+          topic_id: string
+        }
+        Insert: {
+          created_at?: string
+          explanation: Json
+          framing: string
+          id?: string
+          input_tokens: number
+          learner_id: string
+          model: string
+          output_tokens: number
+          topic_id: string
+        }
+        Update: {
+          created_at?: string
+          explanation?: Json
+          framing?: string
+          id?: string
+          input_tokens?: number
+          learner_id?: string
+          model?: string
+          output_tokens?: number
+          topic_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'tutor_explanations_learner_id_fkey'
+            columns: ['learner_id']
+            isOneToOne: false
+            referencedRelation: 'learners'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'tutor_explanations_topic_id_fkey'
+            columns: ['topic_id']
+            isOneToOne: false
+            referencedRelation: 'topics'
+            referencedColumns: ['id']
           },
         ]
       }
@@ -2435,112 +2481,74 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      is_admin: { Args: never; Returns: boolean }
+      [_ in never]: never
     }
     Enums: {
-      admin_role: "content_admin" | "super_admin"
-      assessment_style: "caps_standard" | "ieb_enrichment"
-      assessment_type: "mini_quiz" | "quiz" | "test" | "mock_exam"
-      audit_actor_type: "parent" | "admin" | "system"
-      billing_interval: "monthly" | "annual"
+      admin_role: 'content_admin' | 'super_admin'
+      assessment_style: 'caps_standard' | 'ieb_enrichment'
+      assessment_type: 'mini_quiz' | 'quiz' | 'test' | 'mock_exam'
+      audit_actor_type: 'parent' | 'admin' | 'system'
+      billing_interval: 'monthly' | 'annual'
       content_workflow_status:
-        | "DRAFT"
-        | "AI_GENERATED"
-        | "REVIEW_REQUIRED"
-        | "VERIFIED"
-        | "PUBLISHED"
-        | "ARCHIVED"
+        | 'DRAFT'
+        | 'AI_GENERATED'
+        | 'REVIEW_REQUIRED'
+        | 'VERIFIED'
+        | 'PUBLISHED'
+        | 'ARCHIVED'
       curriculum_source_completeness:
-        | "COMPLETE"
-        | "INCOMPLETE"
-        | "AMENDMENT_ONLY"
-        | "UNKNOWN"
+        'COMPLETE' | 'INCOMPLETE' | 'AMENDMENT_ONLY' | 'UNKNOWN'
       curriculum_validation_status:
-        | "NOT_VALIDATED"
-        | "AUTO_VALIDATED"
-        | "AUTO_VERIFIED"
-        | "REVIEW_REQUIRED"
-        | "SOURCE_INCOMPLETE"
-        | "NON_CURRICULUM"
-        | "CONFLICTING"
+        | 'NOT_VALIDATED'
+        | 'AUTO_VALIDATED'
+        | 'AUTO_VERIFIED'
+        | 'REVIEW_REQUIRED'
+        | 'SOURCE_INCOMPLETE'
+        | 'NON_CURRICULUM'
+        | 'CONFLICTING'
       language_code:
-        | "en"
-        | "af"
-        | "zu"
-        | "xh"
-        | "nr"
-        | "nso"
-        | "st"
-        | "tn"
-        | "ss"
-        | "ve"
-        | "ts"
+        'en' | 'af' | 'zu' | 'xh' | 'nr' | 'nso' | 'st' | 'tn' | 'ss' | 've' | 'ts'
       learner_avatar:
-        | "fox"
-        | "owl"
-        | "lion"
-        | "elephant"
-        | "zebra"
-        | "meerkat"
-        | "tortoise"
-        | "eagle"
+        'fox' | 'owl' | 'lion' | 'elephant' | 'zebra' | 'meerkat' | 'tortoise' | 'eagle'
       lesson_section_type:
-        | "what_are_we_learning"
-        | "simple_explanation"
-        | "visual_explanation"
-        | "example"
-        | "try_it_yourself"
-        | "practice_questions"
-        | "mini_quiz"
-        | "what_did_you_learn"
-        | "mastery_result"
-        | "next_step"
-      media_approval_status: "pending" | "approved" | "rejected"
+        | 'what_are_we_learning'
+        | 'simple_explanation'
+        | 'visual_explanation'
+        | 'example'
+        | 'try_it_yourself'
+        | 'practice_questions'
+        | 'mini_quiz'
+        | 'what_did_you_learn'
+        | 'mastery_result'
+        | 'next_step'
+      media_approval_status: 'pending' | 'approved' | 'rejected'
       media_type:
-        | "svg_animation"
-        | "interactive_demo"
-        | "own_video"
-        | "external_video"
-        | "youtube_embed"
-        | "audio_narration"
-        | "image"
-        | "diagram"
-      moderation_content_type: "image" | "pdf" | "text"
-      moderation_decision: "approved" | "rejected" | "pending"
-      progress_status: "not_started" | "in_progress" | "completed"
-      question_difficulty: "easy" | "medium" | "hard"
-      question_type:
-        | "multiple_choice"
-        | "true_false"
-        | "short_answer"
-        | "numeric"
+        | 'svg_animation'
+        | 'interactive_demo'
+        | 'own_video'
+        | 'external_video'
+        | 'youtube_embed'
+        | 'audio_narration'
+        | 'image'
+        | 'diagram'
+      moderation_content_type: 'image' | 'pdf' | 'text'
+      moderation_decision: 'approved' | 'rejected' | 'pending'
+      progress_status: 'not_started' | 'in_progress' | 'completed'
+      question_difficulty: 'easy' | 'medium' | 'hard'
+      question_type: 'multiple_choice' | 'true_false' | 'short_answer' | 'numeric'
       source_document_type:
-        | "caps"
-        | "atp"
-        | "sba_exemplar"
-        | "ieb_reference"
-        | "index_page"
-        | "other"
+        'caps' | 'atp' | 'sba_exemplar' | 'ieb_reference' | 'index_page' | 'other'
       source_verification_status:
-        | "PENDING"
-        | "IMPORTED"
-        | "PARSED"
-        | "REVIEW_REQUIRED"
-        | "VERIFIED"
-        | "PUBLISHED"
-        | "ARCHIVED"
-      subscription_status:
-        | "trialing"
-        | "active"
-        | "past_due"
-        | "canceled"
-        | "incomplete"
+        | 'PENDING'
+        | 'IMPORTED'
+        | 'PARSED'
+        | 'REVIEW_REQUIRED'
+        | 'VERIFIED'
+        | 'PUBLISHED'
+        | 'ARCHIVED'
+      subscription_status: 'trialing' | 'active' | 'past_due' | 'canceled' | 'incomplete'
       translation_status:
-        | "original"
-        | "machine_translated"
-        | "ai_reviewed"
-        | "human_reviewed"
-        | "verified"
+        'original' | 'machine_translated' | 'ai_reviewed' | 'human_reviewed' | 'verified'
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2548,33 +2556,33 @@ export type Database = {
   }
 }
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+type DatabaseWithoutInternals = Omit<Database, '__InternalSupabase'>
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, 'public'>]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | keyof (DefaultSchema['Tables'] & DefaultSchema['Views'])
     | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Views'])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema['Tables'] &
+        DefaultSchema['Views'])
+    ? (DefaultSchema['Tables'] &
+        DefaultSchema['Views'])[DefaultSchemaTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -2583,23 +2591,22 @@ export type Tables<
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+    keyof DefaultSchema['Tables'] | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -2608,23 +2615,22 @@ export type TablesInsert<
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
-    | { schema: keyof DatabaseWithoutInternals },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
+    keyof DefaultSchema['Tables'] | { schema: keyof DatabaseWithoutInternals },
+  TableName extends (DefaultSchemaTableNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables']
+    : never) = never,
 > = DefaultSchemaTableNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions['schema']]['Tables'][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema['Tables']
+    ? DefaultSchema['Tables'][DefaultSchemaTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -2633,155 +2639,130 @@ export type TablesUpdate<
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
-    | { schema: keyof DatabaseWithoutInternals },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    keyof DefaultSchema['Enums'] | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends (DefaultSchemaEnumNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums']
+    : never) = never,
 > = DefaultSchemaEnumNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions['schema']]['Enums'][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema['Enums']
+    ? DefaultSchema['Enums'][DefaultSchemaEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof DatabaseWithoutInternals },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    keyof DefaultSchema['CompositeTypes'] | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends (PublicCompositeTypeNameOrOptions extends {
     schema: keyof DatabaseWithoutInternals
   }
-    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes']
+    : never) = never,
 > = PublicCompositeTypeNameOrOptions extends {
   schema: keyof DatabaseWithoutInternals
 }
-  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions['schema']]['CompositeTypes'][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema['CompositeTypes']
+    ? DefaultSchema['CompositeTypes'][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {
   public: {
     Enums: {
-      admin_role: ["content_admin", "super_admin"],
-      assessment_style: ["caps_standard", "ieb_enrichment"],
-      assessment_type: ["mini_quiz", "quiz", "test", "mock_exam"],
-      audit_actor_type: ["parent", "admin", "system"],
-      billing_interval: ["monthly", "annual"],
+      admin_role: ['content_admin', 'super_admin'],
+      assessment_style: ['caps_standard', 'ieb_enrichment'],
+      assessment_type: ['mini_quiz', 'quiz', 'test', 'mock_exam'],
+      audit_actor_type: ['parent', 'admin', 'system'],
+      billing_interval: ['monthly', 'annual'],
       content_workflow_status: [
-        "DRAFT",
-        "AI_GENERATED",
-        "REVIEW_REQUIRED",
-        "VERIFIED",
-        "PUBLISHED",
-        "ARCHIVED",
+        'DRAFT',
+        'AI_GENERATED',
+        'REVIEW_REQUIRED',
+        'VERIFIED',
+        'PUBLISHED',
+        'ARCHIVED',
       ],
       curriculum_source_completeness: [
-        "COMPLETE",
-        "INCOMPLETE",
-        "AMENDMENT_ONLY",
-        "UNKNOWN",
+        'COMPLETE',
+        'INCOMPLETE',
+        'AMENDMENT_ONLY',
+        'UNKNOWN',
       ],
       curriculum_validation_status: [
-        "NOT_VALIDATED",
-        "AUTO_VALIDATED",
-        "AUTO_VERIFIED",
-        "REVIEW_REQUIRED",
-        "SOURCE_INCOMPLETE",
-        "NON_CURRICULUM",
-        "CONFLICTING",
+        'NOT_VALIDATED',
+        'AUTO_VALIDATED',
+        'AUTO_VERIFIED',
+        'REVIEW_REQUIRED',
+        'SOURCE_INCOMPLETE',
+        'NON_CURRICULUM',
+        'CONFLICTING',
       ],
-      language_code: [
-        "en",
-        "af",
-        "zu",
-        "xh",
-        "nr",
-        "nso",
-        "st",
-        "tn",
-        "ss",
-        "ve",
-        "ts",
-      ],
+      language_code: ['en', 'af', 'zu', 'xh', 'nr', 'nso', 'st', 'tn', 'ss', 've', 'ts'],
       learner_avatar: [
-        "fox",
-        "owl",
-        "lion",
-        "elephant",
-        "zebra",
-        "meerkat",
-        "tortoise",
-        "eagle",
+        'fox',
+        'owl',
+        'lion',
+        'elephant',
+        'zebra',
+        'meerkat',
+        'tortoise',
+        'eagle',
       ],
       lesson_section_type: [
-        "what_are_we_learning",
-        "simple_explanation",
-        "visual_explanation",
-        "example",
-        "try_it_yourself",
-        "practice_questions",
-        "mini_quiz",
-        "what_did_you_learn",
-        "mastery_result",
-        "next_step",
+        'what_are_we_learning',
+        'simple_explanation',
+        'visual_explanation',
+        'example',
+        'try_it_yourself',
+        'practice_questions',
+        'mini_quiz',
+        'what_did_you_learn',
+        'mastery_result',
+        'next_step',
       ],
-      media_approval_status: ["pending", "approved", "rejected"],
+      media_approval_status: ['pending', 'approved', 'rejected'],
       media_type: [
-        "svg_animation",
-        "interactive_demo",
-        "own_video",
-        "external_video",
-        "youtube_embed",
-        "audio_narration",
-        "image",
-        "diagram",
+        'svg_animation',
+        'interactive_demo',
+        'own_video',
+        'external_video',
+        'youtube_embed',
+        'audio_narration',
+        'image',
+        'diagram',
       ],
-      moderation_content_type: ["image", "pdf", "text"],
-      moderation_decision: ["approved", "rejected", "pending"],
-      progress_status: ["not_started", "in_progress", "completed"],
-      question_difficulty: ["easy", "medium", "hard"],
-      question_type: [
-        "multiple_choice",
-        "true_false",
-        "short_answer",
-        "numeric",
-      ],
+      moderation_content_type: ['image', 'pdf', 'text'],
+      moderation_decision: ['approved', 'rejected', 'pending'],
+      progress_status: ['not_started', 'in_progress', 'completed'],
+      question_difficulty: ['easy', 'medium', 'hard'],
+      question_type: ['multiple_choice', 'true_false', 'short_answer', 'numeric'],
       source_document_type: [
-        "caps",
-        "atp",
-        "sba_exemplar",
-        "ieb_reference",
-        "index_page",
-        "other",
+        'caps',
+        'atp',
+        'sba_exemplar',
+        'ieb_reference',
+        'index_page',
+        'other',
       ],
       source_verification_status: [
-        "PENDING",
-        "IMPORTED",
-        "PARSED",
-        "REVIEW_REQUIRED",
-        "VERIFIED",
-        "PUBLISHED",
-        "ARCHIVED",
+        'PENDING',
+        'IMPORTED',
+        'PARSED',
+        'REVIEW_REQUIRED',
+        'VERIFIED',
+        'PUBLISHED',
+        'ARCHIVED',
       ],
-      subscription_status: [
-        "trialing",
-        "active",
-        "past_due",
-        "canceled",
-        "incomplete",
-      ],
+      subscription_status: ['trialing', 'active', 'past_due', 'canceled', 'incomplete'],
       translation_status: [
-        "original",
-        "machine_translated",
-        "ai_reviewed",
-        "human_reviewed",
-        "verified",
+        'original',
+        'machine_translated',
+        'ai_reviewed',
+        'human_reviewed',
+        'verified',
       ],
     },
   },
