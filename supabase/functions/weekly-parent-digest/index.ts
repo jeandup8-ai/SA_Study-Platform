@@ -134,71 +134,72 @@ Deno.serve(async (req: Request) => {
   let sent = 0
   let skipped = 0
   let errors = 0
+  const errorDetails: string[] = []
 
   for (const parent of parents) {
-    const { data: learners } = await supabase
-      .from('learners')
-      .select('id, display_name')
-      .eq('parent_id', parent.id)
-    if (!learners || learners.length === 0) {
-      skipped++
-      continue
-    }
-
-    const learnerDigests: LearnerDigest[] = []
-    for (const learner of learners) {
-      const [{ count: lessonsCompleted }, { count: questionsAnswered }, { data: sessions }, { data: attention }] =
-        await Promise.all([
-          supabase
-            .from('learner_progress')
-            .select('id', { count: 'exact', head: true })
-            .eq('learner_id', learner.id)
-            .eq('status', 'completed')
-            .gte('completed_at', since),
-          supabase
-            .from('assessment_answers')
-            .select('id, assessment_attempts!inner(learner_id)', { count: 'exact', head: true })
-            .eq('assessment_attempts.learner_id', learner.id)
-            .gte('answered_at', since),
-          supabase.from('study_sessions').select('duration_seconds, started_at').eq('learner_id', learner.id).order('started_at', { ascending: false }).limit(200),
-          supabase
-            .from('mastery')
-            .select('topic_id, mastery_score, topics(name)')
-            .eq('learner_id', learner.id)
-            .lt('mastery_score', 60)
-            .order('mastery_score', { ascending: true })
-            .limit(2),
-        ])
-
-      const weekSessions = (sessions ?? []).filter((sess) => sess.started_at >= since)
-      const minutesThisWeek = formatMinutes(weekSessions.reduce((sum, sess) => sum + (sess.duration_seconds ?? 0), 0))
-
-      const practisedDates = new Set((sessions ?? []).map((sess) => sess.started_at.slice(0, 10)))
-      const cursor = new Date()
-      cursor.setUTCHours(0, 0, 0, 0)
-      const todayKey = cursor.toISOString().slice(0, 10)
-      if (!practisedDates.has(todayKey)) cursor.setUTCDate(cursor.getUTCDate() - 1)
-      let streak = 0
-      while (practisedDates.has(cursor.toISOString().slice(0, 10))) {
-        streak++
-        cursor.setUTCDate(cursor.getUTCDate() - 1)
+    try {
+      const { data: learners } = await supabase
+        .from('learners')
+        .select('id, display_name')
+        .eq('parent_id', parent.id)
+      if (!learners || learners.length === 0) {
+        skipped++
+        continue
       }
 
-      learnerDigests.push({
-        displayName: learner.display_name,
-        streak,
-        minutesThisWeek,
-        lessonsCompleted: lessonsCompleted ?? 0,
-        questionsAnswered: questionsAnswered ?? 0,
-        attentionTopics: (attention ?? []).map((row) => (row as { topics?: { name?: string } }).topics?.name).filter((n): n is string => Boolean(n)),
-        hadActivity: weekSessions.length > 0,
-      })
-    }
+      const learnerDigests: LearnerDigest[] = []
+      for (const learner of learners) {
+        const [{ count: lessonsCompleted }, { count: questionsAnswered }, { data: sessions }, { data: attention }] =
+          await Promise.all([
+            supabase
+              .from('learner_progress')
+              .select('id', { count: 'exact', head: true })
+              .eq('learner_id', learner.id)
+              .eq('status', 'completed')
+              .gte('completed_at', since),
+            supabase
+              .from('assessment_answers')
+              .select('id, assessment_attempts!inner(learner_id)', { count: 'exact', head: true })
+              .eq('assessment_attempts.learner_id', learner.id)
+              .gte('answered_at', since),
+            supabase.from('study_sessions').select('duration_seconds, started_at').eq('learner_id', learner.id).order('started_at', { ascending: false }).limit(200),
+            supabase
+              .from('mastery')
+              .select('topic_id, mastery_score, topics(name)')
+              .eq('learner_id', learner.id)
+              .lt('mastery_score', 60)
+              .order('mastery_score', { ascending: true })
+              .limit(2),
+          ])
 
-    const lang = parent.preferred_language === 'af' ? 'af' : 'en'
-    const html = renderEmailHtml(parent.full_name, learnerDigests, lang)
+        const weekSessions = (sessions ?? []).filter((sess) => sess.started_at >= since)
+        const minutesThisWeek = formatMinutes(weekSessions.reduce((sum, sess) => sum + (sess.duration_seconds ?? 0), 0))
 
-    try {
+        const practisedDates = new Set((sessions ?? []).map((sess) => sess.started_at.slice(0, 10)))
+        const cursor = new Date()
+        cursor.setUTCHours(0, 0, 0, 0)
+        const todayKey = cursor.toISOString().slice(0, 10)
+        if (!practisedDates.has(todayKey)) cursor.setUTCDate(cursor.getUTCDate() - 1)
+        let streak = 0
+        while (practisedDates.has(cursor.toISOString().slice(0, 10))) {
+          streak++
+          cursor.setUTCDate(cursor.getUTCDate() - 1)
+        }
+
+        learnerDigests.push({
+          displayName: learner.display_name,
+          streak,
+          minutesThisWeek,
+          lessonsCompleted: lessonsCompleted ?? 0,
+          questionsAnswered: questionsAnswered ?? 0,
+          attentionTopics: (attention ?? []).map((row) => (row as { topics?: { name?: string } }).topics?.name).filter((n): n is string => Boolean(n)),
+          hadActivity: weekSessions.length > 0,
+        })
+      }
+
+      const lang = parent.preferred_language === 'af' ? 'af' : 'en'
+      const html = renderEmailHtml(parent.full_name, learnerDigests, lang)
+
       const emailResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
@@ -213,11 +214,17 @@ Deno.serve(async (req: Request) => {
         sent++
       } else {
         errors++
+        const detail = `parent ${parent.id}: Resend ${emailResponse.status} ${await emailResponse.text()}`
+        console.error(detail)
+        errorDetails.push(detail)
       }
-    } catch {
+    } catch (err) {
       errors++
+      const detail = `parent ${parent.id}: ${err instanceof Error ? `${err.name}: ${err.message}\n${err.stack}` : String(err)}`
+      console.error(detail)
+      errorDetails.push(detail)
     }
   }
 
-  return jsonResponse({ sent, skipped, errors })
+  return jsonResponse({ sent, skipped, errors, errorDetails })
 })
