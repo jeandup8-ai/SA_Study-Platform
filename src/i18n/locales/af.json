@@ -79,6 +79,8 @@
     "greeting": "Hallo {{name}} 👋",
     "gradeLabel": "Graad {{grade}}",
     "prompt": "Kom ons leer iets vandag.",
+    "streakDays_one": "{{count}} dag reeks",
+    "streakDays_other": "{{count}} dae reeks",
     "todaysLearning": "Vandag se Leer",
     "continueLearning": "Gaan voort met Leer",
     "mySubjects": "My Vakke",

@@ -79,6 +79,8 @@
     "greeting": "Hi {{name}} 👋",
     "gradeLabel": "Grade {{grade}}",
     "prompt": "Let's learn something today.",
+    "streakDays_one": "{{count}} day streak",
+    "streakDays_other": "{{count}} day streak",
     "todaysLearning": "Today's Learning",
     "continueLearning": "Continue Learning",
     "mySubjects": "My Subjects",

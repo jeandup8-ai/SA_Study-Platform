@@ -5,7 +5,9 @@ import { BookOpen, ScanLine, GraduationCap, TrendingUp, MessageCircleHeart } fro
 import { useLearner } from '@/context/LearnerContext'
 import { fetchContinueLearning, fetchSubjectMasterySummary, type ContinueLearningItem, type SubjectMasterySummary } from '@/lib/curriculum/dashboard'
 import { recommendNextTopic, type RecommendedTopic } from '@/lib/recommendation/nextTopic'
+import { fetchStreak, type StreakInfo } from '@/lib/streak/streak'
 import { Card, PressableCard, LearnerAvatarIcon, ProgressRing, Badge } from '@/components/ui'
+import { StreakBadge } from '@/components/dashboard/StreakBadge'
 import { supabase } from '@/lib/supabase'
 
 export function ChildDashboardPage() {
@@ -15,12 +17,14 @@ export function ChildDashboardPage() {
   const [subjects, setSubjects] = useState<SubjectMasterySummary[]>([])
   const [gradeNumber, setGradeNumber] = useState<number | null>(null)
   const [recommended, setRecommended] = useState<RecommendedTopic | null>(null)
+  const [streak, setStreak] = useState<StreakInfo | null>(null)
 
   useEffect(() => {
     if (!activeLearner) return
     fetchContinueLearning(activeLearner.id, activeLearner.preferred_language).then(setContinueItem)
     fetchSubjectMasterySummary(activeLearner.id, activeLearner.grade_id, activeLearner.preferred_language).then(setSubjects)
     recommendNextTopic(activeLearner.id, activeLearner.grade_id, activeLearner.preferred_language).then(setRecommended)
+    fetchStreak(activeLearner.id).then(setStreak)
     supabase
       .from('grades')
       .select('grade_number')
@@ -62,7 +66,10 @@ export function ChildDashboardPage() {
           </select>
         )}
       </div>
-      <p className="mt-1 text-slate-500">{t('dashboard.prompt')}</p>
+      <div className="mt-2 flex items-center justify-between gap-2">
+        <p className="text-slate-500">{t('dashboard.prompt')}</p>
+        <StreakBadge streak={streak} />
+      </div>
 
       {continueItem ? (
         <Link to={`/app/lessons/${continueItem.lessonId}`} className="mt-6 block">
