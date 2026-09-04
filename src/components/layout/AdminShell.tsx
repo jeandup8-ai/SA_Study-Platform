@@ -18,15 +18,18 @@ export function AdminShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-dvh bg-slate-950 text-slate-100">
       <header className="border-b border-slate-800 bg-slate-900">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4">
-          <p className="text-lg font-bold">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-4">
+          <p className="min-w-0 truncate text-lg font-bold">
             {t('common.appName')} <span className="text-slate-500">{t('admin.title')}</span>
           </p>
-          <button onClick={() => void signOut()} className="text-sm text-slate-400 hover:text-slate-100">
+          <button
+            onClick={() => void signOut()}
+            className="shrink-0 text-sm text-slate-400 hover:text-slate-100"
+          >
             {t('auth.signOut')}
           </button>
         </div>
-        <nav className="mx-auto flex max-w-5xl gap-1 px-4 pb-2">
+        <nav className="mx-auto flex max-w-5xl flex-wrap gap-1 px-4 pb-2">
           {TABS.map((tab) => (
             <NavLink
               key={tab.to}
