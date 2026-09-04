@@ -9,6 +9,7 @@ const TABS = [
   { to: '/admin/curriculum-sources', label: 'Curriculum sources', end: false },
   { to: '/admin/review-queue', label: 'Review queue', end: false },
   { to: '/admin/terminology', label: 'Terminology', end: false },
+  { to: '/admin/illustrations', label: 'Illustrations', end: false },
 ] as const
 
 export function AdminShell({ children }: { children: ReactNode }) {

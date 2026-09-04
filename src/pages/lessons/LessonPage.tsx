@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ChevronLeft, RotateCcw, Wand2, Lightbulb, Sparkles } from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
-import { fetchLesson, fetchLessonContent, fetchLessonMedia } from '@/lib/curriculum/queries'
+import { fetchLesson, fetchLessonContent, fetchLessonMedia, fetchTopicIllustration } from '@/lib/curriculum/queries'
 import { fetchQuestionsForTopic, fetchMiniQuizForLesson } from '@/lib/curriculum/questions'
 import { recordQuizResult } from '@/lib/mastery/engine'
 import { requestAlternateExplanation, type AlternateExplanation } from '@/lib/tutor/explainDifferently'
@@ -74,10 +74,14 @@ export function LessonPage() {
   const [aiExplanation, setAiExplanation] = useState<AlternateExplanation | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
+  const [topicIllustrationUrl, setTopicIllustrationUrl] = useState<string | null>(null)
 
   useEffect(() => {
     if (!lessonId || !activeLearner) return
-    fetchLesson(lessonId).then(setLesson)
+    fetchLesson(lessonId).then((row) => {
+      setLesson(row)
+      if (row) fetchTopicIllustration(row.topic_id).then(setTopicIllustrationUrl)
+    })
     fetchLessonContent(lessonId).then(setContent)
     fetchLessonMedia(lessonId).then(setMedia)
 
@@ -252,6 +256,13 @@ export function LessonPage() {
 
         {isV2 && step === 'visual_explanation' && (
           <Card>
+            {topicIllustrationUrl && (
+              <img
+                src={topicIllustrationUrl}
+                alt=""
+                className="mb-4 aspect-square w-full rounded-xl object-cover"
+              />
+            )}
             <StoryboardSlides slides={storyboard} />
           </Card>
         )}
@@ -297,6 +308,13 @@ export function LessonPage() {
 
         {!isV2 && step === 'visual_explanation' && (
           <Card>
+            {topicIllustrationUrl && (
+              <img
+                src={topicIllustrationUrl}
+                alt=""
+                className="mb-4 aspect-square w-full rounded-xl object-cover"
+              />
+            )}
             <LessonVisual media={media[0] ?? null} fallbackLabel={lesson.title} />
           </Card>
         )}

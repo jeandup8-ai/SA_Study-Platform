@@ -25,6 +25,7 @@ import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage'
 import { CurriculumSourcesPage } from '@/pages/admin/CurriculumSourcesPage'
 import { CurriculumReviewPage } from '@/pages/admin/CurriculumReviewPage'
 import { TerminologyReviewPage } from '@/pages/admin/TerminologyReviewPage'
+import { TopicIllustrationsPage } from '@/pages/admin/TopicIllustrationsPage'
 import { ChildShell } from '@/components/layout/ChildShell'
 import { ParentShell } from '@/components/layout/ParentShell'
 import { AdminShell } from '@/components/layout/AdminShell'
@@ -100,6 +101,7 @@ export default function App() {
                 <Route path="curriculum-sources" element={<CurriculumSourcesPage />} />
                 <Route path="review-queue" element={<CurriculumReviewPage />} />
                 <Route path="terminology" element={<TerminologyReviewPage />} />
+                <Route path="illustrations" element={<TopicIllustrationsPage />} />
               </Routes>
             </AdminShell>
           </RequireAdmin>

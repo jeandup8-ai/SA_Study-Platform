@@ -83,3 +83,19 @@ export async function fetchLessonMedia(lessonId: string): Promise<Media[]> {
     .eq('approval_status', 'approved')
   return data ?? []
 }
+
+/** The most recent approved AI illustration for a topic, if any -- used by
+ * both V2 and legacy lessons since V2 lessons have no `media` rows of their
+ * own (see supabase/functions/generate-topic-illustration). */
+export async function fetchTopicIllustration(topicId: string): Promise<string | null> {
+  const { data } = await supabase
+    .from('media')
+    .select('url')
+    .eq('topic_id', topicId)
+    .eq('media_type', 'image')
+    .eq('approval_status', 'approved')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  return data?.url ?? null
+}
