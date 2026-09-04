@@ -3,10 +3,12 @@ import { Link, NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import clsx from 'clsx'
 import { useAuth } from '@/context/AuthContext'
+import { useIsAdmin } from '@/hooks/useIsAdmin'
 
 export function ParentShell({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
   const { signOut } = useAuth()
+  const { isAdmin } = useIsAdmin()
 
   return (
     <div className="min-h-dvh bg-slate-50">
@@ -42,6 +44,16 @@ export function ParentShell({ children }: { children: ReactNode }) {
             >
               {t('parent.settingsTitle')}
             </NavLink>
+            {isAdmin && (
+              <NavLink
+                to="/admin"
+                className={({ isActive }) =>
+                  clsx(isActive ? 'text-brand-700' : 'text-slate-500')
+                }
+              >
+                Admin
+              </NavLink>
+            )}
             <button onClick={() => void signOut()} className="text-slate-500 hover:text-slate-800">
               {t('auth.signOut')}
             </button>
