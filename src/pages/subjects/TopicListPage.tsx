@@ -35,8 +35,15 @@ export function TopicListPage() {
         {topics.map((topic) => (
           <Link key={topic.id} to={`/app/subjects/${subjectId}/topics/${topic.id}`}>
             <Card>
-              <div className="flex items-center justify-between">
-                <div>
+              <div className="flex items-center justify-between gap-3">
+                {topic.illustrationUrl && (
+                  <img
+                    src={topic.illustrationUrl}
+                    alt=""
+                    className="h-14 w-14 shrink-0 rounded-xl object-cover"
+                  />
+                )}
+                <div className="flex-1">
                   <p className="font-bold text-slate-900">{topic.name}</p>
                   <p className="text-sm text-slate-500">
                     {t('subjects.lessonsAvailable', { count: topic.lessonCount })}

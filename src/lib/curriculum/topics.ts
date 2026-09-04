@@ -5,6 +5,7 @@ import type { Topic, LanguageCode } from '@/types/curriculum'
 export interface TopicWithProgress extends Topic {
   lessonCount: number
   masteryScore: number
+  illustrationUrl: string | null
 }
 
 export async function fetchTopicsWithProgress(
@@ -36,10 +37,25 @@ export async function fetchTopicsWithProgress(
     .in('topic_id', topicIds)
   const masteryByTopic = new Map((mastery ?? []).map((m) => [m.topic_id, Number(m.mastery_score)]))
 
+  const { data: illustrations } = await supabase
+    .from('media')
+    .select('topic_id, url, created_at')
+    .eq('media_type', 'image')
+    .eq('approval_status', 'approved')
+    .in('topic_id', topicIds)
+    .order('created_at', { ascending: false })
+  const illustrationByTopic = new Map<string, string>()
+  for (const row of illustrations ?? []) {
+    if (row.topic_id && row.url && !illustrationByTopic.has(row.topic_id)) {
+      illustrationByTopic.set(row.topic_id, row.url)
+    }
+  }
+
   return topics.map((t) => ({
     ...t,
     name: localizedName(t, language),
     lessonCount: lessonCountByTopic.get(t.id) ?? 0,
     masteryScore: masteryByTopic.get(t.id) ?? 0,
+    illustrationUrl: illustrationByTopic.get(t.id) ?? null,
   }))
 }
