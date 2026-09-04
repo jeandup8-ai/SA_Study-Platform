@@ -184,6 +184,11 @@
     "recommended": "Aanbeveel",
     "recommendedSessions": "{{count}} × {{minutes}} minuut sessies hierdie week",
     "manageSubscription": "Bestuur intekening",
+    "settingsTitle": "Instellings",
+    "weeklyEmailTitle": "Weeklikse vorderings-e-pos",
+    "weeklyEmailBody": "'n Kort Maandag-opsomming van elke kind se week — leertyd, reeks, en onderwerpe wat bietjie meer oefening kan gebruik.",
+    "settingsSaveFailed": "Kon nie die verandering stoor nie. Probeer asseblief weer.",
+    "essentialEmailsNote": "Noodsaaklike rekening-e-posse (registrasiebevestiging, wagwoordherstel) word altyd gestuur en kan nie hier afgeskakel word nie.",
     "manageLearners": "Bestuur kinders",
     "addLearner": "Voeg nog 'n kind by",
     "privacyNote": "Jy sien slegs vordering en bemeestering — nie private tutor-gesprekke nie."

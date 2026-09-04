@@ -15,6 +15,10 @@
 // Database -> Cron Jobs, an HTTP request job calling this URL weekly) rather
 // than by the app itself.
 //
+// Only parents with weekly_digest_enabled = true are emailed, and every
+// message carries both a visible unsubscribe link and RFC 8058 one-click
+// unsubscribe headers (see supabase/functions/email-unsubscribe).
+//
 // If a learner had zero activity this week, they still get a line in the
 // digest — a gentle nudge with a suggested topic to start with — rather than
 // being silently skipped. A weekly digest that only ever reports good news
@@ -69,7 +73,8 @@ const STRINGS = {
     questions: (n: number) => `${n} practice question${n === 1 ? '' : 's'} answered`,
     attentionHeading: 'Could use a bit more practice:',
     noActivity: 'No study sessions logged this week — a quick 10-minute lesson keeps the momentum going.',
-    footer: 'You are receiving this because you have an active StudyLegends family account. Manage this in the app under Parent settings.',
+    footer: 'You are receiving this because you have an active StudyLegends family account.',
+    unsubscribe: 'Unsubscribe from this weekly email',
   },
   af: {
     subject: 'Julle gesin se week op StudyLegends',
@@ -80,11 +85,17 @@ const STRINGS = {
     questions: (n: number) => `${n} oefenvraag${n === 1 ? '' : 'e'} beantwoord`,
     attentionHeading: 'Kan bietjie meer oefening gebruik:',
     noActivity: 'Geen leersessies hierdie week nie — ’n vinnige 10-minute les hou die momentum aan die gang.',
-    footer: 'Jy ontvang hierdie omdat jy ’n aktiewe StudyLegends-gesinsrekening het. Bestuur dit in die app onder Ouer-instellings.',
+    footer: 'Jy ontvang hierdie omdat jy ’n aktiewe StudyLegends-gesinsrekening het.',
+    unsubscribe: 'Teken uit van hierdie weeklikse e-pos',
   },
 } as const
 
-function renderEmailHtml(parentName: string, learners: LearnerDigest[], lang: 'en' | 'af'): string {
+function renderEmailHtml(
+  parentName: string,
+  learners: LearnerDigest[],
+  lang: 'en' | 'af',
+  unsubscribeUrl: string,
+): string {
   const s = STRINGS[lang]
   const sections = learners
     .map((l) => {
@@ -109,7 +120,10 @@ function renderEmailHtml(parentName: string, learners: LearnerDigest[], lang: 'e
     <div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
       <h1 style="font-size:20px;color:#0f172a;">${s.heading(parentName)}</h1>
       ${sections}
-      <p style="margin-top:24px;font-size:12px;color:#94a3b8;">${s.footer}</p>
+      <p style="margin-top:24px;font-size:12px;color:#94a3b8;">
+        ${s.footer}<br />
+        <a href="${unsubscribeUrl}" style="color:#94a3b8;text-decoration:underline;">${s.unsubscribe}</a>
+      </p>
     </div>`
 }
 
@@ -128,8 +142,13 @@ Deno.serve(async (req: Request) => {
   const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!)
 
   const since = startOfWeekIso()
-  const { data: parents } = await supabase.from('parents').select('id, full_name, email, preferred_language')
+  const { data: parents } = await supabase
+    .from('parents')
+    .select('id, full_name, email, preferred_language, unsubscribe_token')
+    .eq('weekly_digest_enabled', true)
   if (!parents) return jsonResponse({ error: 'no_parents_found' }, 500)
+
+  const unsubscribeBase = `${Deno.env.get('SUPABASE_URL')}/functions/v1/email-unsubscribe`
 
   let sent = 0
   let skipped = 0
@@ -198,7 +217,8 @@ Deno.serve(async (req: Request) => {
       }
 
       const lang = parent.preferred_language === 'af' ? 'af' : 'en'
-      const html = renderEmailHtml(parent.full_name, learnerDigests, lang)
+      const unsubscribeUrl = `${unsubscribeBase}?token=${parent.unsubscribe_token}`
+      const html = renderEmailHtml(parent.full_name, learnerDigests, lang, unsubscribeUrl)
 
       const emailResponse = await fetch('https://api.resend.com/emails', {
         method: 'POST',
@@ -208,6 +228,13 @@ Deno.serve(async (req: Request) => {
           to: parent.email,
           subject: STRINGS[lang].subject,
           html,
+          // RFC 8058 one-click unsubscribe: lets Gmail/Outlook show their own
+          // native unsubscribe button, which mailbox providers increasingly
+          // expect from any bulk sender and which keeps us out of spam folders.
+          headers: {
+            'List-Unsubscribe': `<${unsubscribeUrl}>`,
+            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+          },
         }),
       })
       if (emailResponse.ok) {

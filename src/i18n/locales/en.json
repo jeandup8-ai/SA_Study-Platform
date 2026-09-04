@@ -184,6 +184,11 @@
     "recommended": "Recommended",
     "recommendedSessions": "{{count}} × {{minutes}} minute sessions this week",
     "manageSubscription": "Manage subscription",
+    "settingsTitle": "Settings",
+    "weeklyEmailTitle": "Weekly progress email",
+    "weeklyEmailBody": "A short Monday summary of each child's week — study time, streak, and topics worth a bit more practice.",
+    "settingsSaveFailed": "Couldn't save that change. Please try again.",
+    "essentialEmailsNote": "Essential account emails (sign-up confirmation, password resets) are always sent and can't be turned off here.",
     "manageLearners": "Manage children",
     "addLearner": "Add another child",
     "privacyNote": "You see progress and mastery only — not private tutor conversations."

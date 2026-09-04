@@ -1583,7 +1583,9 @@ export type Database = {
           id: string
           phone: string | null
           preferred_language: Database['public']['Enums']['language_code']
+          unsubscribe_token: string
           updated_at: string
+          weekly_digest_enabled: boolean
         }
         Insert: {
           created_at?: string
@@ -1592,7 +1594,9 @@ export type Database = {
           id: string
           phone?: string | null
           preferred_language?: Database['public']['Enums']['language_code']
+          unsubscribe_token?: string
           updated_at?: string
+          weekly_digest_enabled?: boolean
         }
         Update: {
           created_at?: string
@@ -1601,7 +1605,9 @@ export type Database = {
           id?: string
           phone?: string | null
           preferred_language?: Database['public']['Enums']['language_code']
+          unsubscribe_token?: string
           updated_at?: string
+          weekly_digest_enabled?: boolean
         }
         Relationships: []
       }

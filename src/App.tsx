@@ -20,6 +20,7 @@ import { ExamPrepPage } from '@/pages/exam/ExamPrepPage'
 import { MockTestPage } from '@/pages/exam/MockTestPage'
 import { ParentDashboardPage } from '@/pages/parent/ParentDashboardPage'
 import { SubscriptionPage } from '@/pages/parent/SubscriptionPage'
+import { SettingsPage } from '@/pages/parent/SettingsPage'
 import { AdminDashboardPage } from '@/pages/admin/AdminDashboardPage'
 import { CurriculumSourcesPage } from '@/pages/admin/CurriculumSourcesPage'
 import { CurriculumReviewPage } from '@/pages/admin/CurriculumReviewPage'
@@ -82,6 +83,7 @@ export default function App() {
               <Routes>
                 <Route index element={<ParentDashboardPage />} />
                 <Route path="subscription" element={<SubscriptionPage />} />
+                <Route path="settings" element={<SettingsPage />} />
               </Routes>
             </ParentShell>
           </RequireAuth>

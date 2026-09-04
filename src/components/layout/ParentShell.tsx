@@ -34,6 +34,14 @@ export function ParentShell({ children }: { children: ReactNode }) {
             >
               {t('parent.manageSubscription')}
             </NavLink>
+            <NavLink
+              to="/parent/settings"
+              className={({ isActive }) =>
+                clsx(isActive ? 'text-brand-700' : 'text-slate-500')
+              }
+            >
+              {t('parent.settingsTitle')}
+            </NavLink>
             <button onClick={() => void signOut()} className="text-slate-500 hover:text-slate-800">
               {t('auth.signOut')}
             </button>
