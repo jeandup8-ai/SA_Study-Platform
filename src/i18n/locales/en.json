@@ -97,7 +97,8 @@
       "spaced_revision": "Haven't practised this in a while"
     },
     "switchLearner": "Switch profile",
-    "noProgressYet": "No lessons started yet — pick a subject to begin!"
+    "noProgressYet": "No lessons started yet — pick a subject to begin!",
+    "parentZone": "Parent zone"
   },
   "subjects": {
     "title": "My Subjects",

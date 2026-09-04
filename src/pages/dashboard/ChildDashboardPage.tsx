@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { BookOpen, ScanLine, GraduationCap, TrendingUp, MessageCircleHeart } from 'lucide-react'
+import { BookOpen, ScanLine, GraduationCap, TrendingUp, MessageCircleHeart, Settings } from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
 import { fetchContinueLearning, fetchSubjectMasterySummary, type ContinueLearningItem, type SubjectMasterySummary } from '@/lib/curriculum/dashboard'
 import { recommendNextTopic, type RecommendedTopic } from '@/lib/recommendation/nextTopic'
@@ -51,20 +51,29 @@ export function ChildDashboardPage() {
             )}
           </div>
         </div>
-        {learners.length > 1 && (
-          <select
-            className="rounded-xl border-2 border-slate-200 bg-white px-2 py-1.5 text-sm"
-            value={activeLearner.id}
-            onChange={(e) => setActiveLearnerId(e.target.value)}
-            aria-label={t('dashboard.switchLearner')}
+        <div className="flex items-center gap-2">
+          {learners.length > 1 && (
+            <select
+              className="rounded-xl border-2 border-slate-200 bg-white px-2 py-1.5 text-sm"
+              value={activeLearner.id}
+              onChange={(e) => setActiveLearnerId(e.target.value)}
+              aria-label={t('dashboard.switchLearner')}
+            >
+              {learners.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.display_name}
+                </option>
+              ))}
+            </select>
+          )}
+          <Link
+            to="/parent"
+            aria-label={t('dashboard.parentZone')}
+            className="flex h-9 w-9 items-center justify-center rounded-xl border-2 border-slate-200 bg-white text-slate-400"
           >
-            {learners.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.display_name}
-              </option>
-            ))}
-          </select>
-        )}
+            <Settings size={16} />
+          </Link>
+        </div>
       </div>
       <div className="mt-2 flex items-center justify-between gap-2">
         <p className="text-slate-500">{t('dashboard.prompt')}</p>
