@@ -192,7 +192,11 @@
     "essentialEmailsNote": "Noodsaaklike rekening-e-posse (registrasiebevestiging, wagwoordherstel) word altyd gestuur en kan nie hier afgeskakel word nie.",
     "manageLearners": "Bestuur kinders",
     "addLearner": "Voeg nog 'n kind by",
-    "privacyNote": "Jy sien slegs vordering en bemeestering — nie private tutor-gesprekke nie."
+    "privacyNote": "Jy sien slegs vordering en bemeestering — nie private tutor-gesprekke nie.",
+    "setStartingPoint": "Stel begin-%",
+    "startingPointLabel": "Beginpunt",
+    "startingPointHint": "As hulle al iets hiervan van 'n vorige kwartaal ken, stel 'n begin-% hier. Dit word net gebruik totdat hulle regte lesse of oefening in hierdie vak begin — daarna neem hul werklike vordering oor.",
+    "startingPointBadge": "Beginpunt"
   },
   "exam": {
     "title": "Eksamenvoorbereiding",

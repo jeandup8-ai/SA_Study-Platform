@@ -1,9 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Pencil } from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
 import { fetchSubjectMasterySummary, type SubjectMasterySummary } from '@/lib/curriculum/dashboard'
 import { fetchWeeklyStats, fetchAttentionNeeded, type WeeklyStats, type TopicAttention } from '@/lib/parent/dashboard'
+import { setSubjectBaseline } from '@/lib/parent/subjectBaseline'
 import { Card, ProgressRing, Badge, LearnerAvatarIcon, Button } from '@/components/ui'
 
 export function ParentDashboardPage() {
@@ -12,13 +14,37 @@ export function ParentDashboardPage() {
   const [stats, setStats] = useState<WeeklyStats | null>(null)
   const [subjects, setSubjects] = useState<SubjectMasterySummary[]>([])
   const [attention, setAttention] = useState<TopicAttention[]>([])
+  const [editingSubjectId, setEditingSubjectId] = useState<string | null>(null)
+  const [editValue, setEditValue] = useState('')
+  const [savingBaseline, setSavingBaseline] = useState(false)
+
+  const loadSubjects = useCallback(() => {
+    if (!activeLearner) return
+    fetchSubjectMasterySummary(activeLearner.id, activeLearner.grade_id).then(setSubjects)
+  }, [activeLearner])
 
   useEffect(() => {
     if (!activeLearner) return
     fetchWeeklyStats(activeLearner.id).then(setStats)
-    fetchSubjectMasterySummary(activeLearner.id, activeLearner.grade_id).then(setSubjects)
+    loadSubjects()
     fetchAttentionNeeded(activeLearner.id).then(setAttention)
-  }, [activeLearner])
+  }, [activeLearner, loadSubjects])
+
+  function startEditingBaseline(subject: SubjectMasterySummary) {
+    setEditingSubjectId(subject.subjectId)
+    setEditValue(subject.isBaseline ? String(Math.round(subject.averageMastery)) : '')
+  }
+
+  async function saveBaseline(subjectId: string) {
+    if (!activeLearner) return
+    const percent = Math.max(0, Math.min(100, Number(editValue)))
+    if (Number.isNaN(percent)) return
+    setSavingBaseline(true)
+    await setSubjectBaseline(activeLearner.id, subjectId, percent)
+    setSavingBaseline(false)
+    setEditingSubjectId(null)
+    loadSubjects()
+  }
 
   if (learners.length === 0) {
     return (
@@ -76,16 +102,63 @@ export function ParentDashboardPage() {
       </h2>
       <div className="mt-3 space-y-2">
         {subjects.map((s) => (
-          <Card key={s.subjectId} className="flex items-center justify-between">
-            <p className="font-semibold text-slate-800">{s.subjectName}</p>
-            <div className="flex items-center gap-3">
-              <div className="h-2 w-32 overflow-hidden rounded-full bg-slate-100">
-                <div className="h-full rounded-full bg-brand-500" style={{ width: `${s.averageMastery}%` }} />
+          <Card key={s.subjectId}>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="font-semibold text-slate-800">{s.subjectName}</p>
+                {s.isBaseline && (
+                  <div className="mt-1">
+                    <Badge tone="neutral">{t('parent.startingPointBadge')}</Badge>
+                  </div>
+                )}
               </div>
-              <span className="w-10 text-right text-sm font-bold text-slate-600">
-                {Math.round(s.averageMastery)}%
-              </span>
+              <div className="flex items-center gap-3">
+                <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-100 sm:w-32">
+                  <div className="h-full rounded-full bg-brand-500" style={{ width: `${s.averageMastery}%` }} />
+                </div>
+                <span className="w-10 text-right text-sm font-bold text-slate-600">
+                  {Math.round(s.averageMastery)}%
+                </span>
+                {editingSubjectId !== s.subjectId && (
+                  <button
+                    onClick={() => startEditingBaseline(s)}
+                    aria-label={t('parent.setStartingPoint')}
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                  >
+                    <Pencil size={14} />
+                  </button>
+                )}
+              </div>
             </div>
+
+            {editingSubjectId === s.subjectId && (
+              <div className="mt-3 border-t border-slate-100 pt-3">
+                <p className="text-xs text-slate-500">{t('parent.startingPointHint')}</p>
+                <div className="mt-2 flex items-center gap-2">
+                  <label className="text-sm font-medium text-slate-600">{t('parent.startingPointLabel')}</label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    className="w-20 rounded-lg border-2 border-slate-200 px-2 py-1 text-sm"
+                  />
+                  <span className="text-sm text-slate-500">%</span>
+                  <Button
+                    size="md"
+                    className="ml-auto"
+                    disabled={savingBaseline || editValue === ''}
+                    onClick={() => void saveBaseline(s.subjectId)}
+                  >
+                    {t('common.save')}
+                  </Button>
+                  <Button size="md" variant="ghost" onClick={() => setEditingSubjectId(null)}>
+                    {t('common.cancel')}
+                  </Button>
+                </div>
+              </div>
+            )}
           </Card>
         ))}
       </div>

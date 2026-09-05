@@ -70,11 +70,17 @@ export function ScanMyWorkPage() {
               silently — the picker closes, the input's change event fires with an empty
               FileList, and the screen just looks like it "did nothing" and went back to
               the upload options. Pairing the MIME type with the .pdf/.jpg/etc extension
-              is the standard fix: most Android document providers match on either. */}
+              is the standard fix: most Android document providers match on either.
+
+              The image input also needs the `image/*` wildcard, not just the enumerated
+              jpeg/png/webp types: a gallery photo can report a MIME the enumerated list
+              doesn't cover (HEIC on many Samsung/Android cameras, or whatever a specific
+              gallery/cloud provider decides to report), which silently filtered it out
+              of the picker before this was added. */}
           <label className="block">
             <input
               type="file"
-              accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp"
+              accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif"
               className="sr-only"
               onChange={(e) => {
                 const file = e.target.files?.[0]

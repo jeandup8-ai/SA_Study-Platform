@@ -192,7 +192,11 @@
     "essentialEmailsNote": "Essential account emails (sign-up confirmation, password resets) are always sent and can't be turned off here.",
     "manageLearners": "Manage children",
     "addLearner": "Add another child",
-    "privacyNote": "You see progress and mastery only — not private tutor conversations."
+    "privacyNote": "You see progress and mastery only — not private tutor conversations.",
+    "setStartingPoint": "Set starting %",
+    "startingPointLabel": "Starting point",
+    "startingPointHint": "If they already know some of this from a previous term, set a starting % here. It's used only until they start real lessons or practice in this subject — after that, their actual progress takes over.",
+    "startingPointBadge": "Starting point"
   },
   "exam": {
     "title": "Exam Preparation",

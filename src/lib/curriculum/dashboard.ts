@@ -64,6 +64,7 @@ export interface SubjectMasterySummary {
   subjectName: string
   colorKey: string | null
   averageMastery: number
+  isBaseline: boolean
 }
 
 export async function fetchSubjectMasterySummary(
@@ -89,6 +90,12 @@ export async function fetchSubjectMasterySummary(
     .select('mastery_score, topic_id')
     .eq('learner_id', learnerId)
 
+  const { data: baselineRows } = await supabase
+    .from('learner_subject_baselines')
+    .select('subject_id, baseline_mastery')
+    .eq('learner_id', learnerId)
+  const baselineBySubject = new Map((baselineRows ?? []).map((r) => [r.subject_id, Number(r.baseline_mastery)]))
+
   const bySubject = new Map<string, number[]>()
   for (const row of masteryRows ?? []) {
     const subjectId = topicToSubject.get(row.topic_id)
@@ -102,7 +109,11 @@ export async function fetchSubjectMasterySummary(
     .sort((a, b) => subjectIds.indexOf(a.id) - subjectIds.indexOf(b.id))
     .map((s) => {
       const scores = bySubject.get(s.id) ?? []
-      const average = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : 0
-      return { subjectId: s.id, subjectName: localizedName(s, language), colorKey: s.color_key, averageMastery: average }
+      if (scores.length > 0) {
+        const average = scores.reduce((a, b) => a + b, 0) / scores.length
+        return { subjectId: s.id, subjectName: localizedName(s, language), colorKey: s.color_key, averageMastery: average, isBaseline: false }
+      }
+      const baseline = baselineBySubject.get(s.id) ?? 0
+      return { subjectId: s.id, subjectName: localizedName(s, language), colorKey: s.color_key, averageMastery: baseline, isBaseline: baseline > 0 }
     })
 }

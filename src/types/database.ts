@@ -1086,6 +1086,42 @@ export type Database = {
           },
         ]
       }
+      learner_subject_baselines: {
+        Row: {
+          baseline_mastery: number
+          learner_id: string
+          subject_id: string
+          updated_at: string
+        }
+        Insert: {
+          baseline_mastery: number
+          learner_id: string
+          subject_id: string
+          updated_at?: string
+        }
+        Update: {
+          baseline_mastery?: number
+          learner_id?: string
+          subject_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'learner_subject_baselines_learner_id_fkey'
+            columns: ['learner_id']
+            isOneToOne: false
+            referencedRelation: 'learners'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'learner_subject_baselines_subject_id_fkey'
+            columns: ['subject_id']
+            isOneToOne: false
+            referencedRelation: 'subjects'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       learners: {
         Row: {
           avatar: Database['public']['Enums']['learner_avatar']
