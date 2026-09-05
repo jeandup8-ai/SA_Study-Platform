@@ -58,7 +58,13 @@ export async function fetchLessonsForTopic(topicId: string, language: LanguageCo
     .eq('topic_id', topicId)
     .eq('language', 'en')
     .order('sort_order')
-  return fallback.data ?? []
+  if (fallback.data && fallback.data.length > 0) return fallback.data
+  // A language-instruction subject (e.g. Afrikaans First Additional Language) only
+  // ever has lessons tagged in the language being taught, which is neither the
+  // learner's own preferred_language nor necessarily 'en' -- fall back to whatever
+  // this topic actually has rather than showing an empty lesson list.
+  const anyLanguage = await supabase.from('lessons').select('*').eq('topic_id', topicId).order('sort_order')
+  return anyLanguage.data ?? []
 }
 
 export async function fetchLesson(lessonId: string): Promise<Lesson | null> {
