@@ -21,16 +21,14 @@ export function SubjectsPage() {
       <div className="mt-4 space-y-3">
         {subjects.map((s) => (
           <Link key={s.subjectId} to={`/app/subjects/${s.subjectId}`}>
-            <Card className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
+            <Card className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+              <div>
                 <p className="font-bold text-slate-900 break-words">{s.subjectName}</p>
                 <p className="text-sm text-slate-500">
                   {Math.round(s.averageMastery)}% {t('subjects.mastery').toLowerCase()}
                 </p>
               </div>
-              <span className="shrink-0">
-                <ProgressRing value={s.averageMastery} size={52} strokeWidth={6} />
-              </span>
+              <ProgressRing value={s.averageMastery} size={52} strokeWidth={6} />
             </Card>
           </Link>
         ))}

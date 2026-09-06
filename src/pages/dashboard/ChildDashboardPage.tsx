@@ -104,11 +104,9 @@ export function ChildDashboardPage() {
       <div className="mt-3 grid grid-cols-2 gap-3">
         {subjects.map((s) => (
           <Link key={s.subjectId} to={`/app/subjects/${s.subjectId}`}>
-            <Card className="flex items-center gap-2 p-3">
-              <span className="shrink-0">
-                <ProgressRing value={s.averageMastery} size={40} strokeWidth={4} />
-              </span>
-              <span className="min-w-0 flex-1 text-xs font-bold break-words text-slate-800">{s.subjectName}</span>
+            <Card className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 p-3">
+              <ProgressRing value={s.averageMastery} size={40} strokeWidth={4} />
+              <span className="text-xs font-bold break-words text-slate-800">{s.subjectName}</span>
             </Card>
           </Link>
         ))}
@@ -157,11 +155,11 @@ function QuickLink({
 }) {
   return (
     <Link to={to} className={full ? 'col-span-2' : undefined}>
-      <PressableCard className="flex items-center gap-2 p-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+      <PressableCard className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 p-3">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
           <Icon size={18} />
         </span>
-        <span className="min-w-0 flex-1 text-sm font-semibold break-words text-slate-800">{label}</span>
+        <span className="text-sm font-semibold break-words text-slate-800">{label}</span>
       </PressableCard>
     </Link>
   )
