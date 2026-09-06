@@ -28,7 +28,9 @@ export function SubjectsPage() {
                   {Math.round(s.averageMastery)}% {t('subjects.mastery').toLowerCase()}
                 </p>
               </div>
-              <ProgressRing value={s.averageMastery} size={52} strokeWidth={6} />
+              <span className="shrink-0">
+                <ProgressRing value={s.averageMastery} size={52} strokeWidth={6} />
+              </span>
             </Card>
           </Link>
         ))}
