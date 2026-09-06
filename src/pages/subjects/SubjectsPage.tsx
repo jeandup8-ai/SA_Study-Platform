@@ -21,9 +21,9 @@ export function SubjectsPage() {
       <div className="mt-4 space-y-3">
         {subjects.map((s) => (
           <Link key={s.subjectId} to={`/app/subjects/${s.subjectId}`}>
-            <Card className="flex items-center justify-between">
-              <div>
-                <p className="font-bold text-slate-900">{s.subjectName}</p>
+            <Card className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="font-bold text-slate-900 break-words">{s.subjectName}</p>
                 <p className="text-sm text-slate-500">
                   {Math.round(s.averageMastery)}% {t('subjects.mastery').toLowerCase()}
                 </p>

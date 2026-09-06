@@ -86,7 +86,7 @@ export function ChildDashboardPage() {
             <p className="text-xs font-bold uppercase tracking-wide text-brand-100">
               {t('dashboard.continueLearning')}
             </p>
-            <p className="mt-1 text-lg font-bold">{continueItem.lessonTitle}</p>
+            <p className="mt-1 text-lg font-bold">{continueItem.topicName}</p>
             <p className="text-sm text-brand-100">
               {continueItem.subjectName} · {continueItem.topicName}
             </p>
@@ -106,7 +106,7 @@ export function ChildDashboardPage() {
           <Link key={s.subjectId} to={`/app/subjects/${s.subjectId}`}>
             <Card className="flex items-center gap-3">
               <ProgressRing value={s.averageMastery} size={48} strokeWidth={5} />
-              <span className="text-sm font-bold text-slate-800">{s.subjectName}</span>
+              <span className="min-w-0 flex-1 text-sm font-bold break-words text-slate-800">{s.subjectName}</span>
             </Card>
           </Link>
         ))}
