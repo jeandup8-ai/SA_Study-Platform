@@ -49,7 +49,7 @@ export function CreateLearnerPage() {
         gradeId,
         preferredLanguage: language,
       })
-      navigate('/app')
+      navigate('/onboarding/starting-point')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.')
     } finally {

@@ -73,7 +73,13 @@
     "gradeLabel": "Which grade are they in?",
     "languageLabel": "Which language should they learn in?",
     "createProfile": "Create profile",
-    "minimalDataNote": "We only store a first name, avatar, grade and language — nothing else is required."
+    "minimalDataNote": "We only store a first name, avatar, grade and language — nothing else is required.",
+    "startingPointTitle": "Where are they starting from?",
+    "startingPointIntro": "If they already have a mark from last term or quarter, enter it here per subject so you can track real growth from day one. This is optional and you can always change it later from your parent dashboard.",
+    "byTopicToggle": "Break down by topic",
+    "byTopicHint": "Optional: set a starting % per topic instead of one number for the whole subject.",
+    "saveStartingPoint": "Save and continue",
+    "skipStartingPoint": "Skip for now"
   },
   "dashboard": {
     "greeting": "Hi {{name}} 👋",
@@ -196,7 +202,9 @@
     "setStartingPoint": "Set starting %",
     "startingPointLabel": "Starting point",
     "startingPointHint": "If they already know some of this from a previous term, set a starting % here. It's used only until they start real lessons or practice in this subject — after that, their actual progress takes over.",
-    "startingPointBadge": "Starting point"
+    "startingPointBadge": "Starting point",
+    "byTopicToggle": "Break down by topic",
+    "byTopicHint": "Set a starting % per topic so you can see exactly where extra focus is needed."
   },
   "exam": {
     "title": "Exam Preparation",

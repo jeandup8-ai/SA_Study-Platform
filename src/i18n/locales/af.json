@@ -73,7 +73,13 @@
     "gradeLabel": "In watter graad is hulle?",
     "languageLabel": "In watter taal moet hulle leer?",
     "createProfile": "Skep profiel",
-    "minimalDataNote": "Ons stoor net 'n voornaam, avatar, graad en taal — niks anders word vereis nie."
+    "minimalDataNote": "Ons stoor net 'n voornaam, avatar, graad en taal — niks anders word vereis nie.",
+    "startingPointTitle": "Waar begin hulle?",
+    "startingPointIntro": "As hulle reeds 'n punt van verlede kwartaal of term het, tik dit hier in per vak sodat jy regte groei van dag een af kan volg. Dit is opsioneel en jy kan dit later altyd vanaf jou ouer-paneel verander.",
+    "byTopicToggle": "Verdeel volgens onderwerp",
+    "byTopicHint": "Opsioneel: stel 'n beginpunt-persentasie per onderwerp in plaas van een syfer vir die hele vak.",
+    "saveStartingPoint": "Stoor en gaan voort",
+    "skipStartingPoint": "Slaan oor vir eers"
   },
   "dashboard": {
     "greeting": "Hallo {{name}} 👋",
@@ -196,7 +202,9 @@
     "setStartingPoint": "Stel begin-%",
     "startingPointLabel": "Beginpunt",
     "startingPointHint": "As hulle al iets hiervan van 'n vorige kwartaal ken, stel 'n begin-% hier. Dit word net gebruik totdat hulle regte lesse of oefening in hierdie vak begin — daarna neem hul werklike vordering oor.",
-    "startingPointBadge": "Beginpunt"
+    "startingPointBadge": "Beginpunt",
+    "byTopicToggle": "Verdeel volgens onderwerp",
+    "byTopicHint": "Stel 'n beginpunt-persentasie per onderwerp sodat jy presies kan sien waar ekstra fokus nodig is."
   },
   "exam": {
     "title": "Eksamenvoorbereiding",

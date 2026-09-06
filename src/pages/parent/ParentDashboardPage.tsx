@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Pencil } from 'lucide-react'
+import { Pencil, ChevronDown, ChevronUp } from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
 import { fetchSubjectMasterySummary, type SubjectMasterySummary } from '@/lib/curriculum/dashboard'
+import { fetchTopicsWithProgress, type TopicWithProgress } from '@/lib/curriculum/topics'
 import { fetchWeeklyStats, fetchAttentionNeeded, type WeeklyStats, type TopicAttention } from '@/lib/parent/dashboard'
 import { setSubjectBaseline } from '@/lib/parent/subjectBaseline'
+import { setTopicBaseline } from '@/lib/parent/topicBaseline'
 import { Card, ProgressRing, Badge, LearnerAvatarIcon, Button } from '@/components/ui'
 
 export function ParentDashboardPage() {
@@ -17,11 +19,26 @@ export function ParentDashboardPage() {
   const [editingSubjectId, setEditingSubjectId] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
   const [savingBaseline, setSavingBaseline] = useState(false)
+  const [expandedSubjectId, setExpandedSubjectId] = useState<string | null>(null)
+  const [topicsBySubject, setTopicsBySubject] = useState<Record<string, TopicWithProgress[]>>({})
+  const [editingTopicId, setEditingTopicId] = useState<string | null>(null)
+  const [topicEditValue, setTopicEditValue] = useState('')
+  const [savingTopicBaseline, setSavingTopicBaseline] = useState(false)
 
   const loadSubjects = useCallback(() => {
     if (!activeLearner) return
     fetchSubjectMasterySummary(activeLearner.id, activeLearner.grade_id).then(setSubjects)
   }, [activeLearner])
+
+  const loadTopicsForSubject = useCallback(
+    (subjectId: string) => {
+      if (!activeLearner) return
+      fetchTopicsWithProgress(subjectId, activeLearner.grade_id, activeLearner.id, activeLearner.preferred_language).then(
+        (topics) => setTopicsBySubject((prev) => ({ ...prev, [subjectId]: topics })),
+      )
+    },
+    [activeLearner],
+  )
 
   useEffect(() => {
     if (!activeLearner) return
@@ -44,6 +61,31 @@ export function ParentDashboardPage() {
     setSavingBaseline(false)
     setEditingSubjectId(null)
     loadSubjects()
+  }
+
+  function toggleTopicBreakdown(subjectId: string) {
+    if (expandedSubjectId === subjectId) {
+      setExpandedSubjectId(null)
+      return
+    }
+    setExpandedSubjectId(subjectId)
+    if (!topicsBySubject[subjectId]) loadTopicsForSubject(subjectId)
+  }
+
+  function startEditingTopicBaseline(topic: TopicWithProgress) {
+    setEditingTopicId(topic.id)
+    setTopicEditValue(topic.isBaseline ? String(Math.round(topic.masteryScore)) : '')
+  }
+
+  async function saveTopicBaseline(subjectId: string, topicId: string) {
+    if (!activeLearner) return
+    const percent = Math.max(0, Math.min(100, Number(topicEditValue)))
+    if (Number.isNaN(percent)) return
+    setSavingTopicBaseline(true)
+    await setTopicBaseline(activeLearner.id, topicId, percent)
+    setSavingTopicBaseline(false)
+    setEditingTopicId(null)
+    loadTopicsForSubject(subjectId)
   }
 
   if (learners.length === 0) {
@@ -128,6 +170,13 @@ export function ParentDashboardPage() {
                     <Pencil size={14} />
                   </button>
                 )}
+                <button
+                  onClick={() => toggleTopicBreakdown(s.subjectId)}
+                  aria-label={t('parent.byTopicToggle')}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                >
+                  {expandedSubjectId === s.subjectId ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                </button>
               </div>
             </div>
 
@@ -157,6 +206,63 @@ export function ParentDashboardPage() {
                     {t('common.cancel')}
                   </Button>
                 </div>
+              </div>
+            )}
+
+            {expandedSubjectId === s.subjectId && (
+              <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
+                <p className="text-xs text-slate-500">{t('parent.byTopicHint')}</p>
+                {(topicsBySubject[s.subjectId] ?? []).map((topic) => (
+                  <div key={topic.id}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-sm text-slate-700">{topic.name}</p>
+                        {topic.isBaseline && (
+                          <Badge tone="neutral">{t('parent.startingPointBadge')}</Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-bold text-slate-600">{Math.round(topic.masteryScore)}%</span>
+                        {editingTopicId !== topic.id && (
+                          <button
+                            onClick={() => startEditingTopicBaseline(topic)}
+                            aria-label={t('parent.setStartingPoint')}
+                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                          >
+                            <Pencil size={12} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    {editingTopicId === topic.id && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          value={topicEditValue}
+                          onChange={(e) => setTopicEditValue(e.target.value)}
+                          className="w-20 rounded-lg border-2 border-slate-200 px-2 py-1 text-sm"
+                        />
+                        <span className="text-sm text-slate-500">%</span>
+                        <Button
+                          size="md"
+                          className="ml-auto"
+                          disabled={savingTopicBaseline || topicEditValue === ''}
+                          onClick={() => void saveTopicBaseline(s.subjectId, topic.id)}
+                        >
+                          {t('common.save')}
+                        </Button>
+                        <Button size="md" variant="ghost" onClick={() => setEditingTopicId(null)}>
+                          {t('common.cancel')}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {(topicsBySubject[s.subjectId]?.length ?? 0) === 0 && (
+                  <p className="text-xs text-slate-400">{t('subjects.noTopicsYet')}</p>
+                )}
               </div>
             )}
           </Card>

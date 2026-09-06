@@ -5,6 +5,7 @@ import type { Topic, LanguageCode } from '@/types/curriculum'
 export interface TopicWithProgress extends Topic {
   lessonCount: number
   masteryScore: number
+  isBaseline: boolean
   illustrationUrl: string | null
 }
 
@@ -37,6 +38,13 @@ export async function fetchTopicsWithProgress(
     .in('topic_id', topicIds)
   const masteryByTopic = new Map((mastery ?? []).map((m) => [m.topic_id, Number(m.mastery_score)]))
 
+  const { data: baselines } = await supabase
+    .from('learner_topic_baselines')
+    .select('topic_id, baseline_mastery')
+    .eq('learner_id', learnerId)
+    .in('topic_id', topicIds)
+  const baselineByTopic = new Map((baselines ?? []).map((b) => [b.topic_id, Number(b.baseline_mastery)]))
+
   const { data: illustrations } = await supabase
     .from('media')
     .select('topic_id, url, created_at')
@@ -51,11 +59,16 @@ export async function fetchTopicsWithProgress(
     }
   }
 
-  return topics.map((t) => ({
-    ...t,
-    name: localizedName(t, language),
-    lessonCount: lessonCountByTopic.get(t.id) ?? 0,
-    masteryScore: masteryByTopic.get(t.id) ?? 0,
-    illustrationUrl: illustrationByTopic.get(t.id) ?? null,
-  }))
+  return topics.map((t) => {
+    const realMastery = masteryByTopic.get(t.id)
+    const baseline = baselineByTopic.get(t.id) ?? 0
+    return {
+      ...t,
+      name: localizedName(t, language),
+      lessonCount: lessonCountByTopic.get(t.id) ?? 0,
+      masteryScore: realMastery ?? baseline,
+      isBaseline: realMastery === undefined && baseline > 0,
+      illustrationUrl: illustrationByTopic.get(t.id) ?? null,
+    }
+  })
 }

@@ -9,6 +9,7 @@ import { ContactPage } from '@/pages/legal/ContactPage'
 import { SignInPage } from '@/pages/auth/SignInPage'
 import { SignUpPage } from '@/pages/auth/SignUpPage'
 import { CreateLearnerPage } from '@/pages/onboarding/CreateLearnerPage'
+import { StartingPointPage } from '@/pages/onboarding/StartingPointPage'
 import { ChildDashboardPage } from '@/pages/dashboard/ChildDashboardPage'
 import { SubjectsPage } from '@/pages/subjects/SubjectsPage'
 import { TopicListPage } from '@/pages/subjects/TopicListPage'
@@ -49,6 +50,17 @@ export default function App() {
         element={
           <RequireAuth>
             <CreateLearnerPage />
+          </RequireAuth>
+        }
+      />
+
+      <Route
+        path="/onboarding/starting-point"
+        element={
+          <RequireAuth>
+            <RequireLearner>
+              <StartingPointPage />
+            </RequireLearner>
           </RequireAuth>
         }
       />

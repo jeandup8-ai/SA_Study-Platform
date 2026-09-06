@@ -18,3 +18,18 @@ export async function setSubjectBaseline(learnerId: string, subjectId: string, b
     )
   if (error) throw error
 }
+
+export async function setSubjectBaselines(
+  learnerId: string,
+  entries: { subjectId: string; baselineMastery: number }[],
+): Promise<void> {
+  if (entries.length === 0) return
+  const rows = entries.map((e) => ({
+    learner_id: learnerId,
+    subject_id: e.subjectId,
+    baseline_mastery: e.baselineMastery,
+    updated_at: new Date().toISOString(),
+  }))
+  const { error } = await supabase.from('learner_subject_baselines').upsert(rows, { onConflict: 'learner_id,subject_id' })
+  if (error) throw error
+}
