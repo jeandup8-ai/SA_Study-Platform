@@ -1,15 +1,16 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Camera, FileText, ShieldCheck } from 'lucide-react'
+import { Camera, FileText, ShieldCheck, Sparkles } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useLearner } from '@/context/LearnerContext'
 import { moderationProvider, logModerationDecision } from '@/lib/moderation'
-import { fetchSubjectsForGrade } from '@/lib/curriculum/queries'
+import { fetchSubjectsForGrade, fetchTopicById } from '@/lib/curriculum/queries'
+import { detectScanTopic } from '@/lib/scan/detectTopic'
 import { Button, Card, Badge } from '@/components/ui'
-import type { Subject } from '@/types/curriculum'
+import type { Subject, Topic } from '@/types/curriculum'
 
-type ScanState = 'idle' | 'checking' | 'rejected' | 'approved'
+type ScanState = 'idle' | 'checking' | 'detecting' | 'rejected' | 'approved'
 
 export function ScanMyWorkPage() {
   const { t } = useTranslation()
@@ -21,6 +22,8 @@ export function ScanMyWorkPage() {
   const [selectedSubject, setSelectedSubject] = useState<Subject | null>(null)
   const [simulateUnsafe, setSimulateUnsafe] = useState(false)
   const [visualSafetyChecked, setVisualSafetyChecked] = useState(false)
+  const [detectedTopic, setDetectedTopic] = useState<Topic | null>(null)
+  const [showManualPicker, setShowManualPicker] = useState(false)
 
   useEffect(() => {
     if (activeLearner) fetchSubjectsForGrade(activeLearner.grade_id, activeLearner.preferred_language).then(setSubjects)
@@ -29,6 +32,8 @@ export function ScanMyWorkPage() {
   async function handleFile(file: File) {
     if (!activeLearner || !parent) return
     setSelectedSubject(null)
+    setDetectedTopic(null)
+    setShowManualPicker(false)
     setState('checking')
     setPreview(file.type.startsWith('image/') ? URL.createObjectURL(file) : null)
 
@@ -40,7 +45,22 @@ export function ScanMyWorkPage() {
       result,
     })
     setVisualSafetyChecked(result.visualSafetyChecked)
-    setState(result.decision === 'approved' ? 'approved' : 'rejected')
+
+    if (result.decision !== 'approved') {
+      setState('rejected')
+      return
+    }
+
+    setState('detecting')
+    const detection = await detectScanTopic(activeLearner.id, file)
+    if (detection?.topicId && detection.confidence !== 'low') {
+      const topic = await fetchTopicById(detection.topicId, activeLearner.preferred_language)
+      if (topic) {
+        setDetectedTopic(topic)
+        setSelectedSubject(subjects.find((s) => s.id === detection.subjectId) ?? null)
+      }
+    }
+    setState('approved')
   }
 
   if (!activeLearner) return null
@@ -123,10 +143,12 @@ export function ScanMyWorkPage() {
         </div>
       )}
 
-      {state === 'checking' && (
+      {(state === 'checking' || state === 'detecting') && (
         <Card className="mt-6 flex flex-col items-center gap-3 py-10 text-center">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
-          <p className="text-sm font-medium text-slate-500">{t('scan.checking')}</p>
+          <p className="text-sm font-medium text-slate-500">
+            {state === 'detecting' ? t('scan.detecting') : t('scan.checking')}
+          </p>
         </Card>
       )}
 
@@ -152,25 +174,54 @@ export function ScanMyWorkPage() {
                 {visualSafetyChecked ? t('scan.safetyChecked') : t('scan.safetyNotConnected')}
               </Badge>
             </div>
-            <p className="mt-3 font-semibold text-slate-800">{t('scan.detectedSubject')}...</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {subjects.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => setSelectedSubject(s)}
-                  className={`min-h-10 rounded-full border-2 px-4 text-sm font-semibold ${
-                    selectedSubject?.id === s.id
-                      ? 'border-brand-600 bg-brand-50 text-brand-700'
-                      : 'border-slate-200 text-slate-600'
-                  }`}
-                >
-                  {s.name}
-                </button>
-              ))}
-            </div>
+
+            {detectedTopic && !showManualPicker ? (
+              <div className="mt-3">
+                <div className="flex items-center gap-2 text-brand-700">
+                  <Sparkles size={16} />
+                  <p className="font-semibold">{t('scan.weThinkThisIs')}</p>
+                </div>
+                <p className="mt-1 text-lg font-bold text-slate-900">{detectedTopic.name}</p>
+                {subjects.find((s) => s.id === detectedTopic.subject_id) && (
+                  <p className="text-sm text-slate-500">
+                    {subjects.find((s) => s.id === detectedTopic.subject_id)?.name}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <>
+                <p className="mt-3 font-semibold text-slate-800">{t('scan.detectedSubject')}...</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {subjects.map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => setSelectedSubject(s)}
+                      className={`min-h-10 rounded-full border-2 px-4 text-sm font-semibold ${
+                        selectedSubject?.id === s.id
+                          ? 'border-brand-600 bg-brand-50 text-brand-700'
+                          : 'border-slate-200 text-slate-600'
+                      }`}
+                    >
+                      {s.name}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </Card>
 
-          {selectedSubject && (
+          {detectedTopic && !showManualPicker && (
+            <>
+              <Link to={`/app/subjects/${detectedTopic.subject_id}/topics/${detectedTopic.id}`}>
+                <Button className="w-full">{t('scan.startLesson')}</Button>
+              </Link>
+              <Button variant="ghost" className="w-full" onClick={() => setShowManualPicker(true)}>
+                {t('scan.notQuiteRight')}
+              </Button>
+            </>
+          )}
+
+          {(!detectedTopic || showManualPicker) && selectedSubject && (
             <Link to={`/app/subjects/${selectedSubject.id}`}>
               <Button className="w-full">{t('scan.startLesson')}</Button>
             </Link>

@@ -29,6 +29,11 @@ export async function fetchSubjectsForGrade(gradeId: string, language: LanguageC
     .map((s) => ({ ...s, name: localizedName(s, language) }))
 }
 
+export async function fetchTopicById(topicId: string, language: LanguageCode = 'en'): Promise<Topic | null> {
+  const { data } = await supabase.from('topics').select('*').eq('id', topicId).maybeSingle()
+  return data ? { ...data, name: localizedName(data, language) } : null
+}
+
 export async function fetchTopicsForSubjectAndGrade(
   subjectId: string,
   gradeId: string,
