@@ -10,6 +10,10 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Registration is done explicitly in main.tsx via virtual:pwa-register
+      // (with a periodic update check), not the default auto-injected
+      // script, which only ever registers once and never checks again.
+      injectRegister: false,
       includeAssets: ['favicon.svg'],
       manifest: {
         name: 'SA Learning Platform',
