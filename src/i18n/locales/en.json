@@ -94,6 +94,7 @@
     "myProgress": "My Progress",
     "askTutor": "Ask My Tutor",
     "scanWork": "Scan My Work",
+    "achievements": "Achievements",
     "recommended": "Recommended For You",
     "recommendReason": {
       "next_in_sequence": "Next up in your syllabus",
@@ -116,7 +117,12 @@
     "nextLesson": "Next lesson",
     "startTopic": "Start",
     "noTopicsYet": "No topics published for this subject yet.",
-    "noLessonsYet": "No lessons published for this topic yet."
+    "noLessonsYet": "No lessons published for this topic yet.",
+    "downloadPracticeSheet": "Download a printable practice sheet",
+    "practiceSheetTitle": "Practice Sheet",
+    "answerMemoTitle": "Answer Memo",
+    "pdfQuestionLabel": "Question",
+    "writeYourAnswer": "Write your answer below:"
   },
   "lesson": {
     "step.what_are_we_learning": "What are we learning?",
@@ -207,7 +213,33 @@
     "startingPointHint": "If they already know some of this from a previous term, set a starting % here. It's used only until they start real lessons or practice in this subject — after that, their actual progress takes over.",
     "startingPointBadge": "Starting point",
     "byTopicToggle": "Break down by topic",
-    "byTopicHint": "Set a starting % per topic so you can see exactly where extra focus is needed."
+    "byTopicHint": "Set a starting % per topic so you can see exactly where extra focus is needed.",
+    "familyLeaderboard": "Family leaderboard"
+  },
+  "gamification": {
+    "totalPoints_one": "{{count}} point",
+    "totalPoints_other": "{{count}} points",
+    "pointsEarned_one": "+{{count}} point!",
+    "pointsEarned_other": "+{{count}} points!",
+    "newBadge": "New badge",
+    "achievementsTitle": "Achievements",
+    "achievementsSubtitle": "{{count}} of {{total}} badges earned",
+    "badge.streak_3.name": "On a Roll",
+    "badge.streak_3.description": "Practise 3 days in a row",
+    "badge.streak_7.name": "Week Warrior",
+    "badge.streak_7.description": "Practise 7 days in a row",
+    "badge.streak_30.name": "Unstoppable",
+    "badge.streak_30.description": "Practise 30 days in a row",
+    "badge.first_topic_mastered.name": "First Star",
+    "badge.first_topic_mastered.description": "Master your first topic",
+    "badge.five_topics_mastered.name": "Rising Star",
+    "badge.five_topics_mastered.description": "Master 5 topics",
+    "badge.ten_topics_mastered.name": "Topic Champion",
+    "badge.ten_topics_mastered.description": "Master 10 topics",
+    "badge.hundred_correct.name": "Century Club",
+    "badge.hundred_correct.description": "Answer 100 questions correctly",
+    "badge.five_hundred_correct.name": "Legend in the Making",
+    "badge.five_hundred_correct.description": "Answer 500 questions correctly"
   },
   "exam": {
     "title": "Exam Preparation",

@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { Download } from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
 import { fetchTopicsWithProgress, type TopicWithProgress } from '@/lib/curriculum/topics'
 import { localizedName } from '@/lib/i18n/localizedName'
+import { fetchPrintablePracticeSet } from '@/lib/curriculum/printable'
+import { generatePracticeSheetPdf } from '@/lib/pdf/practiceSheet'
 import { supabase } from '@/lib/supabase'
 import { Card, ProgressRing, Badge } from '@/components/ui'
 
@@ -13,6 +16,7 @@ export function TopicListPage() {
   const { activeLearner } = useLearner()
   const [topics, setTopics] = useState<TopicWithProgress[]>([])
   const [subjectName, setSubjectName] = useState('')
+  const [downloadingId, setDownloadingId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!activeLearner || !subjectId) return
@@ -26,6 +30,32 @@ export function TopicListPage() {
       .maybeSingle()
       .then(({ data }) => setSubjectName(data ? localizedName(data, activeLearner.preferred_language) : ''))
   }, [activeLearner, subjectId])
+
+  async function handleDownload(event: React.MouseEvent, topic: TopicWithProgress) {
+    event.preventDefault()
+    event.stopPropagation()
+    if (!activeLearner || downloadingId) return
+    setDownloadingId(topic.id)
+    try {
+      const questions = await fetchPrintablePracticeSet(topic.id, activeLearner.preferred_language)
+      if (questions.length > 0) {
+        await generatePracticeSheetPdf({
+          subjectName,
+          topicName: topic.name,
+          questions,
+          labels: {
+            brand: t('common.appName'),
+            practiceSheetTitle: t('subjects.practiceSheetTitle'),
+            answerMemoTitle: t('subjects.answerMemoTitle'),
+            questionLabel: t('subjects.pdfQuestionLabel'),
+            writeYourAnswer: t('subjects.writeYourAnswer'),
+          },
+        })
+      }
+    } finally {
+      setDownloadingId(null)
+    }
+  }
 
   return (
     <div className="mx-auto max-w-lg px-4 pt-6 pb-10">
@@ -52,6 +82,19 @@ export function TopicListPage() {
                     <Badge tone="warning">{t('common.demoContent')}</Badge>
                   )}
                 </div>
+                <button
+                  type="button"
+                  onClick={(e) => void handleDownload(e, topic)}
+                  disabled={downloadingId === topic.id}
+                  aria-label={t('subjects.downloadPracticeSheet')}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600 disabled:opacity-50"
+                >
+                  {downloadingId === topic.id ? (
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+                  ) : (
+                    <Download size={16} />
+                  )}
+                </button>
                 <ProgressRing value={topic.masteryScore} size={44} strokeWidth={5} />
               </div>
             </Card>

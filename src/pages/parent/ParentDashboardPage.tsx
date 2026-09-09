@@ -9,6 +9,7 @@ import { fetchWeeklyStats, fetchAttentionNeeded, type WeeklyStats, type TopicAtt
 import { setSubjectBaseline } from '@/lib/parent/subjectBaseline'
 import { setTopicBaseline } from '@/lib/parent/topicBaseline'
 import { Card, ProgressRing, Badge, LearnerAvatarIcon, Button } from '@/components/ui'
+import { Trophy } from 'lucide-react'
 
 export function ParentDashboardPage() {
   const { t } = useTranslation()
@@ -127,6 +128,29 @@ export function ParentDashboardPage() {
           </select>
         )}
       </div>
+
+      {learners.length > 1 && (
+        <Card className="mt-6">
+          <div className="flex items-center gap-2">
+            <Trophy size={16} className="text-sun-500" />
+            <p className="text-sm font-bold text-slate-800">{t('parent.familyLeaderboard')}</p>
+          </div>
+          <div className="mt-3 space-y-2">
+            {[...learners]
+              .sort((a, b) => b.total_points - a.total_points)
+              .map((l, i) => (
+                <div key={l.id} className="flex items-center gap-3">
+                  <span className="w-5 text-center text-sm font-bold text-slate-400">{i + 1}</span>
+                  <LearnerAvatarIcon avatar={l.avatar} />
+                  <span className="flex-1 text-sm font-semibold text-slate-700">{l.display_name}</span>
+                  <span className="text-sm font-bold text-brand-700">
+                    {t('gamification.totalPoints', { count: l.total_points })}
+                  </span>
+                </div>
+              ))}
+          </div>
+        </Card>
+      )}
 
       <h2 className="mt-6 text-sm font-bold uppercase tracking-wide text-slate-400">{t('parent.thisWeek')}</h2>
       <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">

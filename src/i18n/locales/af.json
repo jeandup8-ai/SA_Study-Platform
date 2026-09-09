@@ -94,6 +94,7 @@
     "myProgress": "My Vordering",
     "askTutor": "Vra My Tutor",
     "scanWork": "Skandeer My Werk",
+    "achievements": "Prestasies",
     "recommended": "Aanbeveel Vir Jou",
     "recommendReason": {
       "next_in_sequence": "Volgende in jou sillabus",
@@ -116,7 +117,12 @@
     "nextLesson": "Volgende les",
     "startTopic": "Begin",
     "noTopicsYet": "Nog geen onderwerpe vir hierdie vak gepubliseer nie.",
-    "noLessonsYet": "Nog geen lesse vir hierdie onderwerp gepubliseer nie."
+    "noLessonsYet": "Nog geen lesse vir hierdie onderwerp gepubliseer nie.",
+    "downloadPracticeSheet": "Laai 'n drukbare oefenblad af",
+    "practiceSheetTitle": "Oefenblad",
+    "answerMemoTitle": "Antwoordmemorandum",
+    "pdfQuestionLabel": "Vraag",
+    "writeYourAnswer": "Skryf jou antwoord hieronder:"
   },
   "lesson": {
     "step.what_are_we_learning": "Wat leer ons?",
@@ -207,7 +213,33 @@
     "startingPointHint": "As hulle al iets hiervan van 'n vorige kwartaal ken, stel 'n begin-% hier. Dit word net gebruik totdat hulle regte lesse of oefening in hierdie vak begin — daarna neem hul werklike vordering oor.",
     "startingPointBadge": "Beginpunt",
     "byTopicToggle": "Verdeel volgens onderwerp",
-    "byTopicHint": "Stel 'n beginpunt-persentasie per onderwerp sodat jy presies kan sien waar ekstra fokus nodig is."
+    "byTopicHint": "Stel 'n beginpunt-persentasie per onderwerp sodat jy presies kan sien waar ekstra fokus nodig is.",
+    "familyLeaderboard": "Gesin-ranglys"
+  },
+  "gamification": {
+    "totalPoints_one": "{{count}} punt",
+    "totalPoints_other": "{{count}} punte",
+    "pointsEarned_one": "+{{count}} punt!",
+    "pointsEarned_other": "+{{count}} punte!",
+    "newBadge": "Nuwe wapenskild",
+    "achievementsTitle": "Prestasies",
+    "achievementsSubtitle": "{{count}} van {{total}} wapenskilde verdien",
+    "badge.streak_3.name": "Aan Die Gang",
+    "badge.streak_3.description": "Oefen 3 dae in 'n ry",
+    "badge.streak_7.name": "Weeklikse Wenner",
+    "badge.streak_7.description": "Oefen 7 dae in 'n ry",
+    "badge.streak_30.name": "Onstuitbaar",
+    "badge.streak_30.description": "Oefen 30 dae in 'n ry",
+    "badge.first_topic_mastered.name": "Eerste Ster",
+    "badge.first_topic_mastered.description": "Bemeester jou eerste onderwerp",
+    "badge.five_topics_mastered.name": "Opkomende Ster",
+    "badge.five_topics_mastered.description": "Bemeester 5 onderwerpe",
+    "badge.ten_topics_mastered.name": "Onderwerp-kampioen",
+    "badge.ten_topics_mastered.description": "Bemeester 10 onderwerpe",
+    "badge.hundred_correct.name": "Honderd-klub",
+    "badge.hundred_correct.description": "Beantwoord 100 vrae korrek",
+    "badge.five_hundred_correct.name": "'n Legende in Wording",
+    "badge.five_hundred_correct.description": "Beantwoord 500 vrae korrek"
   },
   "exam": {
     "title": "Eksamenvoorbereiding",

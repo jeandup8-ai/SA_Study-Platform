@@ -8,6 +8,10 @@ import { fetchQuestionsForTopic, fetchMiniQuizForLesson } from '@/lib/curriculum
 import { recordQuizResult } from '@/lib/mastery/engine'
 import { requestAlternateExplanation, type AlternateExplanation } from '@/lib/tutor/explainDifferently'
 import { AlternateExplanationCard } from '@/components/lesson/AlternateExplanationCard'
+import { awardFlatPoints, POINTS_PER_PRACTICE_SET_COMPLETED } from '@/lib/gamification/points'
+import { checkAndAwardBadges, type BadgeCode } from '@/lib/gamification/badges'
+import { fetchStreak } from '@/lib/streak/streak'
+import { PointsEarnedBanner } from '@/components/lesson/PointsEarnedBanner'
 import {
   isV2Lesson,
   getNarration,
@@ -69,6 +73,8 @@ export function LessonPage() {
     questions: [],
   })
   const [quizResult, setQuizResult] = useState<{ correctCount: number; total: number } | null>(null)
+  const [pointsEarned, setPointsEarned] = useState(0)
+  const [newBadges, setNewBadges] = useState<BadgeCode[]>([])
   const [nextLesson, setNextLesson] = useState<Lesson | null>(null)
   const [sessionStartedAt] = useState(() => new Date())
   const [aiExplanation, setAiExplanation] = useState<AlternateExplanation | null>(null)
@@ -177,7 +183,7 @@ export function LessonPage() {
   async function handleQuizComplete(result: { correctCount: number; total: number; answers: import('@/components/lesson/QuestionRunner').QuestionAnswerRecord[] }) {
     if (!lesson || !activeLearner) return
     setQuizResult(result)
-    await recordQuizResult({
+    const { pointsEarned: earned, newBadges: badges } = await recordQuizResult({
       learnerId: activeLearner.id,
       topicId: lesson.topic_id,
       lessonId: lesson.id,
@@ -187,7 +193,19 @@ export function LessonPage() {
       assessmentId: quiz.assessmentId ?? undefined,
       sessionStartedAt,
     })
+    setPointsEarned(earned)
+    setNewBadges(badges)
     setStepIndex((i) => i + 1)
+  }
+
+  async function handlePracticeSetComplete() {
+    if (activeLearner && lesson) {
+      await awardFlatPoints(activeLearner.id, POINTS_PER_PRACTICE_SET_COMPLETED, 'practice_completed', lesson.id)
+      setPointsEarned(POINTS_PER_PRACTICE_SET_COMPLETED)
+      const { currentStreak } = await fetchStreak(activeLearner.id)
+      setNewBadges(await checkAndAwardBadges(activeLearner.id, { currentStreak }))
+    }
+    goNext()
   }
 
   function goNext() {
@@ -272,7 +290,7 @@ export function LessonPage() {
         {isV2 &&
           step === 'practice_questions' &&
           (v2PracticeQuestions.length > 0 ? (
-            <PracticeSelfCheck questions={v2PracticeQuestions} onComplete={goNext} />
+            <PracticeSelfCheck questions={v2PracticeQuestions} onComplete={() => void handlePracticeSetComplete()} />
           ) : (
             <LoadingCard />
           ))}
@@ -348,12 +366,14 @@ export function LessonPage() {
                   })
                 : t('common.loading')}
             </p>
+            <PointsEarnedBanner points={pointsEarned} newBadges={newBadges} />
           </Card>
         )}
 
         {step === 'next_step' && (
           <Card className="text-center">
             <p className="font-bold text-slate-800">{t('lesson.finishLesson')} 🎉</p>
+            {isV2 && <PointsEarnedBanner points={pointsEarned} newBadges={newBadges} />}
             {nextLesson ? (
               <Link to={`/app/lessons/${nextLesson.id}`} className="mt-4 block">
                 <Button className="w-full">{nextLesson.title}</Button>

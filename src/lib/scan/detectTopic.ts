@@ -6,6 +6,7 @@ export interface ScanTopicDetection {
   subjectId: string | null
   topicId: string | null
   confidence: 'high' | 'medium' | 'low'
+  mistakeFeedback: string | null
 }
 
 const DETECTABLE_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
@@ -33,6 +34,7 @@ export async function detectScanTopic(learnerId: string, file: File): Promise<Sc
       subjectId: typeof data.subjectId === 'string' ? data.subjectId : null,
       topicId: typeof data.topicId === 'string' ? data.topicId : null,
       confidence: data.confidence === 'high' || data.confidence === 'medium' ? data.confidence : 'low',
+      mistakeFeedback: typeof data.mistakeFeedback === 'string' ? data.mistakeFeedback : null,
     }
   } catch {
     return null

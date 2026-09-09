@@ -17,6 +17,7 @@ import { LessonListPage } from '@/pages/subjects/LessonListPage'
 import { LessonPage } from '@/pages/lessons/LessonPage'
 import { ScanMyWorkPage } from '@/pages/scan/ScanMyWorkPage'
 import { LearnerProgressPage } from '@/pages/progress/LearnerProgressPage'
+import { AchievementsPage } from '@/pages/achievements/AchievementsPage'
 import { ExamPrepPage } from '@/pages/exam/ExamPrepPage'
 import { MockTestPage } from '@/pages/exam/MockTestPage'
 import { ParentDashboardPage } from '@/pages/parent/ParentDashboardPage'
@@ -79,6 +80,7 @@ export default function App() {
                   <Route path="lessons/:lessonId" element={<LessonPage />} />
                   <Route path="scan" element={<ScanMyWorkPage />} />
                   <Route path="progress" element={<LearnerProgressPage />} />
+                  <Route path="achievements" element={<AchievementsPage />} />
                   <Route path="exam" element={<ExamPrepPage />} />
                   <Route path="exam/:subjectId/mock-test" element={<MockTestPage />} />
                 </Routes>

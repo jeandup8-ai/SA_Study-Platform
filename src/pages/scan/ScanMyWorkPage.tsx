@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Camera, FileText, ShieldCheck, Sparkles } from 'lucide-react'
+import { Camera, FileText, ShieldCheck, Sparkles, Lightbulb } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useLearner } from '@/context/LearnerContext'
 import { moderationProvider, logModerationDecision } from '@/lib/moderation'
@@ -24,6 +24,7 @@ export function ScanMyWorkPage() {
   const [visualSafetyChecked, setVisualSafetyChecked] = useState(false)
   const [detectedTopic, setDetectedTopic] = useState<Topic | null>(null)
   const [showManualPicker, setShowManualPicker] = useState(false)
+  const [mistakeFeedback, setMistakeFeedback] = useState<string | null>(null)
 
   useEffect(() => {
     if (activeLearner) fetchSubjectsForGrade(activeLearner.grade_id, activeLearner.preferred_language).then(setSubjects)
@@ -34,6 +35,7 @@ export function ScanMyWorkPage() {
     setSelectedSubject(null)
     setDetectedTopic(null)
     setShowManualPicker(false)
+    setMistakeFeedback(null)
     setState('checking')
     setPreview(file.type.startsWith('image/') ? URL.createObjectURL(file) : null)
 
@@ -58,6 +60,7 @@ export function ScanMyWorkPage() {
       if (topic) {
         setDetectedTopic(topic)
         setSelectedSubject(subjects.find((s) => s.id === detection.subjectId) ?? null)
+        setMistakeFeedback(detection.mistakeFeedback)
       }
     }
     setState('approved')
@@ -186,6 +189,12 @@ export function ScanMyWorkPage() {
                   <p className="text-sm text-slate-500">
                     {subjects.find((s) => s.id === detectedTopic.subject_id)?.name}
                   </p>
+                )}
+                {mistakeFeedback && (
+                  <div className="mt-3 flex items-start gap-2 rounded-xl bg-sun-50 px-4 py-3">
+                    <Lightbulb size={16} className="mt-0.5 shrink-0 text-sun-600" />
+                    <p className="text-sm text-sun-700">{mistakeFeedback}</p>
+                  </div>
                 )}
               </div>
             ) : (

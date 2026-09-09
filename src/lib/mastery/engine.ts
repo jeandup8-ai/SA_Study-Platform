@@ -1,5 +1,8 @@
 import { supabase } from '@/lib/supabase'
 import type { QuestionAnswerRecord } from '@/components/lesson/QuestionRunner'
+import { awardQuizPoints } from '@/lib/gamification/points'
+import { checkAndAwardBadges, type BadgeCode } from '@/lib/gamification/badges'
+import { fetchStreak } from '@/lib/streak/streak'
 
 /**
  * Mastery is an exponential moving average over quiz/practice results, weighted
@@ -21,7 +24,7 @@ export async function recordQuizResult(params: {
   answers: QuestionAnswerRecord[]
   assessmentId?: string
   sessionStartedAt?: Date
-}): Promise<{ newMasteryScore: number }> {
+}): Promise<{ newMasteryScore: number; pointsEarned: number; newBadges: BadgeCode[] }> {
   const { learnerId, topicId, lessonId = null, correctCount, total, answers, assessmentId, sessionStartedAt } = params
   const scorePercent = total > 0 ? (correctCount / total) * 100 : 0
 
@@ -94,7 +97,14 @@ export async function recordQuizResult(params: {
 
   await updateSkillMastery({ learnerId, topicId, answers })
 
-  return { newMasteryScore: newScore }
+  const pointsEarned = await awardQuizPoints(
+    learnerId,
+    answers.map((a) => ({ questionId: a.questionId, isCorrect: a.isCorrect })),
+  )
+  const { currentStreak } = await fetchStreak(learnerId)
+  const newBadges = await checkAndAwardBadges(learnerId, { currentStreak })
+
+  return { newMasteryScore: newScore, pointsEarned, newBadges }
 }
 
 /**
