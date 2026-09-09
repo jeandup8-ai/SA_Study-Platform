@@ -66,6 +66,28 @@ interface DetectionResult {
   confidence: 'high' | 'medium' | 'low'
 }
 
+/**
+ * A single retry absorbs a one-off transient network blip between the edge
+ * runtime and Anthropic's API -- confirmed in production logs as the actual
+ * cause of "why didn't it auto-detect" reports: the very first attempt threw
+ * a plain connection error with nothing else wrong (not a bad request, not a
+ * refusal), the kind of failure a second attempt typically clears on its own.
+ * A second failure still surfaces exactly as before -- this doesn't mask a
+ * genuine, persistent problem, only a single flaky attempt.
+ */
+async function createMessageWithRetry(
+  anthropic: Anthropic,
+  params: Parameters<Anthropic['messages']['create']>[0],
+): ReturnType<Anthropic['messages']['create']> {
+  try {
+    return await anthropic.messages.create(params)
+  } catch (err) {
+    console.error(`Anthropic call failed, retrying once: ${err instanceof Error ? err.message : String(err)}`)
+    await new Promise((resolve) => setTimeout(resolve, 400))
+    return await anthropic.messages.create(params)
+  }
+}
+
 function isDetectionResult(value: unknown): value is DetectionResult {
   if (!value || typeof value !== 'object') return false
   const v = value as Record<string, unknown>
@@ -154,7 +176,7 @@ Rules:
   const anthropic = new Anthropic({ apiKey: anthropicKey })
 
   try {
-    const response = await anthropic.messages.create({
+    const response = await createMessageWithRetry(anthropic, {
       model: MODEL,
       max_tokens: 300,
       system: systemPrompt,
@@ -288,7 +310,7 @@ Key terms for this subject:
 ${terminologyText}`
 
   try {
-    const response = await anthropic.messages.create({
+    const response = await createMessageWithRetry(anthropic, {
       model: MODEL,
       max_tokens: 200,
       system: systemPrompt,

@@ -42,12 +42,18 @@ export function LessonListPage() {
       <div className="mt-4 space-y-3">
         {lessons.map((lesson) => {
           const status = progressByLesson.get(lesson.id)?.status ?? 'not_started'
+          // lessons.title is an English-only column with no Afrikaans sibling.
+          // Almost every topic has exactly one lesson, so the topic name
+          // (already localized above) is a safe, correctly-localized stand-in;
+          // only fall back to the raw English title in the rare case where a
+          // topic has more than one lesson and they need to read differently.
+          const label = lessons.length > 1 ? lesson.title : topicName || lesson.title
           return (
             <Link key={lesson.id} to={`/app/lessons/${lesson.id}`}>
               <Card className="flex items-center gap-3">
                 <StatusIcon status={status} />
                 <div className="flex-1">
-                  <p className="font-bold text-slate-900">{lesson.title}</p>
+                  <p className="font-bold text-slate-900">{label}</p>
                   <p className="text-sm text-slate-500">{lesson.estimated_minutes} min</p>
                 </div>
               </Card>
