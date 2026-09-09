@@ -40,6 +40,7 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 import Anthropic from 'npm:@anthropic-ai/sdk@0.32'
+import { encodeBase64 } from 'jsr:@std/encoding/base64'
 
 const MODEL = 'claude-haiku-4-5'
 const MAX_FILE_BYTES = 5 * 1024 * 1024
@@ -67,25 +68,36 @@ interface DetectionResult {
 }
 
 /**
- * A single retry absorbs a one-off transient network blip between the edge
- * runtime and Anthropic's API -- confirmed in production logs as the actual
- * cause of "why didn't it auto-detect" reports: the very first attempt threw
- * a plain connection error with nothing else wrong (not a bad request, not a
- * refusal), the kind of failure a second attempt typically clears on its own.
- * A second failure still surfaces exactly as before -- this doesn't mask a
- * genuine, persistent problem, only a single flaky attempt.
+ * Retries absorb a transient network blip between the edge runtime and
+ * Anthropic's API -- confirmed in production logs as a real, recurring cause
+ * of "why didn't it auto-detect" reports (a plain connection error, not a bad
+ * request or a refusal). One retry with a fixed 400ms gap turned out not to
+ * be enough on at least one occasion (both the original attempt and that
+ * retry failed within ~2 seconds of each other), so this tries up to three
+ * times total with increasing backoff. A run that still fails after all three
+ * surfaces exactly as before -- this doesn't mask a genuine, persistent
+ * problem, only a slow-to-clear blip.
  */
 async function createMessageWithRetry(
   anthropic: Anthropic,
   params: Parameters<Anthropic['messages']['create']>[0],
 ): ReturnType<Anthropic['messages']['create']> {
-  try {
-    return await anthropic.messages.create(params)
-  } catch (err) {
-    console.error(`Anthropic call failed, retrying once: ${err instanceof Error ? err.message : String(err)}`)
-    await new Promise((resolve) => setTimeout(resolve, 400))
-    return await anthropic.messages.create(params)
+  const backoffsMs = [500, 1500]
+  let lastErr: unknown
+  for (let attempt = 0; attempt <= backoffsMs.length; attempt++) {
+    try {
+      return await anthropic.messages.create(params)
+    } catch (err) {
+      lastErr = err
+      if (attempt < backoffsMs.length) {
+        console.error(
+          `Anthropic call failed (attempt ${attempt + 1}/${backoffsMs.length + 1}), retrying: ${err instanceof Error ? err.message : String(err)}`,
+        )
+        await new Promise((resolve) => setTimeout(resolve, backoffsMs[attempt]))
+      }
+    }
   }
+  throw lastErr
 }
 
 function isDetectionResult(value: unknown): value is DetectionResult {
@@ -158,10 +170,14 @@ Deno.serve(async (req: Request) => {
     })
     .join('\n')
 
+  // A byte-by-byte String.fromCharCode concatenation loop here (the original
+  // approach) is O(n) allocations for a multi-megabyte photo -- easily
+  // millions of intermediate string allocations, which can burn enough CPU
+  // inside the edge isolate's single-threaded event loop to look, from the
+  // outside, like a hung or failed connection on the *next* thing that runs
+  // (the Anthropic fetch call). encodeBase64 does this in one native pass.
   const imageBytes = new Uint8Array(await file.arrayBuffer())
-  let binary = ''
-  for (const byte of imageBytes) binary += String.fromCharCode(byte)
-  const imageBase64 = btoa(binary)
+  const imageBase64 = encodeBase64(imageBytes)
 
   const systemPrompt = `You are matching a photo of a South African primary-school worksheet or textbook page to the single closest topic from a fixed list. You must only ever choose an id that appears in the list given to you -- never invent one. Respond with ONLY a single JSON object, no markdown, no code fences, matching exactly this shape:
 {"detected_language": "en" | "af", "subject_id": "<uuid from the list, or null>", "topic_id": "<uuid from the list, or null>", "confidence": "high" | "medium" | "low"}

@@ -186,7 +186,9 @@
     "safetyChecked": "Visual safety scan: checked",
     "safetyNotConnected": "Visual safety scan: not connected",
     "safetyNote": "Every upload is checked on our server before it's used — file type, size, and hidden location data in the photo are always verified for real. Deep visual scanning for unsafe imagery runs too once a vision-safety provider is connected; see the toggle below to preview how a rejection looks either way.",
-    "simulateUnsafeToggle": "Demo: simulate an unsafe upload being rejected"
+    "simulateUnsafeToggle": "Demo: simulate an unsafe upload being rejected",
+    "detectionUnavailable": "Auto-detection is having trouble right now — please choose below, or try again.",
+    "tryDetectionAgain": "Try auto-detect again"
   },
   "parent": {
     "dashboardTitle": "{{name}}'s progress",

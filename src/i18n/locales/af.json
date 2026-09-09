@@ -186,7 +186,9 @@
     "safetyChecked": "Visuele veiligheidsontleding: nagegaan",
     "safetyNotConnected": "Visuele veiligheidsontleding: nie gekoppel nie",
     "safetyNote": "Elke oplaai word op ons bediener nagegaan voordat dit gebruik word — lêertipe, grootte, en versteekte liggingdata in die foto word altyd werklik geverifieer. Diepgaande visuele ontleding vir onveilige beelde loop ook sodra 'n visie-veiligheidsverskaffer gekoppel is; sien die wisselaar hieronder om te sien hoe 'n verwerping in albei gevalle lyk.",
-    "simulateUnsafeToggle": "Demo: simuleer die verwerping van 'n onveilige oplaai"
+    "simulateUnsafeToggle": "Demo: simuleer die verwerping van 'n onveilige oplaai",
+    "detectionUnavailable": "Outomatiese herkenning sukkel tans — kies asseblief hieronder, of probeer weer.",
+    "tryDetectionAgain": "Probeer outomatiese herkenning weer"
   },
   "parent": {
     "dashboardTitle": "{{name}} se vordering",

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Camera, FileText, ShieldCheck, Sparkles, Lightbulb } from 'lucide-react'
+import { Camera, FileText, ShieldCheck, Sparkles, Lightbulb, RotateCw } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useLearner } from '@/context/LearnerContext'
 import { moderationProvider, logModerationDecision } from '@/lib/moderation'
@@ -25,6 +25,9 @@ export function ScanMyWorkPage() {
   const [detectedTopic, setDetectedTopic] = useState<Topic | null>(null)
   const [showManualPicker, setShowManualPicker] = useState(false)
   const [mistakeFeedback, setMistakeFeedback] = useState<string | null>(null)
+  const [approvedFile, setApprovedFile] = useState<File | null>(null)
+  const [detectionUnavailable, setDetectionUnavailable] = useState(false)
+  const [retryingDetection, setRetryingDetection] = useState(false)
 
   useEffect(() => {
     if (activeLearner) fetchSubjectsForGrade(activeLearner.grade_id, activeLearner.preferred_language).then(setSubjects)
@@ -36,6 +39,8 @@ export function ScanMyWorkPage() {
     setDetectedTopic(null)
     setShowManualPicker(false)
     setMistakeFeedback(null)
+    setDetectionUnavailable(false)
+    setApprovedFile(null)
     setState('checking')
     setPreview(file.type.startsWith('image/') ? URL.createObjectURL(file) : null)
 
@@ -53,9 +58,25 @@ export function ScanMyWorkPage() {
       return
     }
 
+    setApprovedFile(file)
     setState('detecting')
+    await runDetection(file)
+    setState('approved')
+  }
+
+  // Split out from handleFile so a technical detection failure (as opposed to
+  // a genuine "couldn't confidently match anything") can be retried on its
+  // own -- the photo already passed moderation, so retrying shouldn't force
+  // the parent to re-take or re-upload it, only re-run the AI lookup.
+  async function runDetection(file: File) {
+    if (!activeLearner) return
     const detection = await detectScanTopic(activeLearner.id, file)
-    if (detection?.topicId && detection.confidence !== 'low') {
+    if (detection === null) {
+      setDetectionUnavailable(true)
+      return
+    }
+    setDetectionUnavailable(false)
+    if (detection.topicId && detection.confidence !== 'low') {
       const topic = await fetchTopicById(detection.topicId, activeLearner.preferred_language)
       if (topic) {
         setDetectedTopic(topic)
@@ -63,7 +84,13 @@ export function ScanMyWorkPage() {
         setMistakeFeedback(detection.mistakeFeedback)
       }
     }
-    setState('approved')
+  }
+
+  async function handleRetryDetection() {
+    if (!approvedFile) return
+    setRetryingDetection(true)
+    await runDetection(approvedFile)
+    setRetryingDetection(false)
   }
 
   if (!activeLearner) return null
@@ -199,6 +226,21 @@ export function ScanMyWorkPage() {
               </div>
             ) : (
               <>
+                {detectionUnavailable && !showManualPicker && (
+                  <div className="mt-3 rounded-xl bg-slate-50 px-4 py-3">
+                    <p className="text-sm text-slate-600">{t('scan.detectionUnavailable')}</p>
+                    <Button
+                      variant="secondary"
+                      size="md"
+                      className="mt-2"
+                      disabled={retryingDetection || !approvedFile}
+                      onClick={() => void handleRetryDetection()}
+                    >
+                      <RotateCw size={14} className={retryingDetection ? 'animate-spin' : undefined} />
+                      {t('scan.tryDetectionAgain')}
+                    </Button>
+                  </div>
+                )}
                 <p className="mt-3 font-semibold text-slate-800">{t('scan.detectedSubject')}...</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {subjects.map((s) => (
