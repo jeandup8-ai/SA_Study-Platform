@@ -15,6 +15,20 @@
 // verified terminology, nothing else) rather than a free-ended "what's wrong
 // with this" prompt.
 //
+// IMPORTANT: this calls the Anthropic Messages API via plain `fetch`, not the
+// `@anthropic-ai/sdk` npm package. Production logs showed every single
+// invocation of this function logging "Couldn't load zlib" / "Couldn't load
+// fs" on boot, followed by the SDK's HTTP call throwing a bare "Connection
+// error" 100% of the time (three separate attempts across increasing
+// backoff, on two separate days, all failed identically) -- while every
+// other Supabase-JS `fetch`-based call in this exact function (the `learners`
+// / `topics` queries above) succeeded every time. That pattern points at the
+// SDK's Node-oriented HTTP transport failing under this specific Deno edge
+// runtime's npm compatibility layer, not a real network outage. Deno's native
+// `fetch` is what supabase-js itself already relies on successfully here, so
+// this function talks to Anthropic the same way, sidestepping the SDK's
+// transport entirely.
+//
 // Deliberately narrow, mirroring explain-differently's safety posture:
 //   - The model is only ever offered a closed list of this learner's own grade's
 //     real topic ids as candidates -- it cannot invent a topic, and this
@@ -39,13 +53,14 @@
 
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { createClient } from 'npm:@supabase/supabase-js@2'
-import Anthropic from 'npm:@anthropic-ai/sdk@0.32'
 import { encodeBase64 } from 'jsr:@std/encoding/base64'
 
 const MODEL = 'claude-haiku-4-5'
 const MAX_FILE_BYTES = 5 * 1024 * 1024
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/webp']
 const MISTAKE_FEEDBACK_DAILY_LIMIT = 10
+const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages'
+const ANTHROPIC_VERSION = '2023-06-01'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -67,26 +82,45 @@ interface DetectionResult {
   confidence: 'high' | 'medium' | 'low'
 }
 
+interface ClaudeMessage {
+  content: { type: string; text?: string }[]
+  stop_reason: string
+  usage: { input_tokens: number; output_tokens: number }
+}
+
+interface ImageContentBlock {
+  type: 'image'
+  source: { type: 'base64'; media_type: 'image/jpeg' | 'image/png' | 'image/webp'; data: string }
+}
+
 /**
- * Retries absorb a transient network blip between the edge runtime and
- * Anthropic's API -- confirmed in production logs as a real, recurring cause
- * of "why didn't it auto-detect" reports (a plain connection error, not a bad
- * request or a refusal). One retry with a fixed 400ms gap turned out not to
- * be enough on at least one occasion (both the original attempt and that
- * retry failed within ~2 seconds of each other), so this tries up to three
- * times total with increasing backoff. A run that still fails after all three
- * surfaces exactly as before -- this doesn't mask a genuine, persistent
- * problem, only a slow-to-clear blip.
+ * Plain `fetch` to the Anthropic Messages API -- see the file header for why
+ * this bypasses the SDK. Retries absorb a genuine transient network blip
+ * (still possible even with a native fetch); a run that fails all three
+ * attempts surfaces exactly as before rather than masking a real problem.
  */
-async function createMessageWithRetry(
-  anthropic: Anthropic,
-  params: Parameters<Anthropic['messages']['create']>[0],
-): ReturnType<Anthropic['messages']['create']> {
+async function callClaude(
+  apiKey: string,
+  body: { model: string; max_tokens: number; system: string; messages: { role: 'user'; content: (ImageContentBlock | { type: 'text'; text: string })[] }[] },
+): Promise<ClaudeMessage> {
   const backoffsMs = [500, 1500]
   let lastErr: unknown
   for (let attempt = 0; attempt <= backoffsMs.length; attempt++) {
     try {
-      return await anthropic.messages.create(params)
+      const res = await fetch(ANTHROPIC_API_URL, {
+        method: 'POST',
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': ANTHROPIC_VERSION,
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify(body),
+      })
+      if (!res.ok) {
+        const errorText = await res.text().catch(() => '')
+        throw new Error(`Anthropic API responded ${res.status}: ${errorText.slice(0, 500)}`)
+      }
+      return (await res.json()) as ClaudeMessage
     } catch (err) {
       lastErr = err
       if (attempt < backoffsMs.length) {
@@ -170,14 +204,9 @@ Deno.serve(async (req: Request) => {
     })
     .join('\n')
 
-  // A byte-by-byte String.fromCharCode concatenation loop here (the original
-  // approach) is O(n) allocations for a multi-megabyte photo -- easily
-  // millions of intermediate string allocations, which can burn enough CPU
-  // inside the edge isolate's single-threaded event loop to look, from the
-  // outside, like a hung or failed connection on the *next* thing that runs
-  // (the Anthropic fetch call). encodeBase64 does this in one native pass.
   const imageBytes = new Uint8Array(await file.arrayBuffer())
   const imageBase64 = encodeBase64(imageBytes)
+  const mediaType = file.type as 'image/jpeg' | 'image/png' | 'image/webp'
 
   const systemPrompt = `You are matching a photo of a South African primary-school worksheet or textbook page to the single closest topic from a fixed list. You must only ever choose an id that appears in the list given to you -- never invent one. Respond with ONLY a single JSON object, no markdown, no code fences, matching exactly this shape:
 {"detected_language": "en" | "af", "subject_id": "<uuid from the list, or null>", "topic_id": "<uuid from the list, or null>", "confidence": "high" | "medium" | "low"}
@@ -189,10 +218,8 @@ Rules:
 
   const userText = `Candidate subjects and topics for this learner's grade:\n${candidateText}\n\nWhich topic id does this photo match?`
 
-  const anthropic = new Anthropic({ apiKey: anthropicKey })
-
   try {
-    const response = await createMessageWithRetry(anthropic, {
+    const response = await callClaude(anthropicKey, {
       model: MODEL,
       max_tokens: 300,
       system: systemPrompt,
@@ -200,13 +227,13 @@ Rules:
         {
           role: 'user',
           content: [
-            { type: 'image', source: { type: 'base64', media_type: file.type as 'image/jpeg' | 'image/png' | 'image/webp', data: imageBase64 } },
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: imageBase64 } },
             { type: 'text', text: userText },
           ],
         },
       ],
     })
-    const textBlock = response.content.find((b): b is Anthropic.TextBlock => b.type === 'text')
+    const textBlock = response.content.find((b) => b.type === 'text')
     const raw = textBlock?.text ?? ''
     if (response.stop_reason === 'refusal' || !raw) {
       return jsonResponse({ error: 'detection_unavailable' }, 502)
@@ -239,12 +266,12 @@ Rules:
     if (topicId && confidence !== 'low') {
       mistakeFeedback = await generateMistakeFeedback({
         supabase,
-        anthropic,
+        anthropicKey,
         learnerId,
         topicId,
         language: learner.preferred_language as 'en' | 'af',
         imageBase64,
-        mimeType: file.type,
+        mediaType,
       })
     }
 
@@ -272,14 +299,14 @@ Rules:
  */
 async function generateMistakeFeedback(params: {
   supabase: ReturnType<typeof createClient>
-  anthropic: Anthropic
+  anthropicKey: string
   learnerId: string
   topicId: string
   language: 'en' | 'af'
   imageBase64: string
-  mimeType: string
+  mediaType: 'image/jpeg' | 'image/png' | 'image/webp'
 }): Promise<string | null> {
-  const { supabase, anthropic, learnerId, topicId, language, imageBase64, mimeType } = params
+  const { supabase, anthropicKey, learnerId, topicId, language, imageBase64, mediaType } = params
 
   const startOfToday = new Date()
   startOfToday.setUTCHours(0, 0, 0, 0)
@@ -326,7 +353,7 @@ Key terms for this subject:
 ${terminologyText}`
 
   try {
-    const response = await createMessageWithRetry(anthropic, {
+    const response = await callClaude(anthropicKey, {
       model: MODEL,
       max_tokens: 200,
       system: systemPrompt,
@@ -334,13 +361,13 @@ ${terminologyText}`
         {
           role: 'user',
           content: [
-            { type: 'image', source: { type: 'base64', media_type: mimeType as 'image/jpeg' | 'image/png' | 'image/webp', data: imageBase64 } },
+            { type: 'image', source: { type: 'base64', media_type: mediaType, data: imageBase64 } },
             { type: 'text', text: 'What, if anything, is worth double-checking in this work?' },
           ],
         },
       ],
     })
-    const textBlock = response.content.find((b): b is Anthropic.TextBlock => b.type === 'text')
+    const textBlock = response.content.find((b) => b.type === 'text')
     const raw = textBlock?.text ?? ''
     if (response.stop_reason === 'refusal' || !raw) return null
 
