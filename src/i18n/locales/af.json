@@ -122,7 +122,11 @@
     "practiceSheetTitle": "Oefenblad",
     "answerMemoTitle": "Antwoordmemorandum",
     "pdfQuestionLabel": "Vraag",
-    "writeYourAnswer": "Skryf jou antwoord hieronder:"
+    "writeYourAnswer": "Skryf jou antwoord hieronder:",
+    "downloadSummary": "Laai 'n drukbare onderwerp-opsomming af",
+    "keyTermsHeading": "Sleutelterme",
+    "summaryHeading": "Opsomming",
+    "workedExampleHeading": "Uitgewerkte Voorbeeld"
   },
   "lesson": {
     "step.what_are_we_learning": "Wat leer ons?",

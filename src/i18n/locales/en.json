@@ -122,7 +122,11 @@
     "practiceSheetTitle": "Practice Sheet",
     "answerMemoTitle": "Answer Memo",
     "pdfQuestionLabel": "Question",
-    "writeYourAnswer": "Write your answer below:"
+    "writeYourAnswer": "Write your answer below:",
+    "downloadSummary": "Download a printable topic summary",
+    "keyTermsHeading": "Key Terms",
+    "summaryHeading": "Summary",
+    "workedExampleHeading": "Worked Example"
   },
   "lesson": {
     "step.what_are_we_learning": "What are we learning?",

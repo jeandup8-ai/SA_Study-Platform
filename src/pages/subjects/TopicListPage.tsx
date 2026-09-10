@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Download } from 'lucide-react'
+import { Download, BookOpen } from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
 import { fetchTopicsWithProgress, type TopicWithProgress } from '@/lib/curriculum/topics'
 import { localizedName } from '@/lib/i18n/localizedName'
 import { fetchPrintablePracticeSet } from '@/lib/curriculum/printable'
 import { generatePracticeSheetPdf } from '@/lib/pdf/practiceSheet'
+import { fetchTopicSummaryContent } from '@/lib/curriculum/topicSummary'
+import { generateTopicSummaryPdf } from '@/lib/pdf/topicSummarySheet'
 import { supabase } from '@/lib/supabase'
 import { Card, ProgressRing, Badge } from '@/components/ui'
 
@@ -16,7 +18,7 @@ export function TopicListPage() {
   const { activeLearner } = useLearner()
   const [topics, setTopics] = useState<TopicWithProgress[]>([])
   const [subjectName, setSubjectName] = useState('')
-  const [downloadingId, setDownloadingId] = useState<string | null>(null)
+  const [downloadingKey, setDownloadingKey] = useState<string | null>(null)
 
   useEffect(() => {
     if (!activeLearner || !subjectId) return
@@ -31,11 +33,12 @@ export function TopicListPage() {
       .then(({ data }) => setSubjectName(data ? localizedName(data, activeLearner.preferred_language) : ''))
   }, [activeLearner, subjectId])
 
-  async function handleDownload(event: React.MouseEvent, topic: TopicWithProgress) {
+  async function handleDownloadPracticeSheet(event: React.MouseEvent, topic: TopicWithProgress) {
     event.preventDefault()
     event.stopPropagation()
-    if (!activeLearner || downloadingId) return
-    setDownloadingId(topic.id)
+    if (!activeLearner || downloadingKey) return
+    const key = `${topic.id}:practice`
+    setDownloadingKey(key)
     try {
       const questions = await fetchPrintablePracticeSet(topic.id, activeLearner.preferred_language)
       if (questions.length > 0) {
@@ -53,7 +56,34 @@ export function TopicListPage() {
         })
       }
     } finally {
-      setDownloadingId(null)
+      setDownloadingKey(null)
+    }
+  }
+
+  async function handleDownloadSummary(event: React.MouseEvent, topic: TopicWithProgress) {
+    event.preventDefault()
+    event.stopPropagation()
+    if (!activeLearner || downloadingKey) return
+    const key = `${topic.id}:summary`
+    setDownloadingKey(key)
+    try {
+      const content = await fetchTopicSummaryContent(topic.id, activeLearner.preferred_language)
+      if (content.narrationParagraphs.length > 0 || content.workedExample || content.keyTerms.length > 0) {
+        await generateTopicSummaryPdf({
+          subjectName,
+          topicName: topic.name,
+          ...content,
+          labels: {
+            brand: t('common.appName'),
+            keyTermsHeading: t('subjects.keyTermsHeading'),
+            summaryHeading: t('subjects.summaryHeading'),
+            workedExampleHeading: t('subjects.workedExampleHeading'),
+            aiGeneratedNotice: t('lesson.aiGeneratedNotice'),
+          },
+        })
+      }
+    } finally {
+      setDownloadingKey(null)
     }
   }
 
@@ -65,7 +95,7 @@ export function TopicListPage() {
         {topics.map((topic) => (
           <Link key={topic.id} to={`/app/subjects/${subjectId}/topics/${topic.id}`}>
             <Card>
-              <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center justify-between gap-2">
                 {topic.illustrationUrl && (
                   <img
                     src={topic.illustrationUrl}
@@ -84,12 +114,25 @@ export function TopicListPage() {
                 </div>
                 <button
                   type="button"
-                  onClick={(e) => void handleDownload(e, topic)}
-                  disabled={downloadingId === topic.id}
+                  onClick={(e) => void handleDownloadSummary(e, topic)}
+                  disabled={downloadingKey === `${topic.id}:summary`}
+                  aria-label={t('subjects.downloadSummary')}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600 disabled:opacity-50"
+                >
+                  {downloadingKey === `${topic.id}:summary` ? (
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
+                  ) : (
+                    <BookOpen size={16} />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => void handleDownloadPracticeSheet(e, topic)}
+                  disabled={downloadingKey === `${topic.id}:practice`}
                   aria-label={t('subjects.downloadPracticeSheet')}
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border-2 border-slate-200 text-slate-400 hover:bg-slate-50 hover:text-slate-600 disabled:opacity-50"
                 >
-                  {downloadingId === topic.id ? (
+                  {downloadingKey === `${topic.id}:practice` ? (
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-slate-300 border-t-slate-600" />
                   ) : (
                     <Download size={16} />
