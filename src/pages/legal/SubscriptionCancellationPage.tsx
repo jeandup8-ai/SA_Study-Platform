@@ -2,31 +2,26 @@ import { LegalPageLayout } from './LegalPageLayout'
 
 export function SubscriptionCancellationPage() {
   return (
-    <LegalPageLayout title="Subscription Cancellation" lastUpdated="22 August 2026">
+    <LegalPageLayout title="Subscription Cancellation" lastUpdated="10 September 2026">
       <p>
-        <strong>Honest status: there is currently no self-service "Cancel subscription" button
-        anywhere in the app.</strong> This is a real gap, not an oversight in this page — it is
-        listed here so it is fixed before real billing goes live rather than discovered by a
-        parent who needs it.
+        A "Cancel subscription" button is available on the Manage Subscription screen once you're
+        signed in. Clicking it stops future billing immediately — it does not automatically refund
+        a charge already made; see our <a href="/refund-policy">Refund Policy</a> for that.
       </p>
 
-      <h2>How to cancel today</h2>
+      <h2>How to cancel</h2>
       <p>
-        Because no payment provider is connected yet, no subscription started in the app today is
-        actually being billed — starting a plan only records your intent to subscribe. If you
-        would still like your account's subscription record removed or your trial stopped, contact
-        us using the details on our <a href="/contact">Contact page</a> and we will action it
+        Sign in, go to Manage Subscription, and click Cancel subscription. This records the
+        cancellation on your account right away. If the automatic step with our payment provider
+        doesn't go through for any reason, our records still show your cancellation was requested,
+        and we reconcile it manually — you are never dependent on that one call succeeding.
+      </p>
+
+      <h2>If you have trouble</h2>
+      <p>
+        If you can't access the app or the button doesn't work as expected, contact us using the
+        details on our <a href="/contact">Contact page</a> and we will action the cancellation
         manually.
-      </p>
-
-      <h2>Once billing is live</h2>
-      <p>
-        Before real billing goes live, we intend to add a self-service cancellation option inside
-        the app (on the Manage Subscription screen), so cancelling does not require contacting
-        support. Until that exists, cancellation will continue to be handled manually through{' '}
-        <a href="/contact">Contact</a>. Cancelling stops the next billing charge; it does not
-        automatically refund a charge already made — see our{' '}
-        <a href="/refund-policy">Refund Policy</a> for that.
       </p>
     </LegalPageLayout>
   )

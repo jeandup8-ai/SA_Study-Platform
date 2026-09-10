@@ -1755,6 +1755,56 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_events: {
+        Row: {
+          amount_gross: number | null
+          created_at: string
+          id: string
+          payment_status: string | null
+          processed_at: string | null
+          provider: string
+          provider_event_id: string
+          raw_payload: Json
+          server_validated: boolean
+          signature_valid: boolean
+          subscription_id: string | null
+        }
+        Insert: {
+          amount_gross?: number | null
+          created_at?: string
+          id?: string
+          payment_status?: string | null
+          processed_at?: string | null
+          provider: string
+          provider_event_id: string
+          raw_payload: Json
+          server_validated?: boolean
+          signature_valid: boolean
+          subscription_id?: string | null
+        }
+        Update: {
+          amount_gross?: number | null
+          created_at?: string
+          id?: string
+          payment_status?: string | null
+          processed_at?: string | null
+          provider?: string
+          provider_event_id?: string
+          raw_payload?: Json
+          server_validated?: boolean
+          signature_valid?: boolean
+          subscription_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_events_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       phases: {
         Row: {
           code: string
@@ -2273,6 +2323,7 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          cancel_requested_at: string | null
           created_at: string
           current_period_end: string | null
           id: string
@@ -2287,6 +2338,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cancel_requested_at?: string | null
           created_at?: string
           current_period_end?: string | null
           id?: string
@@ -2301,6 +2353,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cancel_requested_at?: string | null
           created_at?: string
           current_period_end?: string | null
           id?: string

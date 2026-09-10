@@ -51,7 +51,7 @@ export function TermsPage() {
 
       <h2>4. Subscriptions, trial, and billing</h2>
       <p>
-        StudyLegends is offered on a single Family Plan at R149 per month or R1,150 per year, each
+        StudyLegends is offered on a single Family Plan at R149 per month or R1,199 per year, each
         starting with a 3-day free trial. You can use the plan during the trial at no charge;
         after the trial ends, the subscription is intended to renew automatically at the listed
         price until cancelled, unless you cancel before the trial ends.
