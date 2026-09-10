@@ -127,3 +127,34 @@ export async function generateTopicIllustration(topicId: string): Promise<Genera
   if (!data?.media) return { ok: false, error: 'unknown' }
   return { ok: true }
 }
+
+/**
+ * Runs generateTopicIllustration for every given topic ID, one at a time
+ * (not in parallel) -- this hits a real paid image-generation API per call,
+ * so a deliberate sequential pace with a short gap avoids bursting past
+ * OpenAI's rate limits and keeps a runaway loop easy to cancel between
+ * calls. Every generated image still lands as approval_status='pending'
+ * exactly like a single manual "Generate" click -- this bulk helper does
+ * not change or bypass the human-review gate in any way, only the number
+ * of times "Generate" gets pressed.
+ */
+export async function generateAllMissingIllustrations(
+  topicIds: string[],
+  options: { onProgress?: (done: number, total: number, topicId: string, result: GenerateIllustrationResult) => void; shouldContinue?: () => boolean; delayMs?: number } = {},
+): Promise<{ succeeded: number; failed: { topicId: string; error: string }[] }> {
+  const { onProgress, shouldContinue, delayMs = 500 } = options
+  let succeeded = 0
+  const failed: { topicId: string; error: string }[] = []
+
+  for (let i = 0; i < topicIds.length; i++) {
+    if (shouldContinue && !shouldContinue()) break
+    const topicId = topicIds[i]
+    const result = await generateTopicIllustration(topicId)
+    if (result.ok) succeeded++
+    else failed.push({ topicId, error: result.error ?? 'unknown' })
+    onProgress?.(i + 1, topicIds.length, topicId, result)
+    if (i + 1 < topicIds.length) await new Promise((resolve) => setTimeout(resolve, delayMs))
+  }
+
+  return { succeeded, failed }
+}
