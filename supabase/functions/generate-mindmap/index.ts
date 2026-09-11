@@ -174,7 +174,11 @@ Generate one simplified mind map of this topic, grounded only in the content abo
       messages: [{ role: 'user', content: userPrompt }],
     })
     const textBlock = response.content.find((b): b is Anthropic.TextBlock => b.type === 'text')
-    raw = textBlock?.text ?? ''
+    raw = (textBlock?.text ?? '').trim()
+    // The system prompt tells the model not to use markdown code fences, but it
+    // doesn't always comply -- strip a leading/trailing ```json fence if present
+    // rather than failing on otherwise-valid JSON.
+    raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '')
 
     if (response.stop_reason === 'refusal' || !raw) {
       console.error(`generate-mindmap: stop_reason=${response.stop_reason} rawLength=${raw.length}`)
