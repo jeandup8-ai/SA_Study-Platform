@@ -2,6 +2,7 @@ import { supabase } from '@/lib/supabase'
 
 export interface MindMapBranch {
   label: string
+  icon: string
   children: string[]
 }
 

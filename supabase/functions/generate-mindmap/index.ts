@@ -30,6 +30,19 @@ const MIN_BRANCHES = 3
 const MAX_BRANCHES = 6
 const MAX_CHILDREN_PER_BRANCH = 4
 
+// Fixed icon vocabulary the model picks one from per branch, purely for visual
+// styling on the client (see MindMapView.tsx's ICON_MAP). Deliberately not
+// enforced in isMindMapResult below -- an icon key outside this list just
+// falls back to a default icon client-side rather than failing the whole
+// response, the same lesson learned from the code-fence bug this replaces.
+const ICON_KEYS = [
+  'lightbulb', 'atom', 'calculator', 'map', 'book', 'heart', 'users', 'globe',
+  'leaf', 'droplet', 'flame', 'zap', 'shapes', 'palette', 'music', 'ruler',
+  'clock', 'calendar', 'scale', 'compass', 'cloud', 'mountain', 'factory',
+  'coins', 'shield', 'home', 'brain', 'dumbbell', 'utensils', 'puzzle', 'star',
+  'magnet', 'thermometer', 'battery',
+]
+
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -45,6 +58,7 @@ function jsonResponse(body: unknown, status = 200): Response {
 
 interface MindMapBranch {
   label: string
+  icon: string
   children: string[]
 }
 interface MindMapResult {
@@ -63,6 +77,8 @@ function isMindMapResult(value: unknown): value is MindMapResult {
     return (
       typeof branch.label === 'string' &&
       branch.label.length > 0 &&
+      typeof branch.icon === 'string' &&
+      branch.icon.length > 0 &&
       Array.isArray(branch.children) &&
       branch.children.length > 0 &&
       branch.children.length <= MAX_CHILDREN_PER_BRANCH &&
@@ -150,8 +166,9 @@ STRICT RULES — follow all of them:
 3. Every label must be SHORT: the central topic label at most 6 words, each branch label at most 4 words, each child point at most 6 words. No full sentences, no explanations — a mind map is keywords and short phrases only.
 4. Write at a Grade ${gradeNumber} reading level: simple, familiar words.
 5. This topic and its content are the only valid subject matter. Never ask the child for personal information, never suggest meeting or contacting anyone, never include external links, phone numbers, or contact details, and never claim to be a human or a friend.
-6. Output ONLY a single JSON object, with no markdown formatting and no code fences, matching exactly this shape:
-{"central": "<short central topic label>", "branches": [{"label": "<short branch label>", "children": ["<short point>", "..."]}, ...]}`
+6. For each branch, pick the single best-fitting icon key from this exact list (lowercase, no other value is valid): ${ICON_KEYS.join(', ')}.
+7. Output ONLY a single JSON object, with no markdown formatting and no code fences, matching exactly this shape:
+{"central": "<short central topic label>", "branches": [{"label": "<short branch label>", "icon": "<one icon key from the list>", "children": ["<short point>", "..."]}, ...]}`
 
   const userPrompt = `Topic: ${topicName}
 
@@ -169,7 +186,7 @@ Generate one simplified mind map of this topic, grounded only in the content abo
   try {
     const response = await anthropic.messages.create({
       model: MODEL,
-      max_tokens: 500,
+      max_tokens: 700,
       system: systemPrompt,
       messages: [{ role: 'user', content: userPrompt }],
     })
