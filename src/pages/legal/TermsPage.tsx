@@ -2,7 +2,7 @@ import { LegalPageLayout } from './LegalPageLayout'
 
 export function TermsPage() {
   return (
-    <LegalPageLayout title="Terms of Service" lastUpdated="2 September 2026">
+    <LegalPageLayout title="Terms of Service" lastUpdated="11 September 2026">
       <p>
         These terms govern use of StudyLegends, a mobile-first learning app for South African learners in
         Grade 4–7, built around the CAPS curriculum. <strong>These terms have not yet been
@@ -57,12 +57,13 @@ export function TermsPage() {
         price until cancelled, unless you cancel before the trial ends.
       </p>
       <p>
-        <strong>At the time of writing, no live payment processor is connected to this product.</strong>
-        Starting a plan currently records your intent to subscribe only — it does not charge a
-        card, because no card details are currently collected anywhere in the product. This
-        section describes the billing terms that will apply once a South African payment provider
-        (for example PayFast) is connected and switched on; it will be updated to name that
-        provider before real billing goes live. See our <a href="/refund-policy">Refund Policy</a>
+        Billing is handled by PayFast, a South African payment provider. Starting a paid
+        subscription takes you to PayFast's own secure checkout page to enter your card details —
+        StudyLegends never sees or stores your card number. PayFast then notifies us automatically
+        once a payment succeeds, fails, or a subscription is cancelled.{' '}
+        <strong>At the time of writing, this integration is running in PayFast's sandbox (test)
+        mode only, so no real money is being charged yet.</strong> This notice will be removed
+        once live billing goes live. See our <a href="/refund-policy">Refund Policy</a>
         {' '}and <a href="/subscription-cancellation">Cancellation</a> pages for what happens after
         that point.
       </p>
@@ -95,9 +96,9 @@ export function TermsPage() {
       <h2>8. Cancellation</h2>
       <p>
         You may cancel at any time as described on our{' '}
-        <a href="/subscription-cancellation">Subscription Cancellation</a> page. Self-service
-        cancellation inside the app is not yet built; cancellation currently has to be requested
-        through <a href="/contact">Contact</a>.
+        <a href="/subscription-cancellation">Subscription Cancellation</a> page, using the
+        self-service "Cancel subscription" button on the Manage Subscription screen once you are
+        signed in.
       </p>
 
       <h2>9. Limitation of liability</h2>

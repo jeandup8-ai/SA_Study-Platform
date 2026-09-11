@@ -2,25 +2,25 @@ import { LegalPageLayout } from './LegalPageLayout'
 
 export function RefundPolicyPage() {
   return (
-    <LegalPageLayout title="Refund Policy" lastUpdated="30 August 2026">
+    <LegalPageLayout title="Refund Policy" lastUpdated="11 September 2026">
       <p>
-        <strong>No payment provider is connected to StudyLegends yet, so no real payments are being taken
-        today and there is currently nothing to refund.</strong> This page describes the refund
-        policy we intend to apply once real billing (via a South African payment provider such as
-        PayFast) goes live. It has not yet been reviewed by a qualified attorney and should be
-        checked against that provider's own requirements before publication.
+        <strong>Billing is built and connected via PayFast, but at the time of writing it is
+        running in PayFast's sandbox (test) mode only — no real payments are being taken today, so
+        there is currently nothing to refund.</strong> This page describes the refund policy we
+        intend to apply once live billing goes live. It has not yet been reviewed by a qualified
+        attorney and should be checked against PayFast's own requirements before publication.
       </p>
 
       <h2>Free trial</h2>
       <p>
-        Every Family Plan subscription starts with a 3-day free trial. If you cancel before the
-        trial ends, you will not be charged. This is true today in the sense that starting a trial
-        in the app only records your intent to subscribe — it does not charge a card, because no
-        card-collection or billing step exists in the product yet.
+        Every Family Plan subscription starts with a 3-day free trial. Starting a trial directly
+        does not charge a card and does not go through PayFast at all — it simply activates trial
+        access on your account. Only choosing to subscribe with PayFast takes you to their
+        checkout to enter card details.
       </p>
 
       <h2>Once billing is live</h2>
-      <p>Once a real payment provider is connected, we intend to offer:</p>
+      <p>Once billing goes live, we intend to offer:</p>
       <ul>
         <li>
           A full refund if you are charged in error (for example, a duplicate charge or a charge
