@@ -29,6 +29,16 @@ function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: { ...CORS_HEADERS, 'Content-Type': 'application/json' } })
 }
 
+// PHP's urlencode(), which is what http_build_query() uses internally to
+// encode each value -- matches encodeURIComponent except space -> '+' and
+// !'()* and ~ are also percent-escaped (encodeURIComponent leaves those
+// unreserved). Verified against known PHP urlencode output before use.
+function phpUrlEncode(value: string): string {
+  return encodeURIComponent(value)
+    .replace(/%20/g, '+')
+    .replace(/[!'()*~]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())
+}
+
 // Minimal RFC 1321 MD5 -- same implementation as payfast-checkout/payfast-itn,
 // verified against Node's crypto.createHash('md5') for known test vectors
 // before use. Deno's Web Crypto has no native MD5, and this avoids depending
@@ -152,17 +162,27 @@ Deno.serve(async (req: Request) => {
   if (subscription.provider_subscription_id) {
     try {
       const merchantId = Deno.env.get('PAYFAST_MERCHANT_ID') ?? ''
-      const passphrase = Deno.env.get('PAYFAST_PASSPHRASE') ?? ''
-      // Per developers.payfast.co.za "Cancel a subscription": headers are
-      // merchant-id, version, timestamp (ISO-8601 with a numeric UTC offset,
-      // e.g. +00:00 -- NOT a bare "Z"), and signature = MD5 of the
-      // alphabetised header variables plus the passphrase, all lower-cased.
-      // This is a different scheme to the checkout/ITN form signature (fixed
-      // field order, passphrase only appended if set) -- verified against
-      // the real docs page after the first guess here failed in sandbox.
+      const passphrase = Deno.env.get('PAYFAST_PASSPHRASE')
+      // Per developers.payfast.co.za's Authentication page, which gives this
+      // reference PHP implementation:
+      //   if ($passPhrase !== null) $pfData['passphrase'] = $passPhrase;
+      //   ksort($pfData);
+      //   return md5(http_build_query($pfData));
+      // i.e.: alphabetise the header variables (adding passphrase to the set
+      // ONLY when one is actually configured -- not as an empty value), then
+      // url-encode each value the same way http_build_query/PHP's urlencode()
+      // does, join with '&'. No case-folding of the string itself (the
+      // "characters must be in lower case" line on another page turned out to
+      // just describe the output hex digest, not the input -- confirmed by
+      // this reference implementation, which doesn't lower-case anything).
       const timestamp = new Date().toISOString().slice(0, 19) + '+00:00'
       const version = 'v1'
-      const signatureBase = `merchant-id=${merchantId}&passphrase=${passphrase}&timestamp=${timestamp}&version=${version}`.toLowerCase()
+      const fields: Record<string, string> = { 'merchant-id': merchantId, timestamp, version }
+      if (passphrase) fields.passphrase = passphrase
+      const signatureBase = Object.keys(fields)
+        .sort()
+        .map((k) => `${k}=${phpUrlEncode(fields[k])}`)
+        .join('&')
       const signature = md5Hex(signatureBase)
       const response = await fetch(`https://api.payfast.co.za/subscriptions/${subscription.provider_subscription_id}/cancel`, {
         method: 'PUT',
