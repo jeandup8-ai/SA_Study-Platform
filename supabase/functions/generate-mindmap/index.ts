@@ -206,8 +206,10 @@ Generate one simplified mind map of this topic, grounded only in the content abo
     return jsonResponse({ mindmap: parsed })
   } catch (err) {
     const status = (err as { status?: number })?.status
+    const cause = (err as { cause?: unknown })?.cause
     console.error(
-      `generate-mindmap: Anthropic call threw${status ? ` (status ${status})` : ''}: ${err instanceof Error ? err.message : String(err)}`,
+      `generate-mindmap: Anthropic call threw${status ? ` (status ${status})` : ''}: ${err instanceof Error ? err.message : String(err)}` +
+        (cause ? ` | cause: ${cause instanceof Error ? `${cause.name}: ${cause.message}` : String(cause)}` : ''),
     )
     return jsonResponse({ error: 'mindmap_unavailable' }, 502)
   }

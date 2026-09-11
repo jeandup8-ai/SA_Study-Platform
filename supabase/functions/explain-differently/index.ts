@@ -243,8 +243,10 @@ Generate one alternate explanation of this topic using the "${availableFraming}"
     return jsonResponse({ explanation: parsed })
   } catch (err) {
     const status = (err as { status?: number })?.status
+    const cause = (err as { cause?: unknown })?.cause
     console.error(
-      `explain-differently: Anthropic call threw${status ? ` (status ${status})` : ''}: ${err instanceof Error ? err.message : String(err)}`,
+      `explain-differently: Anthropic call threw${status ? ` (status ${status})` : ''}: ${err instanceof Error ? err.message : String(err)}` +
+        (cause ? ` | cause: ${cause instanceof Error ? `${cause.name}: ${cause.message}` : String(cause)}` : ''),
     )
     return jsonResponse({ error: 'explanation_unavailable' }, 502)
   }
