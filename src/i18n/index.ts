@@ -21,8 +21,14 @@ i18n
     fallbackLng: 'en',
     supportedLngs: ['en', 'af'],
     interpolation: { escapeValue: false },
+    // No 'navigator' here deliberately: this is a South African product
+    // where a browser/OS locale of 'af' is common and would otherwise
+    // silently switch a first-time visitor's landing page to Afrikaans
+    // before they've ever chosen anything. Default is always English until
+    // applyLanguagePreference() below writes an explicit in-app choice
+    // (parent/learner preferred_language) into localStorage.
     detection: {
-      order: ['localStorage', 'navigator'],
+      order: ['localStorage'],
       caches: ['localStorage'],
     },
   })

@@ -164,7 +164,14 @@
     "aiExplanationError.feature_not_configured": "Hierdie funksie is nog nie aangeskakel nie — probeer solank die ander knoppies hierbo.",
     "aiExplanationError.explanation_unavailable": "Kon nie nou 'n nuwe verduideliking kry nie — probeer asseblief weer oor 'n oomblik.",
     "aiExplanationError.model_output_invalid": "Kon nie nou 'n nuwe verduideliking kry nie — probeer asseblief weer oor 'n oomblik.",
-    "aiExplanationError.unknown": "Iets het verkeerd geloop — probeer asseblief weer oor 'n oomblik."
+    "aiExplanationError.unknown": "Iets het verkeerd geloop — probeer asseblief weer oor 'n oomblik.",
+    "mindMap": "Gedagtekaart",
+    "mindMapLoading": "Besig om 'n gedagtekaart te teken...",
+    "mindMapError.daily_limit_reached": "Jy het vandag se gedagtekaarte klaar gebruik — goeie moeite vandag! Probeer weer môre, of vra 'n ouer vir hulp.",
+    "mindMapError.feature_not_configured": "Hierdie funksie is nog nie aangeskakel nie — probeer solank die ander knoppies hierbo.",
+    "mindMapError.mindmap_unavailable": "Kon nie nou 'n gedagtekaart teken nie — probeer asseblief weer oor 'n oomblik.",
+    "mindMapError.model_output_invalid": "Kon nie nou 'n gedagtekaart teken nie — probeer asseblief weer oor 'n oomblik.",
+    "mindMapError.unknown": "Iets het verkeerd geloop — probeer asseblief weer oor 'n oomblik."
   },
   "quiz": {
     "questionOf": "Vraag {{current}} van {{total}}",
@@ -206,6 +213,13 @@
     "recommended": "Aanbeveel",
     "recommendedSessions": "{{count}} × {{minutes}} minuut sessies hierdie week",
     "manageSubscription": "Bestuur intekening",
+    "subscriptionStatus": {
+      "trialing": "Proeftydperk",
+      "active": "Aktief",
+      "past_due": "Betaling agterstallig",
+      "canceled": "Gekanselleer",
+      "incomplete": "Betaling hangende"
+    },
     "settingsTitle": "Instellings",
     "weeklyEmailTitle": "Weeklikse vorderings-e-pos",
     "weeklyEmailBody": "'n Kort Maandag-opsomming van elke kind se week — leertyd, reeks, en onderwerpe wat bietjie meer oefening kan gebruik.",

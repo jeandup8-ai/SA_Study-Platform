@@ -113,7 +113,7 @@ export function SubscriptionPage() {
       {subscription && (
         <Card className="mt-4 bg-brand-50">
           <Badge tone={subscription.status === 'active' ? 'success' : subscription.status === 'trialing' ? 'sun' : 'warning'}>
-            {subscription.status}
+            {t(`parent.subscriptionStatus.${subscription.status}`)}
           </Badge>
           {subscription.trial_ends_at && subscription.status === 'trialing' && (
             <p className="mt-2 text-sm text-brand-800">

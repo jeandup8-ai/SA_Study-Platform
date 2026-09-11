@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronLeft, RotateCcw, Wand2, Lightbulb, Sparkles } from 'lucide-react'
+import { ChevronLeft, RotateCcw, Wand2, Lightbulb, Sparkles, Network } from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
 import { fetchLesson, fetchLessonContent, fetchLessonMedia, fetchTopicIllustration } from '@/lib/curriculum/queries'
 import { fetchQuestionsForTopic, fetchMiniQuizForLesson } from '@/lib/curriculum/questions'
 import { recordQuizResult } from '@/lib/mastery/engine'
 import { requestAlternateExplanation, type AlternateExplanation } from '@/lib/tutor/explainDifferently'
+import { generateMindMap, type MindMap } from '@/lib/tutor/generateMindmap'
 import { AlternateExplanationCard } from '@/components/lesson/AlternateExplanationCard'
+import { MindMapView } from '@/components/lesson/MindMapView'
 import { awardFlatPoints, POINTS_PER_PRACTICE_SET_COMPLETED } from '@/lib/gamification/points'
 import { checkAndAwardBadges, type BadgeCode } from '@/lib/gamification/badges'
 import { fetchStreak } from '@/lib/streak/streak'
@@ -80,6 +82,9 @@ export function LessonPage() {
   const [aiExplanation, setAiExplanation] = useState<AlternateExplanation | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
+  const [mindMap, setMindMap] = useState<MindMap | null>(null)
+  const [mindMapLoading, setMindMapLoading] = useState(false)
+  const [mindMapError, setMindMapError] = useState<string | null>(null)
   const [topicIllustrationUrl, setTopicIllustrationUrl] = useState<string | null>(null)
 
   useEffect(() => {
@@ -211,11 +216,15 @@ export function LessonPage() {
   function goNext() {
     setAiExplanation(null)
     setAiError(null)
+    setMindMap(null)
+    setMindMapError(null)
     setStepIndex((i) => Math.min(i + 1, steps.length - 1))
   }
   function goBack() {
     setAiExplanation(null)
     setAiError(null)
+    setMindMap(null)
+    setMindMapError(null)
     if (stepIndex === 0) navigate(-1)
     else setStepIndex((i) => i - 1)
   }
@@ -231,6 +240,19 @@ export function LessonPage() {
       setAiError(result.error)
     }
     setAiLoading(false)
+  }
+
+  async function handleGenerateMindMap() {
+    if (!activeLearner || !lesson) return
+    setMindMapLoading(true)
+    setMindMapError(null)
+    const result = await generateMindMap(activeLearner.id, lesson.topic_id)
+    if (result.ok) {
+      setMindMap(result.mindmap)
+    } else {
+      setMindMapError(result.error)
+    }
+    setMindMapLoading(false)
   }
 
   return (
@@ -267,8 +289,10 @@ export function LessonPage() {
                 onClick={() => setStepIndex(steps.indexOf('example'))}
               />
               <TutorChip icon={Sparkles} label={t('lesson.explainDifferently')} onClick={handleRequestAlternateExplanation} />
+              <TutorChip icon={Network} label={t('lesson.mindMap')} onClick={handleGenerateMindMap} />
             </div>
             <AiExplanationPanel loading={aiLoading} error={aiError} explanation={aiExplanation} />
+            <MindMapPanel loading={mindMapLoading} error={mindMapError} mindmap={mindMap} />
           </Card>
         )}
 
@@ -316,10 +340,14 @@ export function LessonPage() {
                     onClick={() => setStepIndex(steps.indexOf('example'))}
                   />
                   <TutorChip icon={Sparkles} label={t('lesson.explainDifferently')} onClick={handleRequestAlternateExplanation} />
+                  <TutorChip icon={Network} label={t('lesson.mindMap')} onClick={handleGenerateMindMap} />
                 </div>
               )}
               {step === 'simple_explanation' && (
-                <AiExplanationPanel loading={aiLoading} error={aiError} explanation={aiExplanation} />
+                <>
+                  <AiExplanationPanel loading={aiLoading} error={aiError} explanation={aiExplanation} />
+                  <MindMapPanel loading={mindMapLoading} error={mindMapError} mindmap={mindMap} />
+                </>
               )}
             </Card>
           )}
@@ -433,6 +461,34 @@ function AiExplanationPanel({
   }
   if (explanation) {
     return <AlternateExplanationCard explanation={explanation} />
+  }
+  return null
+}
+
+function MindMapPanel({
+  loading,
+  error,
+  mindmap,
+}: {
+  loading: boolean
+  error: string | null
+  mindmap: MindMap | null
+}) {
+  const { t } = useTranslation()
+
+  if (loading) {
+    return (
+      <div className="mt-3 flex items-center gap-2 text-sm text-slate-500">
+        <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" />
+        {t('lesson.mindMapLoading')}
+      </div>
+    )
+  }
+  if (error) {
+    return <p className="mt-3 text-sm text-slate-500">{t(`lesson.mindMapError.${error}`)}</p>
+  }
+  if (mindmap) {
+    return <MindMapView mindmap={mindmap} />
   }
   return null
 }

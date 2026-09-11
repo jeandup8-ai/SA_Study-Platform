@@ -164,7 +164,14 @@
     "aiExplanationError.feature_not_configured": "This feature isn't switched on yet — try the other buttons above for now.",
     "aiExplanationError.explanation_unavailable": "Couldn't get a new explanation right now — please try again in a moment.",
     "aiExplanationError.model_output_invalid": "Couldn't get a new explanation right now — please try again in a moment.",
-    "aiExplanationError.unknown": "Something went wrong — please try again in a moment."
+    "aiExplanationError.unknown": "Something went wrong — please try again in a moment.",
+    "mindMap": "Mind map",
+    "mindMapLoading": "Drawing a mind map...",
+    "mindMapError.daily_limit_reached": "You've used up today's mind maps — great effort for today! Try again tomorrow, or ask a parent for help.",
+    "mindMapError.feature_not_configured": "This feature isn't switched on yet — try the other buttons above for now.",
+    "mindMapError.mindmap_unavailable": "Couldn't draw a mind map right now — please try again in a moment.",
+    "mindMapError.model_output_invalid": "Couldn't draw a mind map right now — please try again in a moment.",
+    "mindMapError.unknown": "Something went wrong — please try again in a moment."
   },
   "quiz": {
     "questionOf": "Question {{current}} of {{total}}",
@@ -206,6 +213,13 @@
     "recommended": "Recommended",
     "recommendedSessions": "{{count}} × {{minutes}} minute sessions this week",
     "manageSubscription": "Manage subscription",
+    "subscriptionStatus": {
+      "trialing": "Trial",
+      "active": "Active",
+      "past_due": "Payment overdue",
+      "canceled": "Cancelled",
+      "incomplete": "Payment pending"
+    },
     "settingsTitle": "Settings",
     "weeklyEmailTitle": "Weekly progress email",
     "weeklyEmailBody": "A short Monday summary of each child's week — study time, streak, and topics worth a bit more practice.",

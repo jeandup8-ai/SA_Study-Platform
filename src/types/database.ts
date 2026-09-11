@@ -2727,6 +2727,54 @@ export type Database = {
           },
         ]
       }
+      tutor_mindmaps: {
+        Row: {
+          created_at: string
+          id: string
+          input_tokens: number
+          learner_id: string
+          mindmap: Json
+          model: string
+          output_tokens: number
+          topic_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          input_tokens: number
+          learner_id: string
+          mindmap: Json
+          model: string
+          output_tokens: number
+          topic_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          input_tokens?: number
+          learner_id?: string
+          mindmap?: Json
+          model?: string
+          output_tokens?: number
+          topic_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tutor_mindmaps_learner_id_fkey"
+            columns: ["learner_id"]
+            isOneToOne: false
+            referencedRelation: "learners"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tutor_mindmaps_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
