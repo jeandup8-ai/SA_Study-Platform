@@ -177,6 +177,7 @@ Generate one simplified mind map of this topic, grounded only in the content abo
     raw = textBlock?.text ?? ''
 
     if (response.stop_reason === 'refusal' || !raw) {
+      console.error(`generate-mindmap: stop_reason=${response.stop_reason} rawLength=${raw.length}`)
       return jsonResponse({ error: 'mindmap_unavailable' }, 502)
     }
 
@@ -203,7 +204,11 @@ Generate one simplified mind map of this topic, grounded only in the content abo
     }
 
     return jsonResponse({ mindmap: parsed })
-  } catch {
+  } catch (err) {
+    const status = (err as { status?: number })?.status
+    console.error(
+      `generate-mindmap: Anthropic call threw${status ? ` (status ${status})` : ''}: ${err instanceof Error ? err.message : String(err)}`,
+    )
     return jsonResponse({ error: 'mindmap_unavailable' }, 502)
   }
 })
