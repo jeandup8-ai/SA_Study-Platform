@@ -34,7 +34,7 @@ export function ParentShell({ children }: { children: ReactNode }) {
                 clsx(isActive ? 'text-brand-700' : 'text-slate-500')
               }
             >
-              {t('parent.dashboardTitle', { name: '' }).split(' ')[0] || 'Progress'}
+              {t('nav.progress')}
             </NavLink>
             <NavLink
               to="/parent/subscription"
