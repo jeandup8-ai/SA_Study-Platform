@@ -9,13 +9,13 @@
 // token manually from the PayFast dashboard (Transactions > Customer
 // Subscriptions) as a fallback; that gap is logged, not hidden.
 //
-// NOTE: PayFast's subscription-cancel REST API (api.payfast.co.za) uses a
-// different auth scheme to the checkout/ITN form signature (merchant-id +
-// version + timestamp headers, signed with the passphrase) -- verify the
-// exact header/signature format against the current PayFast API reference
-// in the merchant dashboard before relying on this call in production; a
-// failure here is caught and only logged, it does not block the local
-// cancellation record below.
+// PayFast's subscription-cancel REST API (api.payfast.co.za) uses a
+// different auth scheme to the checkout/ITN form signature -- see the
+// signing comment inline below, confirmed against developers.payfast.co.za
+// and verified against a real sandbox subscription. A failure here is
+// caught and only logged, it does not block the local cancellation record
+// below -- a parent's "cancel" click must never depend on this call
+// succeeding, since our own database is the source of truth for billing.
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
@@ -151,25 +151,32 @@ Deno.serve(async (req: Request) => {
   let payfastCancelSucceeded = false
   if (subscription.provider_subscription_id) {
     try {
-      const merchantId = Deno.env.get('PAYFAST_MERCHANT_ID')
+      const merchantId = Deno.env.get('PAYFAST_MERCHANT_ID') ?? ''
       const passphrase = Deno.env.get('PAYFAST_PASSPHRASE') ?? ''
-      const mode = Deno.env.get('PAYFAST_MODE') ?? 'sandbox'
-      const timestamp = new Date().toISOString().slice(0, 19)
+      // Per developers.payfast.co.za "Cancel a subscription": headers are
+      // merchant-id, version, timestamp (ISO-8601 with a numeric UTC offset,
+      // e.g. +00:00 -- NOT a bare "Z"), and signature = MD5 of the
+      // alphabetised header variables plus the passphrase, all lower-cased.
+      // This is a different scheme to the checkout/ITN form signature (fixed
+      // field order, passphrase only appended if set) -- verified against
+      // the real docs page after the first guess here failed in sandbox.
+      const timestamp = new Date().toISOString().slice(0, 19) + '+00:00'
       const version = 'v1'
-      const signature = md5Hex(`merchant-id=${merchantId}&passphrase=${passphrase}&timestamp=${timestamp}&version=${version}`)
-      const apiBase = mode === 'live' ? 'https://api.payfast.co.za' : 'https://api.payfast.co.za/sandbox'
-      const response = await fetch(`${apiBase}/subscriptions/${subscription.provider_subscription_id}/cancel`, {
+      const signatureBase = `merchant-id=${merchantId}&passphrase=${passphrase}&timestamp=${timestamp}&version=${version}`.toLowerCase()
+      const signature = md5Hex(signatureBase)
+      const response = await fetch(`https://api.payfast.co.za/subscriptions/${subscription.provider_subscription_id}/cancel`, {
         method: 'PUT',
         headers: {
-          'merchant-id': merchantId ?? '',
+          'merchant-id': merchantId,
           version,
           timestamp,
           signature,
         },
       })
-      payfastCancelSucceeded = response.ok
-      if (!response.ok) {
-        console.error(`PayFast cancel API returned ${response.status}: ${await response.text()}`)
+      const responseBody = await response.json().catch(() => null)
+      payfastCancelSucceeded = response.ok && responseBody?.status === 'success'
+      if (!payfastCancelSucceeded) {
+        console.error(`PayFast cancel API returned ${response.status}: ${JSON.stringify(responseBody)}`)
       }
     } catch (err) {
       console.error(`PayFast cancel API call threw: ${err instanceof Error ? err.message : String(err)}`)
