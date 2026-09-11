@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import type { Session, User } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
 import { applyLanguagePreference } from '@/i18n'
@@ -25,10 +25,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [parent, setParent] = useState<Parent | null>(null)
   const [loading, setLoading] = useState(true)
+  // Tracks whose parent row is currently loaded, so a background token
+  // refresh for the same user (fires periodically via autoRefreshToken)
+  // doesn't re-fetch or re-toggle `loading` -- only a genuinely new sign-in
+  // does.
+  const loadedUserIdRef = useRef<string | null>(null)
 
   async function loadParent(userId: string) {
     const { data } = await supabase.from('parents').select('*').eq('id', userId).maybeSingle()
     setParent(data)
+    loadedUserIdRef.current = userId
     if (data) applyLanguagePreference(data.preferred_language)
   }
 
@@ -41,11 +47,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession)
-      if (newSession) {
-        void loadParent(newSession.user.id)
-      } else {
+      if (!newSession) {
         setParent(null)
+        loadedUserIdRef.current = null
+        return
       }
+      if (loadedUserIdRef.current === newSession.user.id) {
+        // Same user already loaded -- this is a background token refresh,
+        // not a new sign-in. Nothing to reload, and no reason to flip
+        // `loading` (which would otherwise flash a full-screen spinner for
+        // an already-settled session every time the token silently
+        // refreshes).
+        return
+      }
+      // A genuinely new session (sign-in, or a different user). `parent`
+      // from the previous session is stale until this resolves -- block
+      // dependents (LearnerContext etc.) via `loading` so they don't read
+      // that stale/null `parent` as "confirmed no children" and bounce an
+      // already-onboarded parent back into onboarding.
+      setLoading(true)
+      void loadParent(newSession.user.id).finally(() => setLoading(false))
     })
 
     return () => subscription.subscription.unsubscribe()
