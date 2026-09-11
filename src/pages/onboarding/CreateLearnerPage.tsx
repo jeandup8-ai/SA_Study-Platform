@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useLearner } from '@/context/LearnerContext'
+import { MaxLearnersReachedError, useLearner } from '@/context/LearnerContext'
 import { fetchActiveCurriculum, fetchLaunchedGrades } from '@/lib/curriculum/queries'
 import { AVAILABLE_LANGUAGES } from '@/i18n/languages'
 import { Button, Card, LearnerAvatarIcon, AVATAR_OPTIONS } from '@/components/ui'
@@ -51,7 +51,11 @@ export function CreateLearnerPage() {
       })
       navigate('/onboarding/starting-point')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.')
+      if (err instanceof MaxLearnersReachedError) {
+        setError(t('onboarding.maxLearnersReached', { max: err.max }))
+      } else {
+        setError(err instanceof Error ? err.message : 'Something went wrong.')
+      }
     } finally {
       setSubmitting(false)
     }

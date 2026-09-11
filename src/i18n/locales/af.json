@@ -79,7 +79,8 @@
     "byTopicToggle": "Verdeel volgens onderwerp",
     "byTopicHint": "Opsioneel: stel 'n beginpunt-persentasie per onderwerp in plaas van een syfer vir die hele vak.",
     "saveStartingPoint": "Stoor en gaan voort",
-    "skipStartingPoint": "Slaan oor vir eers"
+    "skipStartingPoint": "Slaan oor vir eers",
+    "maxLearnersReached": "Jy het reeds die maksimum van {{max}} kinderprofiele vir jou plan bygevoeg."
   },
   "dashboard": {
     "greeting": "Hallo {{name}} 👋",

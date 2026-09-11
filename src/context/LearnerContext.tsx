@@ -12,6 +12,10 @@ import { applyLanguagePreference } from '@/i18n'
 import type { Learner, LearnerAvatar, LanguageCode } from '@/types/curriculum'
 
 const ACTIVE_LEARNER_KEY = 'study.activeLearnerId'
+// No subscription row exists yet (trial not started) -- falls back to the
+// only plan currently on sale (see subscription_plans: both active family
+// plans cap at 4) rather than leaving new parents completely uncapped.
+const DEFAULT_MAX_LEARNERS = 4
 
 interface CreateLearnerInput {
   displayName: string
@@ -19,6 +23,14 @@ interface CreateLearnerInput {
   curriculumId: string
   gradeId: string
   preferredLanguage: LanguageCode
+}
+
+export class MaxLearnersReachedError extends Error {
+  readonly max: number
+  constructor(max: number) {
+    super('max_learners_reached')
+    this.max = max
+  }
 }
 
 interface LearnerContextValue {
@@ -33,7 +45,7 @@ interface LearnerContextValue {
 const LearnerContext = createContext<LearnerContextValue | undefined>(undefined)
 
 export function LearnerProvider({ children }: { children: ReactNode }) {
-  const { parent } = useAuth()
+  const { parent, loading: authLoading } = useAuth()
   const [learners, setLearners] = useState<Learner[]>([])
   const [activeLearnerId, setActiveLearnerIdState] = useState<string | null>(
     () => localStorage.getItem(ACTIVE_LEARNER_KEY),
@@ -41,6 +53,13 @@ export function LearnerProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   const refreshLearners = useCallback(async () => {
+    // Auth hasn't settled yet -- `parent` being momentarily null here doesn't
+    // mean "no parent," it means "don't know yet." Reporting an empty learner
+    // list in that window was sending signed-in parents with existing
+    // profiles into onboarding's "create a profile" flow on every reload
+    // where the session took a moment to restore (observed on non-Chrome
+    // mobile browsers).
+    if (authLoading) return
     if (!parent) {
       setLearners([])
       setLoading(false)
@@ -54,7 +73,7 @@ export function LearnerProvider({ children }: { children: ReactNode }) {
       .order('created_at', { ascending: true })
     setLearners(data ?? [])
     setLoading(false)
-  }, [parent])
+  }, [parent, authLoading])
 
   useEffect(() => {
     void refreshLearners()
@@ -76,6 +95,30 @@ export function LearnerProvider({ children }: { children: ReactNode }) {
 
   async function createLearner(input: CreateLearnerInput): Promise<Learner> {
     if (!parent) throw new Error('No signed-in parent.')
+
+    // Client-side check for immediate, friendly feedback -- the real
+    // enforcement is the learners_enforce_limit DB trigger (migration 0041),
+    // since a direct API call could otherwise bypass this.
+    const { data: latestSubscription } = await supabase
+      .from('subscriptions')
+      .select('plan_id')
+      .eq('parent_id', parent.id)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+    let maxLearners = DEFAULT_MAX_LEARNERS
+    if (latestSubscription?.plan_id) {
+      const { data: plan } = await supabase
+        .from('subscription_plans')
+        .select('max_learners')
+        .eq('id', latestSubscription.plan_id)
+        .maybeSingle()
+      if (plan) maxLearners = plan.max_learners
+    }
+    if (learners.length >= maxLearners) {
+      throw new MaxLearnersReachedError(maxLearners)
+    }
+
     const { data, error } = await supabase
       .from('learners')
       .insert({

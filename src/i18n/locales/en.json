@@ -79,7 +79,8 @@
     "byTopicToggle": "Break down by topic",
     "byTopicHint": "Optional: set a starting % per topic instead of one number for the whole subject.",
     "saveStartingPoint": "Save and continue",
-    "skipStartingPoint": "Skip for now"
+    "skipStartingPoint": "Skip for now",
+    "maxLearnersReached": "You've already added the maximum of {{max}} child profiles for your plan."
   },
   "dashboard": {
     "greeting": "Hi {{name}} 👋",
