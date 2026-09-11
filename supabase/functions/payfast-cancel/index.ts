@@ -177,6 +177,17 @@ Deno.serve(async (req: Request) => {
       // this reference implementation, which doesn't lower-case anything).
       const timestamp = new Date().toISOString().slice(0, 19) + '+00:00'
       const version = 'v1'
+      const mode = Deno.env.get('PAYFAST_MODE') ?? 'sandbox'
+      // The Signature Generation reference page notes: "When in test mode
+      // the testing parameter should be excluded from the signature" --
+      // meaning a `testing=true` query param exists to tell PayFast's API
+      // (same api.payfast.co.za host, no separate sandbox host for this
+      // endpoint) to look the merchant ID up against their sandbox merchant
+      // database instead of production. Without it, a sandbox-only merchant
+      // ID is correctly reported as "not found" against production -- which
+      // is exactly the error every prior attempt hit here, regardless of
+      // signature correctness (a strong tell it was never a signing bug).
+      const url = `https://api.payfast.co.za/subscriptions/${subscription.provider_subscription_id}/cancel${mode === 'live' ? '' : '?testing=true'}`
       const fields: Record<string, string> = { 'merchant-id': merchantId, timestamp, version }
       if (passphrase) fields.passphrase = passphrase
       const signatureBase = Object.keys(fields)
@@ -184,7 +195,7 @@ Deno.serve(async (req: Request) => {
         .map((k) => `${k}=${phpUrlEncode(fields[k])}`)
         .join('&')
       const signature = md5Hex(signatureBase)
-      const response = await fetch(`https://api.payfast.co.za/subscriptions/${subscription.provider_subscription_id}/cancel`, {
+      const response = await fetch(url, {
         method: 'PUT',
         headers: {
           'merchant-id': merchantId,
