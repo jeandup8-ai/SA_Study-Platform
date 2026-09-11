@@ -184,10 +184,12 @@ Generate one simplified mind map of this topic, grounded only in the content abo
     let parsed: unknown
     try {
       parsed = JSON.parse(raw)
-    } catch {
+    } catch (parseErr) {
+      console.error(`generate-mindmap: JSON.parse failed: ${parseErr instanceof Error ? parseErr.message : String(parseErr)} | raw: ${raw.slice(0, 500)}`)
       return jsonResponse({ error: 'model_output_invalid' }, 502)
     }
     if (!isMindMapResult(parsed)) {
+      console.error(`generate-mindmap: isMindMapResult failed | raw: ${raw.slice(0, 500)}`)
       return jsonResponse({ error: 'model_output_invalid' }, 502)
     }
 
@@ -200,6 +202,7 @@ Generate one simplified mind map of this topic, grounded only in the content abo
       output_tokens: response.usage.output_tokens,
     })
     if (insertError) {
+      console.error(`generate-mindmap: tutor_mindmaps insert failed: ${insertError.message}`)
       return jsonResponse({ error: 'logging_failed' }, 500)
     }
 

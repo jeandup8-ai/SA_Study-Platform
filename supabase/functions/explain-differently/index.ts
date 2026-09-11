@@ -220,10 +220,12 @@ Generate one alternate explanation of this topic using the "${availableFraming}"
     let parsed: unknown
     try {
       parsed = JSON.parse(raw)
-    } catch {
+    } catch (parseErr) {
+      console.error(`explain-differently: JSON.parse failed: ${parseErr instanceof Error ? parseErr.message : String(parseErr)} | raw: ${raw.slice(0, 500)}`)
       return jsonResponse({ error: 'model_output_invalid' }, 502)
     }
     if (!isExplanationResult(parsed)) {
+      console.error(`explain-differently: isExplanationResult failed | raw: ${raw.slice(0, 500)}`)
       return jsonResponse({ error: 'model_output_invalid' }, 502)
     }
 
@@ -237,6 +239,7 @@ Generate one alternate explanation of this topic using the "${availableFraming}"
       output_tokens: response.usage.output_tokens,
     })
     if (insertError) {
+      console.error(`explain-differently: tutor_explanations insert failed: ${insertError.message}`)
       return jsonResponse({ error: 'logging_failed' }, 500)
     }
 
