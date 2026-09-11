@@ -17,7 +17,7 @@ export function ParentShell({ children }: { children: ReactNode }) {
           <div className="flex items-center justify-between gap-3">
             <Link to="/parent" className="flex min-w-0 items-baseline gap-2 text-lg font-bold text-brand-700">
               <span className="truncate">{t('common.appName')}</span>
-              <span className="shrink-0 text-sm font-medium text-slate-400">Parent</span>
+              <span className="shrink-0 text-sm font-medium text-slate-400">{t('nav.parent')}</span>
             </Link>
             <button
               onClick={() => void signOut()}
@@ -59,7 +59,7 @@ export function ParentShell({ children }: { children: ReactNode }) {
                   clsx(isActive ? 'text-brand-700' : 'text-slate-500')
                 }
               >
-                Admin
+                {t('admin.title')}
               </NavLink>
             )}
           </nav>

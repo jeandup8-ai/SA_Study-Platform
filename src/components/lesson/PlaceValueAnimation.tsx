@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 /**
  * Animates base-10 blocks growing in to represent hundreds / tens / units,
  * demonstrating place value for a given number (e.g. multiplication with carrying).
  */
 export function PlaceValueAnimation({ value = 234 }: { value?: number }) {
+  const { t } = useTranslation()
   const hundreds = Math.floor(value / 100)
   const tens = Math.floor((value % 100) / 10)
   const units = value % 10
@@ -22,9 +24,9 @@ export function PlaceValueAnimation({ value = 234 }: { value?: number }) {
   return (
     <div className="flex flex-col items-center gap-4">
       <div className="flex items-end gap-4">
-        <BlockGroup label="Hundreds" count={hundreds} size={44} color="var(--color-brand-500)" visible={visible} startIndex={0} />
+        <BlockGroup label={t('lesson.placeValue.hundreds')} count={hundreds} size={44} color="var(--color-brand-500)" visible={visible} startIndex={0} />
         <BlockGroup
-          label="Tens"
+          label={t('lesson.placeValue.tens')}
           count={tens}
           size={16}
           height={44}
@@ -33,7 +35,7 @@ export function PlaceValueAnimation({ value = 234 }: { value?: number }) {
           startIndex={hundreds}
         />
         <BlockGroup
-          label="Units"
+          label={t('lesson.placeValue.units')}
           count={units}
           size={14}
           color="var(--color-coral-400)"

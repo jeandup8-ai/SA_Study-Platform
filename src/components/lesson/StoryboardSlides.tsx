@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight, ImageIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 import type { StoryboardSlide } from '@/lib/curriculum/lessonV2'
 
 /**
@@ -9,6 +10,7 @@ import type { StoryboardSlide } from '@/lib/curriculum/lessonV2'
  * what an illustrator/video would show.
  */
 export function StoryboardSlides({ slides }: { slides: StoryboardSlide[] }) {
+  const { t } = useTranslation()
   const [index, setIndex] = useState(0)
 
   if (slides.length === 0) return null
@@ -29,7 +31,7 @@ export function StoryboardSlides({ slides }: { slides: StoryboardSlide[] }) {
             disabled={index === 0}
             onClick={() => setIndex((i) => Math.max(0, i - 1))}
             className="rounded-full p-2 hover:bg-slate-200 disabled:opacity-30"
-            aria-label="Previous slide"
+            aria-label={t('lesson.previousSlide')}
           >
             <ChevronLeft />
           </button>
@@ -46,7 +48,7 @@ export function StoryboardSlides({ slides }: { slides: StoryboardSlide[] }) {
             disabled={index === slides.length - 1}
             onClick={() => setIndex((i) => Math.min(slides.length - 1, i + 1))}
             className="rounded-full p-2 hover:bg-slate-200 disabled:opacity-30"
-            aria-label="Next slide"
+            aria-label={t('lesson.nextSlide')}
           >
             <ChevronRight />
           </button>

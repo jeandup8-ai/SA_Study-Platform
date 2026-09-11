@@ -26,15 +26,15 @@ export function CreateLearnerPage() {
       .then(async (c) => {
         setCurriculum(c)
         if (!c) {
-          setError('Could not load the curriculum. Please try again shortly.')
+          setError(t('onboarding.curriculumLoadFailed'))
           return
         }
         const g = await fetchLaunchedGrades(c.id)
         setGrades(g)
         if (g.length > 0) setGradeId(g[0].id)
-        else setError('No grades are available yet. Please try again shortly.')
+        else setError(t('onboarding.noGradesAvailable'))
       })
-      .catch(() => setError('Could not load grades. Please check your connection and try again.'))
+      .catch(() => setError(t('onboarding.gradesLoadFailed')))
   }, [])
 
   async function onSubmit() {
@@ -54,7 +54,7 @@ export function CreateLearnerPage() {
       if (err instanceof MaxLearnersReachedError) {
         setError(t('onboarding.maxLearnersReached', { max: err.max }))
       } else {
-        setError(err instanceof Error ? err.message : 'Something went wrong.')
+        setError(err instanceof Error ? err.message : t('common.somethingWentWrong'))
       }
     } finally {
       setSubmitting(false)

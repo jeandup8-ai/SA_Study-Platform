@@ -75,8 +75,8 @@ export function SubscriptionPage() {
     if (error || !data?.action || !data?.fields) {
       setCheckoutError(
         data?.error === 'feature_not_configured'
-          ? 'Card payment is not switched on yet -- start a free trial instead, or contact us.'
-          : 'Something went wrong starting checkout. Please try again.',
+          ? t('parent.checkoutFeatureUnavailable')
+          : t('parent.checkoutFailed'),
       )
       return
     }
@@ -98,15 +98,12 @@ export function SubscriptionPage() {
 
       {paymentResult === 'success' && (
         <Card className="mt-4 bg-green-50">
-          <p className="text-sm text-green-800">
-            Thanks! We're confirming your payment with PayFast now -- this usually only takes a few
-            seconds. Refresh this page shortly if your status below doesn't update automatically.
-          </p>
+          <p className="text-sm text-green-800">{t('parent.paymentConfirming')}</p>
         </Card>
       )}
       {paymentResult === 'cancelled' && (
         <Card className="mt-4 bg-amber-50">
-          <p className="text-sm text-amber-800">Checkout was cancelled -- no payment was made.</p>
+          <p className="text-sm text-amber-800">{t('parent.checkoutCancelled')}</p>
         </Card>
       )}
 
@@ -117,20 +114,20 @@ export function SubscriptionPage() {
           </Badge>
           {subscription.trial_ends_at && subscription.status === 'trialing' && (
             <p className="mt-2 text-sm text-brand-800">
-              Trial ends {new Date(subscription.trial_ends_at).toLocaleDateString()}
+              {t('parent.trialEndsOn', { date: new Date(subscription.trial_ends_at).toLocaleDateString() })}
             </p>
           )}
           {subscription.current_period_end && subscription.status === 'active' && (
             <p className="mt-2 text-sm text-brand-800">
-              Next billing date {new Date(subscription.current_period_end).toLocaleDateString()}
+              {t('parent.nextBillingDate', { date: new Date(subscription.current_period_end).toLocaleDateString() })}
             </p>
           )}
           {subscription.cancel_requested_at && (
-            <p className="mt-2 text-sm text-brand-800">Cancellation requested -- this will not renew further.</p>
+            <p className="mt-2 text-sm text-brand-800">{t('parent.cancellationRequestedNote')}</p>
           )}
           {isPayingStatus && !subscription.cancel_requested_at && (
             <Button className="mt-3" variant="secondary" disabled={canceling} onClick={cancelSubscription}>
-              {canceling ? t('common.loading') : 'Cancel subscription'}
+              {canceling ? t('common.loading') : t('parent.cancelSubscription')}
             </Button>
           )}
         </Card>
@@ -143,16 +140,16 @@ export function SubscriptionPage() {
           <Card key={plan.id}>
             <p className="font-bold text-slate-900">{plan.name}</p>
             <p className="mt-1 text-2xl font-extrabold text-brand-700">
-              {plan.price_cents != null ? `R${(plan.price_cents / 100).toFixed(0)}` : 'TBC'}
+              {plan.price_cents != null ? `R${(plan.price_cents / 100).toFixed(0)}` : t('common.priceTbc')}
               <span className="text-sm font-medium text-slate-500">/{plan.billing_interval === 'monthly' ? 'mo' : 'yr'}</span>
             </p>
-            <p className="text-sm text-slate-500">Up to {plan.max_learners} child profile(s)</p>
+            <p className="text-sm text-slate-500">{t('parent.maxLearnersOnPlan', { count: plan.max_learners })}</p>
             <Button
               className="mt-4 w-full"
               disabled={checkingOut === plan.id}
               onClick={() => checkout(plan.id)}
             >
-              {checkingOut === plan.id ? t('common.loading') : 'Subscribe with PayFast'}
+              {checkingOut === plan.id ? t('common.loading') : t('parent.subscribeWithPayfast')}
             </Button>
             <Button
               className="mt-2 w-full"
@@ -160,11 +157,11 @@ export function SubscriptionPage() {
               disabled={startingTrial === plan.id}
               onClick={() => startTrial(plan.id)}
             >
-              {startingTrial === plan.id ? t('common.loading') : 'Start free trial'}
+              {startingTrial === plan.id ? t('common.loading') : t('parent.startFreeTrial')}
             </Button>
           </Card>
         ))}
-        {plans.length === 0 && <p className="text-sm text-slate-400">No plans published yet.</p>}
+        {plans.length === 0 && <p className="text-sm text-slate-400">{t('parent.noPlansYet')}</p>}
       </div>
     </div>
   )

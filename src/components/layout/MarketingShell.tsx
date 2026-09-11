@@ -43,19 +43,19 @@ export function MarketingShell({ children }: { children: ReactNode }) {
           <p className="mt-1 max-w-md">{t('landing.footer.tagline')}</p>
           <nav className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-slate-500">
             <Link to="/terms" className="hover:text-slate-700">
-              Terms of Service
+              {t('landing.footer.termsOfService')}
             </Link>
             <Link to="/privacy" className="hover:text-slate-700">
-              Privacy Policy
+              {t('landing.footer.privacyPolicy')}
             </Link>
             <Link to="/refund-policy" className="hover:text-slate-700">
-              Refund Policy
+              {t('landing.footer.refundPolicy')}
             </Link>
             <Link to="/subscription-cancellation" className="hover:text-slate-700">
-              Cancel Subscription
+              {t('landing.footer.cancelSubscription')}
             </Link>
             <Link to="/contact" className="hover:text-slate-700">
-              Contact
+              {t('landing.footer.contact')}
             </Link>
           </nav>
           <p className="mt-4 text-xs text-slate-400">{t('landing.disclaimer')}</p>

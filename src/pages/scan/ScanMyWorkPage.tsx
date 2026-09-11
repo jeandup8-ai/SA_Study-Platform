@@ -196,7 +196,7 @@ export function ScanMyWorkPage() {
         <div className="mt-6 space-y-4">
           <Card>
             {preview && (
-              <img src={preview} alt="Your upload" className="mb-3 max-h-48 w-full rounded-2xl object-cover" />
+              <img src={preview} alt={t('scan.uploadAlt')} className="mb-3 max-h-48 w-full rounded-2xl object-cover" />
             )}
             <div className="flex flex-wrap gap-2">
               <Badge tone="success">{t('scan.approved')}</Badge>

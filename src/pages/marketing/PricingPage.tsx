@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { MarketingShell } from '@/components/layout/MarketingShell'
 import { Button, Card } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
@@ -8,6 +9,7 @@ import type { Database } from '@/types/database'
 type SubscriptionPlan = Database['public']['Tables']['subscription_plans']['Row']
 
 export function PricingPage() {
+  const { t } = useTranslation()
   const [plans, setPlans] = useState<SubscriptionPlan[]>([])
 
   useEffect(() => {
@@ -22,26 +24,26 @@ export function PricingPage() {
   return (
     <MarketingShell>
       <div className="mx-auto max-w-4xl px-4 py-16">
-        <h1 className="text-center text-3xl font-extrabold text-slate-900">Simple, family-friendly pricing</h1>
-        <p className="mt-2 text-center text-slate-500">Start with a 3-day free trial — cancel anytime.</p>
+        <h1 className="text-center text-3xl font-extrabold text-slate-900">{t('pricing.title')}</h1>
+        <p className="mt-2 text-center text-slate-500">{t('pricing.subtitle')}</p>
         <div className="mt-10 grid gap-6 sm:grid-cols-2">
           {plans.map((plan) => (
             <Card key={plan.id}>
               <p className="font-bold text-slate-900">{plan.name}</p>
               <p className="mt-2 text-3xl font-extrabold text-brand-700">
-                {plan.price_cents != null ? `R${(plan.price_cents / 100).toFixed(0)}` : 'TBC'}
+                {plan.price_cents != null ? `R${(plan.price_cents / 100).toFixed(0)}` : t('common.priceTbc')}
                 <span className="text-base font-medium text-slate-500">
                   /{plan.billing_interval === 'monthly' ? 'mo' : 'yr'}
                 </span>
               </p>
-              <p className="mt-1 text-sm text-slate-500">Up to {plan.max_learners} child profile(s)</p>
+              <p className="mt-1 text-sm text-slate-500">{t('parent.maxLearnersOnPlan', { count: plan.max_learners })}</p>
               <Link to="/sign-up" className="mt-4 block">
-                <Button className="w-full">Get started</Button>
+                <Button className="w-full">{t('pricing.getStarted')}</Button>
               </Link>
             </Card>
           ))}
           {plans.length === 0 && (
-            <p className="col-span-2 text-center text-slate-400">Pricing plans are being finalised.</p>
+            <p className="col-span-2 text-center text-slate-400">{t('pricing.noPlansYet')}</p>
           )}
         </div>
       </div>

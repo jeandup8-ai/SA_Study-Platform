@@ -27,7 +27,7 @@ export function SignUpPage() {
         navigate('/onboarding/learner')
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.')
+      setError(err instanceof Error ? err.message : t('common.somethingWentWrong'))
     } finally {
       setSubmitting(false)
     }
@@ -38,10 +38,11 @@ export function SignUpPage() {
       <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-4 py-10">
         <Card className="w-full max-w-md text-center">
           <p className="text-4xl">📩</p>
-          <h1 className="mt-3 text-xl font-extrabold text-slate-900">Check your email</h1>
+          <h1 className="mt-3 text-xl font-extrabold text-slate-900">{t('auth.checkYourEmail')}</h1>
           <p className="mt-2 text-sm text-slate-600">
-            We sent a confirmation link to <span className="font-semibold">{email}</span>. Click it,
-            then come back and sign in to set up your child's profile.
+            {t('auth.confirmationSentBefore')}
+            <span className="font-semibold">{email}</span>
+            {t('auth.confirmationSentAfter')}
           </p>
           <Link to="/sign-in" className="mt-6 block">
             <Button className="w-full">{t('auth.signIn')}</Button>

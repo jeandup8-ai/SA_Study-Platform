@@ -10,7 +10,9 @@
     "close": "Maak toe",
     "tryAgain": "Probeer weer",
     "comingSoon": "Kom binnekort",
-    "demoContent": "Voorbeeldles vir demonstrasie"
+    "demoContent": "Voorbeeldles vir demonstrasie",
+    "priceTbc": "Nog te bevestig",
+    "somethingWentWrong": "Iets het verkeerd geloop."
   },
   "nav": {
     "dashboard": "Tuis",
@@ -48,7 +50,18 @@
     "footer.parents": "Vir ouers",
     "footer.pricing": "Pryse",
     "footer.privacy": "Privaatheid",
-    "footer.contact": "Kontak"
+    "footer.contact": "Kontak",
+    "footer.termsOfService": "Diensvoorwaardes",
+    "footer.privacyPolicy": "Privaatheidsbeleid",
+    "footer.refundPolicy": "Terugbetalingsbeleid",
+    "footer.cancelSubscription": "Kanselleer Intekening",
+    "gradeBadge": "Graad 4 – 7 · CAPS-belyn",
+    "preview.greeting": "Hallo Liam 👋",
+    "preview.subtitle": "Graad 5 · Kom ons leer iets vandag.",
+    "preview.continueLearning": "Gaan voort met leer",
+    "preview.topicName": "Breuke · Ekwivalente breuke",
+    "preview.mathSubject": "Wiskunde",
+    "preview.englishSubject": "Engels"
   },
   "auth": {
     "signIn": "Meld aan",
@@ -63,7 +76,10 @@
     "signUpLink": "Skep 'n ouerrekening",
     "signInLink": "Meld eerder aan",
     "signOut": "Meld af",
-    "popiaNote": "Ons vra net wat ons nodig het om jou rekening te bestuur. Geen fisiese adres, geen onnodige persoonlike besonderhede nie."
+    "popiaNote": "Ons vra net wat ons nodig het om jou rekening te bestuur. Geen fisiese adres, geen onnodige persoonlike besonderhede nie.",
+    "checkYourEmail": "Gaan jou e-pos na",
+    "confirmationSentBefore": "Ons het 'n bevestigingskakel gestuur na ",
+    "confirmationSentAfter": ". Klik daarop, kom dan terug en meld aan om jou kind se profiel op te stel."
   },
   "onboarding": {
     "title": "Kom ons stel jou kind se profiel op",
@@ -80,7 +96,10 @@
     "byTopicHint": "Opsioneel: stel 'n beginpunt-persentasie per onderwerp in plaas van een syfer vir die hele vak.",
     "saveStartingPoint": "Stoor en gaan voort",
     "skipStartingPoint": "Slaan oor vir eers",
-    "maxLearnersReached": "Jy het reeds die maksimum van {{max}} kinderprofiele vir jou plan bygevoeg."
+    "maxLearnersReached": "Jy het reeds die maksimum van {{max}} kinderprofiele vir jou plan bygevoeg.",
+    "curriculumLoadFailed": "Kon nie die kurrikulum laai nie. Probeer asseblief binnekort weer.",
+    "noGradesAvailable": "Geen grade is nog beskikbaar nie. Probeer asseblief binnekort weer.",
+    "gradesLoadFailed": "Kon nie grade laai nie. Gaan jou verbinding na en probeer weer."
   },
   "dashboard": {
     "greeting": "Hallo {{name}} 👋",
@@ -172,7 +191,12 @@
     "mindMapError.feature_not_configured": "Hierdie funksie is nog nie aangeskakel nie — probeer solank die ander knoppies hierbo.",
     "mindMapError.mindmap_unavailable": "Kon nie nou 'n gedagtekaart teken nie — probeer asseblief weer oor 'n oomblik.",
     "mindMapError.model_output_invalid": "Kon nie nou 'n gedagtekaart teken nie — probeer asseblief weer oor 'n oomblik.",
-    "mindMapError.unknown": "Iets het verkeerd geloop — probeer asseblief weer oor 'n oomblik."
+    "mindMapError.unknown": "Iets het verkeerd geloop — probeer asseblief weer oor 'n oomblik.",
+    "previousSlide": "Vorige skyfie",
+    "nextSlide": "Volgende skyfie",
+    "placeValue.hundreds": "Honderde",
+    "placeValue.tens": "Tiene",
+    "placeValue.units": "Eenhede"
   },
   "quiz": {
     "questionOf": "Vraag {{current}} van {{total}}",
@@ -200,7 +224,8 @@
     "safetyNote": "Elke oplaai word op ons bediener nagegaan voordat dit gebruik word — lêertipe, grootte, en versteekte liggingdata in die foto word altyd werklik geverifieer. Diepgaande visuele ontleding vir onveilige beelde loop ook sodra 'n visie-veiligheidsverskaffer gekoppel is; sien die wisselaar hieronder om te sien hoe 'n verwerping in albei gevalle lyk.",
     "simulateUnsafeToggle": "Demo: simuleer die verwerping van 'n onveilige oplaai",
     "detectionUnavailable": "Outomatiese herkenning sukkel tans — kies asseblief hieronder, of probeer weer.",
-    "tryDetectionAgain": "Probeer outomatiese herkenning weer"
+    "tryDetectionAgain": "Probeer outomatiese herkenning weer",
+    "uploadAlt": "Jou oplaai"
   },
   "parent": {
     "dashboardTitle": "{{name}} se vordering",
@@ -239,7 +264,22 @@
     "removeLearner": "Verwyder",
     "removeLearnerConfirm": "Verwyder {{name}}? Dit skrap permanent al hulle vordering, punte en geskiedenis. Dit kan nie ontdoen word nie.",
     "removeLearnerConfirmButton": "Ja, verwyder",
-    "removeLearnerFailed": "Kon nie daardie profiel verwyder nie. Probeer asseblief weer."
+    "removeLearnerFailed": "Kon nie daardie profiel verwyder nie. Probeer asseblief weer.",
+    "checkoutFeatureUnavailable": "Kaartbetaling is nog nie aangeskakel nie — begin eerder 'n gratis proeftydperk, of kontak ons.",
+    "checkoutFailed": "Iets het verkeerd geloop met die begin van uitkas. Probeer asseblief weer.",
+    "paymentConfirming": "Dankie! Ons bevestig nou jou betaling met PayFast — dit neem gewoonlik net 'n paar sekondes. Herlaai hierdie bladsy binnekort as jou status hieronder nie outomaties opdateer nie.",
+    "checkoutCancelled": "Uitkas is gekanselleer — geen betaling is gemaak nie.",
+    "trialEndsOn": "Proeftydperk eindig {{date}}",
+    "nextBillingDate": "Volgende faktureringsdatum {{date}}",
+    "cancellationRequestedNote": "Kansellasie versoek — dit sal nie verder hernu nie.",
+    "cancelSubscription": "Kanselleer intekening",
+    "maxLearnersOnPlan_one": "Tot {{count}} kinderprofiel",
+    "maxLearnersOnPlan_other": "Tot {{count}} kinderprofiele",
+    "subscribeWithPayfast": "Teken in met PayFast",
+    "startFreeTrial": "Begin gratis proeftydperk",
+    "noPlansYet": "Nog geen planne gepubliseer nie.",
+    "noLearnersYet": "Nog geen kinderprofiele nie.",
+    "noAttentionNeeded": "Niks benodig tans aandag nie."
   },
   "gamification": {
     "totalPoints_one": "{{count}} punt",
@@ -290,5 +330,18 @@
     "users": "Gebruikers",
     "subscriptions": "Intekeninge",
     "restricted": "Hierdie area is slegs vir gemagtigde administrateurs."
+  },
+  "adminNav": {
+    "overview": "Oorsig",
+    "curriculumSources": "Kurrikulumbronne",
+    "reviewQueue": "Hersieningswagry",
+    "terminology": "Terminologie",
+    "illustrations": "Illustrasies"
+  },
+  "pricing": {
+    "title": "Eenvoudige, gesinsvriendelike pryse",
+    "subtitle": "Begin met 'n 3-dae gratis proeftydperk — kanselleer enige tyd.",
+    "getStarted": "Begin nou",
+    "noPlansYet": "Prysplanne word tans afgehandel."
   }
 }

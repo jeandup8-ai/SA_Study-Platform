@@ -5,11 +5,11 @@ import clsx from 'clsx'
 import { useAuth } from '@/context/AuthContext'
 
 const TABS = [
-  { to: '/admin', label: 'Overview', end: true },
-  { to: '/admin/curriculum-sources', label: 'Curriculum sources', end: false },
-  { to: '/admin/review-queue', label: 'Review queue', end: false },
-  { to: '/admin/terminology', label: 'Terminology', end: false },
-  { to: '/admin/illustrations', label: 'Illustrations', end: false },
+  { to: '/admin', labelKey: 'adminNav.overview', end: true },
+  { to: '/admin/curriculum-sources', labelKey: 'adminNav.curriculumSources', end: false },
+  { to: '/admin/review-queue', labelKey: 'adminNav.reviewQueue', end: false },
+  { to: '/admin/terminology', labelKey: 'adminNav.terminology', end: false },
+  { to: '/admin/illustrations', labelKey: 'adminNav.illustrations', end: false },
 ] as const
 
 export function AdminShell({ children }: { children: ReactNode }) {
@@ -42,7 +42,7 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 )
               }
             >
-              {tab.label}
+              {t(tab.labelKey)}
             </NavLink>
           ))}
         </nav>

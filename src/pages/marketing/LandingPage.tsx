@@ -33,7 +33,7 @@ export function LandingPage() {
         <div className="mx-auto grid max-w-6xl items-center gap-10 px-4 py-16 sm:py-24 lg:grid-cols-2">
           <div>
             <span className="inline-flex items-center rounded-full bg-brand-100 px-3 py-1 text-xs font-bold text-brand-700">
-              Grade 4 – 7 · CAPS-aligned
+              {t('landing.gradeBadge')}
             </span>
             <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
               {t('landing.heroTitle')}
@@ -95,25 +95,26 @@ export function LandingPage() {
 }
 
 function DashboardPreview() {
+  const { t } = useTranslation()
   return (
     <div className="rounded-[2.5rem] border-8 border-slate-900 bg-slate-900 shadow-2xl">
       <div className="rounded-[2rem] bg-slate-50 p-4">
-        <p className="text-lg font-bold text-slate-900">Hi Liam 👋</p>
-        <p className="text-sm text-slate-500">Grade 5 · Let's learn something today.</p>
+        <p className="text-lg font-bold text-slate-900">{t('landing.preview.greeting')}</p>
+        <p className="text-sm text-slate-500">{t('landing.preview.subtitle')}</p>
         <div className="mt-4 space-y-3">
           <div className="rounded-2xl bg-brand-600 p-4 text-white">
             <p className="text-xs font-semibold uppercase tracking-wide text-brand-100">
-              Continue learning
+              {t('landing.preview.continueLearning')}
             </p>
-            <p className="mt-1 font-bold">Fractions · Equivalent fractions</p>
+            <p className="mt-1 font-bold">{t('landing.preview.topicName')}</p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-2xl bg-white p-3 shadow-sm">
-              <p className="text-xs font-semibold text-slate-500">Mathematics</p>
+              <p className="text-xs font-semibold text-slate-500">{t('landing.preview.mathSubject')}</p>
               <p className="text-lg font-extrabold text-brand-600">78%</p>
             </div>
             <div className="rounded-2xl bg-white p-3 shadow-sm">
-              <p className="text-xs font-semibold text-slate-500">English</p>
+              <p className="text-xs font-semibold text-slate-500">{t('landing.preview.englishSubject')}</p>
               <p className="text-lg font-extrabold text-brand-600">82%</p>
             </div>
           </div>

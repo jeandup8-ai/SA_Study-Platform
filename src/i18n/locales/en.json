@@ -10,7 +10,9 @@
     "close": "Close",
     "tryAgain": "Try again",
     "comingSoon": "Coming soon",
-    "demoContent": "Sample lesson for demonstration"
+    "demoContent": "Sample lesson for demonstration",
+    "priceTbc": "TBC",
+    "somethingWentWrong": "Something went wrong."
   },
   "nav": {
     "dashboard": "Home",
@@ -48,7 +50,18 @@
     "footer.parents": "For parents",
     "footer.pricing": "Pricing",
     "footer.privacy": "Privacy",
-    "footer.contact": "Contact"
+    "footer.contact": "Contact",
+    "footer.termsOfService": "Terms of Service",
+    "footer.privacyPolicy": "Privacy Policy",
+    "footer.refundPolicy": "Refund Policy",
+    "footer.cancelSubscription": "Cancel Subscription",
+    "gradeBadge": "Grade 4 – 7 · CAPS-aligned",
+    "preview.greeting": "Hi Liam 👋",
+    "preview.subtitle": "Grade 5 · Let's learn something today.",
+    "preview.continueLearning": "Continue learning",
+    "preview.topicName": "Fractions · Equivalent fractions",
+    "preview.mathSubject": "Mathematics",
+    "preview.englishSubject": "English"
   },
   "auth": {
     "signIn": "Sign in",
@@ -63,7 +76,10 @@
     "signUpLink": "Create a parent account",
     "signInLink": "Sign in instead",
     "signOut": "Sign out",
-    "popiaNote": "We only ask for what we need to run your account. No physical address, no unnecessary personal details."
+    "popiaNote": "We only ask for what we need to run your account. No physical address, no unnecessary personal details.",
+    "checkYourEmail": "Check your email",
+    "confirmationSentBefore": "We sent a confirmation link to ",
+    "confirmationSentAfter": ". Click it, then come back and sign in to set up your child's profile."
   },
   "onboarding": {
     "title": "Let's set up your child's profile",
@@ -80,7 +96,10 @@
     "byTopicHint": "Optional: set a starting % per topic instead of one number for the whole subject.",
     "saveStartingPoint": "Save and continue",
     "skipStartingPoint": "Skip for now",
-    "maxLearnersReached": "You've already added the maximum of {{max}} child profiles for your plan."
+    "maxLearnersReached": "You've already added the maximum of {{max}} child profiles for your plan.",
+    "curriculumLoadFailed": "Could not load the curriculum. Please try again shortly.",
+    "noGradesAvailable": "No grades are available yet. Please try again shortly.",
+    "gradesLoadFailed": "Could not load grades. Please check your connection and try again."
   },
   "dashboard": {
     "greeting": "Hi {{name}} 👋",
@@ -172,7 +191,12 @@
     "mindMapError.feature_not_configured": "This feature isn't switched on yet — try the other buttons above for now.",
     "mindMapError.mindmap_unavailable": "Couldn't draw a mind map right now — please try again in a moment.",
     "mindMapError.model_output_invalid": "Couldn't draw a mind map right now — please try again in a moment.",
-    "mindMapError.unknown": "Something went wrong — please try again in a moment."
+    "mindMapError.unknown": "Something went wrong — please try again in a moment.",
+    "previousSlide": "Previous slide",
+    "nextSlide": "Next slide",
+    "placeValue.hundreds": "Hundreds",
+    "placeValue.tens": "Tens",
+    "placeValue.units": "Units"
   },
   "quiz": {
     "questionOf": "Question {{current}} of {{total}}",
@@ -200,7 +224,8 @@
     "safetyNote": "Every upload is checked on our server before it's used — file type, size, and hidden location data in the photo are always verified for real. Deep visual scanning for unsafe imagery runs too once a vision-safety provider is connected; see the toggle below to preview how a rejection looks either way.",
     "simulateUnsafeToggle": "Demo: simulate an unsafe upload being rejected",
     "detectionUnavailable": "Auto-detection is having trouble right now — please choose below, or try again.",
-    "tryDetectionAgain": "Try auto-detect again"
+    "tryDetectionAgain": "Try auto-detect again",
+    "uploadAlt": "Your upload"
   },
   "parent": {
     "dashboardTitle": "{{name}}'s progress",
@@ -239,7 +264,22 @@
     "removeLearner": "Remove",
     "removeLearnerConfirm": "Remove {{name}}? This permanently deletes all their progress, points, and history. This can't be undone.",
     "removeLearnerConfirmButton": "Yes, remove",
-    "removeLearnerFailed": "Couldn't remove that profile. Please try again."
+    "removeLearnerFailed": "Couldn't remove that profile. Please try again.",
+    "checkoutFeatureUnavailable": "Card payment is not switched on yet — start a free trial instead, or contact us.",
+    "checkoutFailed": "Something went wrong starting checkout. Please try again.",
+    "paymentConfirming": "Thanks! We're confirming your payment with PayFast now — this usually only takes a few seconds. Refresh this page shortly if your status below doesn't update automatically.",
+    "checkoutCancelled": "Checkout was cancelled — no payment was made.",
+    "trialEndsOn": "Trial ends {{date}}",
+    "nextBillingDate": "Next billing date {{date}}",
+    "cancellationRequestedNote": "Cancellation requested — this will not renew further.",
+    "cancelSubscription": "Cancel subscription",
+    "maxLearnersOnPlan_one": "Up to {{count}} child profile",
+    "maxLearnersOnPlan_other": "Up to {{count}} child profiles",
+    "subscribeWithPayfast": "Subscribe with PayFast",
+    "startFreeTrial": "Start free trial",
+    "noPlansYet": "No plans published yet.",
+    "noLearnersYet": "No child profiles yet.",
+    "noAttentionNeeded": "Nothing needs attention right now."
   },
   "gamification": {
     "totalPoints_one": "{{count}} point",
@@ -290,5 +330,18 @@
     "users": "Users",
     "subscriptions": "Subscriptions",
     "restricted": "This area is for authorised administrators only."
+  },
+  "adminNav": {
+    "overview": "Overview",
+    "curriculumSources": "Curriculum sources",
+    "reviewQueue": "Review queue",
+    "terminology": "Terminology",
+    "illustrations": "Illustrations"
+  },
+  "pricing": {
+    "title": "Simple, family-friendly pricing",
+    "subtitle": "Start with a 3-day free trial — cancel anytime.",
+    "getStarted": "Get started",
+    "noPlansYet": "Pricing plans are being finalised."
   }
 }

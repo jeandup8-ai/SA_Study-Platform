@@ -21,7 +21,7 @@ export function SignInPage() {
       await signIn({ email, password })
       navigate('/app')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.')
+      setError(err instanceof Error ? err.message : t('common.somethingWentWrong'))
     } finally {
       setSubmitting(false)
     }

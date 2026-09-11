@@ -92,7 +92,7 @@ export function ParentDashboardPage() {
   if (learners.length === 0) {
     return (
       <div className="text-center">
-        <p className="text-slate-600">No child profiles yet.</p>
+        <p className="text-slate-600">{t('parent.noLearnersYet')}</p>
         <Link to="/onboarding/learner" className="mt-4 inline-block">
           <Button>{t('parent.addLearner')}</Button>
         </Link>
@@ -297,7 +297,7 @@ export function ParentDashboardPage() {
         {t('parent.attentionNeeded')}
       </h2>
       <div className="mt-3 flex flex-wrap gap-2">
-        {attention.length === 0 && <p className="text-sm text-slate-400">Nothing needs attention right now.</p>}
+        {attention.length === 0 && <p className="text-sm text-slate-400">{t('parent.noAttentionNeeded')}</p>}
         {attention.map((a) => (
           <Badge key={a.topicId} tone="warning">
             {a.topicName} · {Math.round(a.masteryScore)}%
