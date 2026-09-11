@@ -235,7 +235,11 @@
     "startingPointBadge": "Starting point",
     "byTopicToggle": "Break down by topic",
     "byTopicHint": "Set a starting % per topic so you can see exactly where extra focus is needed.",
-    "familyLeaderboard": "Family leaderboard"
+    "familyLeaderboard": "Family leaderboard",
+    "removeLearner": "Remove",
+    "removeLearnerConfirm": "Remove {{name}}? This permanently deletes all their progress, points, and history. This can't be undone.",
+    "removeLearnerConfirmButton": "Yes, remove",
+    "removeLearnerFailed": "Couldn't remove that profile. Please try again."
   },
   "gamification": {
     "totalPoints_one": "{{count}} point",

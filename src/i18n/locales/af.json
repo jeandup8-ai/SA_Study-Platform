@@ -235,7 +235,11 @@
     "startingPointBadge": "Beginpunt",
     "byTopicToggle": "Verdeel volgens onderwerp",
     "byTopicHint": "Stel 'n beginpunt-persentasie per onderwerp sodat jy presies kan sien waar ekstra fokus nodig is.",
-    "familyLeaderboard": "Gesin-ranglys"
+    "familyLeaderboard": "Gesin-ranglys",
+    "removeLearner": "Verwyder",
+    "removeLearnerConfirm": "Verwyder {{name}}? Dit skrap permanent al hulle vordering, punte en geskiedenis. Dit kan nie ontdoen word nie.",
+    "removeLearnerConfirmButton": "Ja, verwyder",
+    "removeLearnerFailed": "Kon nie daardie profiel verwyder nie. Probeer asseblief weer."
   },
   "gamification": {
     "totalPoints_one": "{{count}} punt",

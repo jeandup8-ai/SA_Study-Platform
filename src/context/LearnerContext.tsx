@@ -39,6 +39,7 @@ interface LearnerContextValue {
   loading: boolean
   setActiveLearnerId: (id: string) => void
   createLearner: (input: CreateLearnerInput) => Promise<Learner>
+  deleteLearner: (id: string) => Promise<void>
   refreshLearners: () => Promise<void>
 }
 
@@ -137,6 +138,20 @@ export function LearnerProvider({ children }: { children: ReactNode }) {
     return data
   }
 
+  async function deleteLearner(id: string): Promise<void> {
+    // Cascades to every table referencing learners(id) -- assessment history,
+    // AI-tutor logs, points, baselines, everything. See migration 0002 etc.
+    // (all "on delete cascade"). Irreversible; the UI confirms before calling
+    // this.
+    const { error } = await supabase.from('learners').delete().eq('id', id)
+    if (error) throw error
+    if (activeLearnerId === id) {
+      localStorage.removeItem(ACTIVE_LEARNER_KEY)
+      setActiveLearnerIdState(null)
+    }
+    await refreshLearners()
+  }
+
   const activeLearner = learners.find((l) => l.id === activeLearnerId) ?? learners[0] ?? null
 
   useEffect(() => {
@@ -145,7 +160,7 @@ export function LearnerProvider({ children }: { children: ReactNode }) {
 
   return (
     <LearnerContext.Provider
-      value={{ learners, activeLearner, loading, setActiveLearnerId, createLearner, refreshLearners }}
+      value={{ learners, activeLearner, loading, setActiveLearnerId, createLearner, deleteLearner, refreshLearners }}
     >
       {children}
     </LearnerContext.Provider>
