@@ -2,13 +2,11 @@ import { LegalPageLayout } from './LegalPageLayout'
 
 export function RefundPolicyPage() {
   return (
-    <LegalPageLayout title="Refund Policy" lastUpdated="11 September 2026">
+    <LegalPageLayout title="Refund Policy" lastUpdated="13 September 2026">
       <p>
-        <strong>Billing is built and connected via PayFast, but at the time of writing it is
-        running in PayFast's sandbox (test) mode only — no real payments are being taken today, so
-        there is currently nothing to refund.</strong> This page describes the refund policy we
-        intend to apply once live billing goes live. It has not yet been reviewed by a qualified
-        attorney and should be checked against PayFast's own requirements before publication.
+        Billing is handled by PayFast, a South African payment provider. This page describes our
+        refund policy. <strong>It has not yet been reviewed by a qualified attorney</strong> and
+        should be checked against PayFast's own requirements.
       </p>
 
       <h2>Free trial</h2>
@@ -19,8 +17,8 @@ export function RefundPolicyPage() {
         checkout to enter card details.
       </p>
 
-      <h2>Once billing is live</h2>
-      <p>Once billing goes live, we intend to offer:</p>
+      <h2>Refunds</h2>
+      <p>We offer:</p>
       <ul>
         <li>
           A full refund if you are charged in error (for example, a duplicate charge or a charge
@@ -36,15 +34,14 @@ export function RefundPolicyPage() {
         </li>
       </ul>
       <p>
-        These terms are our current intended policy, not a legal guarantee, and will be finalised
-        alongside the payment provider integration and reviewed by an attorney before real billing
-        goes live.
+        These terms are our current policy, not a legal guarantee, and may be updated once
+        reviewed by an attorney.
       </p>
 
       <h2>How to request a refund</h2>
       <p>
-        There is no self-service refund button in the app today. Once billing is live, refund
-        requests will go through the same channel as cancellation requests — see our{' '}
+        There is no self-service refund button in the app today. Refund requests go through the
+        same channel as cancellation requests — see our{' '}
         <a href="/subscription-cancellation">Subscription Cancellation</a> page and our{' '}
         <a href="/contact">Contact page</a>.
       </p>

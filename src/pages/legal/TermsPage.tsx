@@ -2,7 +2,7 @@ import { LegalPageLayout } from './LegalPageLayout'
 
 export function TermsPage() {
   return (
-    <LegalPageLayout title="Terms of Service" lastUpdated="12 September 2026">
+    <LegalPageLayout title="Terms of Service" lastUpdated="13 September 2026">
       <p>
         These terms govern use of StudyLegends, a mobile-first learning app for South African learners in
         Grade 4–7, built around the CAPS curriculum. <strong>These terms have not yet been
@@ -59,10 +59,8 @@ export function TermsPage() {
         Billing is handled by PayFast, a South African payment provider. Starting a paid
         subscription takes you to PayFast's own secure checkout page to enter your card details —
         StudyLegends never sees or stores your card number. PayFast then notifies us automatically
-        once a payment succeeds, fails, or a subscription is cancelled.{' '}
-        <strong>At the time of writing, this integration is running in PayFast's sandbox (test)
-        mode only, so no real money is being charged yet.</strong> This notice will be removed
-        once live billing goes live. See our <a href="/refund-policy">Refund Policy</a>
+        once a payment succeeds, fails, or a subscription is cancelled. See our{' '}
+        <a href="/refund-policy">Refund Policy</a>
         {' '}and <a href="/subscription-cancellation">Cancellation</a> pages for what happens after
         that point.
       </p>

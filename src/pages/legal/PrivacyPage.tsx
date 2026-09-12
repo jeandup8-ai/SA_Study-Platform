@@ -2,7 +2,7 @@ import { LegalPageLayout } from './LegalPageLayout'
 
 export function PrivacyPage() {
   return (
-    <LegalPageLayout title="Privacy Policy" lastUpdated="11 September 2026">
+    <LegalPageLayout title="Privacy Policy" lastUpdated="13 September 2026">
       <p>
         This policy explains what personal information StudyLegends collects, why, and what actually
         happens to it in this product today. It is written to describe the platform's real,
@@ -135,10 +135,7 @@ export function PrivacyPage() {
         them — StudyLegends never sees, collects, or stores your card number or banking details.
         PayFast notifies our server automatically when a payment succeeds, fails, or a subscription
         is cancelled, and we store only a PayFast-issued reference used to manage your subscription
-        with them — never your card details.{' '}
-        <strong>At the time of writing, this integration is running in PayFast's sandbox (test)
-        mode only, so no real payments or real card details are involved yet.</strong> This notice
-        will be removed once live billing goes live.
+        with them — never your card details.
       </p>
 
       <h2>Your rights</h2>
