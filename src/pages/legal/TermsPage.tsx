@@ -14,10 +14,10 @@ export function TermsPage() {
 
       <h2>1. The company</h2>
       <p>
-        StudyLegends is operated by [LEGAL ENTITY NAME — TO BE CONFIRMED], registration number
-        [COMPANY REGISTRATION NUMBER — TO BE CONFIRMED], of [REGISTERED BUSINESS ADDRESS — TO BE
-        CONFIRMED] ("we," "us," "StudyLegends"). These details must be completed with the real,
-        registered business information before this page is published.
+        StudyLegends is a trading name of Legend Supplies (Pty) Ltd, registration number
+        2025/342787/07, of [REGISTERED BUSINESS ADDRESS — TO BE CONFIRMED] ("we," "us,"
+        "StudyLegends"). The business address above must be completed with real, verified
+        information before this page is published.
       </p>
 
       <h2>2. Accounts</h2>

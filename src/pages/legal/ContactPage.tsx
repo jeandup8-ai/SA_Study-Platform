@@ -2,29 +2,26 @@ import { LegalPageLayout } from './LegalPageLayout'
 
 export function ContactPage() {
   return (
-    <LegalPageLayout title="Contact" lastUpdated="22 August 2026">
+    <LegalPageLayout title="Contact" lastUpdated="12 September 2026">
       <p>
-        <strong>Honest status: no verified support email address, phone number, or business
-        registration detail currently exists anywhere in this codebase.</strong> The fields below
-        are placeholders and must be replaced with real, checked details before this page is
-        published — nothing in brackets is a real, working contact method today.
+        <strong>Honest status: the registered business address below is still a placeholder and
+        must be replaced with real, checked details before this page is published.</strong> Every
+        other field on this page is now a real, working contact method.
       </p>
 
       <h2>General support</h2>
-      <p>Email: [SUPPORT EMAIL ADDRESS — TO BE CONFIRMED]</p>
-      <p>Phone: [SUPPORT PHONE NUMBER — TO BE CONFIRMED, OPTIONAL]</p>
+      <p>Email: info@legendsupplies.co.za</p>
 
       <h2>Privacy and data requests</h2>
       <p>
         For a request relating to your (or your child's) personal information under our{' '}
-        <a href="/privacy">Privacy Policy</a>, email: [PRIVACY/DATA-REQUEST EMAIL ADDRESS — TO BE
-        CONFIRMED].
+        <a href="/privacy">Privacy Policy</a>, email: info@legendsupplies.co.za.
       </p>
 
       <h2>Billing, refunds, and cancellation</h2>
       <p>
-        For a billing, refund, or cancellation request, email: [BILLING SUPPORT EMAIL ADDRESS —
-        TO BE CONFIRMED]. See also our <a href="/refund-policy">Refund Policy</a> and{' '}
+        For a billing, refund, or cancellation request, email: info@legendsupplies.co.za. See
+        also our <a href="/refund-policy">Refund Policy</a> and{' '}
         <a href="/subscription-cancellation">Subscription Cancellation</a> pages.
       </p>
 
