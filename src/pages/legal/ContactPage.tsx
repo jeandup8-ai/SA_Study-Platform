@@ -3,12 +3,6 @@ import { LegalPageLayout } from './LegalPageLayout'
 export function ContactPage() {
   return (
     <LegalPageLayout title="Contact" lastUpdated="12 September 2026">
-      <p>
-        <strong>Honest status: the registered business address below is still a placeholder and
-        must be replaced with real, checked details before this page is published.</strong> Every
-        other field on this page is now a real, working contact method.
-      </p>
-
       <h2>General support</h2>
       <p>Email: info@legendsupplies.co.za</p>
 
@@ -26,7 +20,7 @@ export function ContactPage() {
       </p>
 
       <h2>Registered business address</h2>
-      <p>[REGISTERED BUSINESS ADDRESS — TO BE CONFIRMED]</p>
+      <p>714 Doornkloof Street, Moreletapark, Pretoria, South Africa</p>
 
       <h2>Note on how this is handled today</h2>
       <p>

@@ -2,7 +2,7 @@ import { LegalPageLayout } from './LegalPageLayout'
 
 export function TermsPage() {
   return (
-    <LegalPageLayout title="Terms of Service" lastUpdated="11 September 2026">
+    <LegalPageLayout title="Terms of Service" lastUpdated="12 September 2026">
       <p>
         These terms govern use of StudyLegends, a mobile-first learning app for South African learners in
         Grade 4–7, built around the CAPS curriculum. <strong>These terms have not yet been
@@ -15,9 +15,8 @@ export function TermsPage() {
       <h2>1. The company</h2>
       <p>
         StudyLegends is a trading name of Legend Supplies (Pty) Ltd, registration number
-        2025/342787/07, of [REGISTERED BUSINESS ADDRESS — TO BE CONFIRMED] ("we," "us,"
-        "StudyLegends"). The business address above must be completed with real, verified
-        information before this page is published.
+        2025/342787/07, of 714 Doornkloof Street, Moreletapark, Pretoria, South Africa ("we,"
+        "us," "StudyLegends").
       </p>
 
       <h2>2. Accounts</h2>
