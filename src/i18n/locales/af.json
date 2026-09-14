@@ -186,6 +186,8 @@
     "aiExplanationError.model_output_invalid": "Kon nie nou 'n nuwe verduideliking kry nie — probeer asseblief weer oor 'n oomblik.",
     "aiExplanationError.unknown": "Iets het verkeerd geloop — probeer asseblief weer oor 'n oomblik.",
     "mindMap": "Gedagtekaart",
+    "watchVideo": "Kyk 'n video",
+    "videoDisclaimer": "Hierdie video word op YouTube gehuisves — deur ons span goedgekeur, maar YouTube se eie speler en enige voorstelle aan die einde van die video is buite ons beheer.",
     "mindMapLoading": "Besig om 'n gedagtekaart te teken...",
     "mindMapError.daily_limit_reached": "Jy het vandag se gedagtekaarte klaar gebruik — goeie moeite vandag! Probeer weer môre, of vra 'n ouer vir hulp.",
     "mindMapError.feature_not_configured": "Hierdie funksie is nog nie aangeskakel nie — probeer solank die ander knoppies hierbo.",
@@ -336,7 +338,8 @@
     "curriculumSources": "Kurrikulumbronne",
     "reviewQueue": "Hersieningswagry",
     "terminology": "Terminologie",
-    "illustrations": "Illustrasies"
+    "illustrations": "Illustrasies",
+    "videoSuggestions": "Video-voorstelle"
   },
   "pricing": {
     "title": "Eenvoudige, gesinsvriendelike pryse",

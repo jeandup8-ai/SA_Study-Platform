@@ -28,6 +28,7 @@ import { CurriculumSourcesPage } from '@/pages/admin/CurriculumSourcesPage'
 import { CurriculumReviewPage } from '@/pages/admin/CurriculumReviewPage'
 import { TerminologyReviewPage } from '@/pages/admin/TerminologyReviewPage'
 import { TopicIllustrationsPage } from '@/pages/admin/TopicIllustrationsPage'
+import { VideoSuggestionsReviewPage } from '@/pages/admin/VideoSuggestionsReviewPage'
 import { ChildShell } from '@/components/layout/ChildShell'
 import { ParentShell } from '@/components/layout/ParentShell'
 import { AdminShell } from '@/components/layout/AdminShell'
@@ -116,6 +117,7 @@ export default function App() {
                 <Route path="review-queue" element={<CurriculumReviewPage />} />
                 <Route path="terminology" element={<TerminologyReviewPage />} />
                 <Route path="illustrations" element={<TopicIllustrationsPage />} />
+                <Route path="video-suggestions" element={<VideoSuggestionsReviewPage />} />
               </Routes>
             </AdminShell>
           </RequireAdmin>

@@ -186,6 +186,8 @@
     "aiExplanationError.model_output_invalid": "Couldn't get a new explanation right now — please try again in a moment.",
     "aiExplanationError.unknown": "Something went wrong — please try again in a moment.",
     "mindMap": "Mind map",
+    "watchVideo": "Watch a video",
+    "videoDisclaimer": "This video is hosted on YouTube — approved by our team, but YouTube's own player and any end-of-video suggestions are outside our control.",
     "mindMapLoading": "Drawing a mind map...",
     "mindMapError.daily_limit_reached": "You've used up today's mind maps — great effort for today! Try again tomorrow, or ask a parent for help.",
     "mindMapError.feature_not_configured": "This feature isn't switched on yet — try the other buttons above for now.",
@@ -336,7 +338,8 @@
     "curriculumSources": "Curriculum sources",
     "reviewQueue": "Review queue",
     "terminology": "Terminology",
-    "illustrations": "Illustrations"
+    "illustrations": "Illustrations",
+    "videoSuggestions": "Video suggestions"
   },
   "pricing": {
     "title": "Simple, family-friendly pricing",

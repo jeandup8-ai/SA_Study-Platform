@@ -10,6 +10,7 @@ const TABS = [
   { to: '/admin/review-queue', labelKey: 'adminNav.reviewQueue', end: false },
   { to: '/admin/terminology', labelKey: 'adminNav.terminology', end: false },
   { to: '/admin/illustrations', labelKey: 'adminNav.illustrations', end: false },
+  { to: '/admin/video-suggestions', labelKey: 'adminNav.videoSuggestions', end: false },
 ] as const
 
 export function AdminShell({ children }: { children: ReactNode }) {

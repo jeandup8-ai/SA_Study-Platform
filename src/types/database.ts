@@ -2534,6 +2534,63 @@ export type Database = {
           },
         ]
       }
+      topic_videos: {
+        Row: {
+          channel_name: string
+          created_at: string
+          id: string
+          notes: string | null
+          reviewer_id: string | null
+          suggested_by: string
+          title: string
+          topic_id: string
+          updated_at: string
+          verified: boolean
+          youtube_video_id: string
+        }
+        Insert: {
+          channel_name: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          reviewer_id?: string | null
+          suggested_by?: string
+          title: string
+          topic_id: string
+          updated_at?: string
+          verified?: boolean
+          youtube_video_id: string
+        }
+        Update: {
+          channel_name?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          reviewer_id?: string | null
+          suggested_by?: string
+          title?: string
+          topic_id?: string
+          updated_at?: string
+          verified?: boolean
+          youtube_video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topic_videos_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "admins"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "topic_videos_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       topics: {
         Row: {
           code: string

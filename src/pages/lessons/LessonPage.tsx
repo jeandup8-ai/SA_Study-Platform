@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronLeft, RotateCcw, Wand2, Lightbulb, Sparkles, Network } from 'lucide-react'
+import { ChevronLeft, RotateCcw, Wand2, Lightbulb, Sparkles, Network, PlayCircle } from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
 import { fetchLesson, fetchLessonContent, fetchLessonMedia, fetchTopicIllustration } from '@/lib/curriculum/queries'
+import { fetchVerifiedTopicVideo } from '@/lib/curriculum/topicVideos'
+import type { Database } from '@/types/database'
 import { fetchQuestionsForTopic, fetchMiniQuizForLesson } from '@/lib/curriculum/questions'
 import { recordQuizResult } from '@/lib/mastery/engine'
 import { requestAlternateExplanation, type AlternateExplanation } from '@/lib/tutor/explainDifferently'
@@ -14,6 +16,7 @@ import { awardFlatPoints, POINTS_PER_PRACTICE_SET_COMPLETED } from '@/lib/gamifi
 import { checkAndAwardBadges, type BadgeCode } from '@/lib/gamification/badges'
 import { fetchStreak } from '@/lib/streak/streak'
 import { PointsEarnedBanner } from '@/components/lesson/PointsEarnedBanner'
+import { TopicVideoPanel } from '@/components/lesson/TopicVideoPanel'
 import {
   isV2Lesson,
   getNarration,
@@ -86,12 +89,17 @@ export function LessonPage() {
   const [mindMapLoading, setMindMapLoading] = useState(false)
   const [mindMapError, setMindMapError] = useState<string | null>(null)
   const [topicIllustrationUrl, setTopicIllustrationUrl] = useState<string | null>(null)
+  const [topicVideo, setTopicVideo] = useState<Database['public']['Tables']['topic_videos']['Row'] | null>(null)
+  const [showVideo, setShowVideo] = useState(false)
 
   useEffect(() => {
     if (!lessonId || !activeLearner) return
     fetchLesson(lessonId).then((row) => {
       setLesson(row)
-      if (row) fetchTopicIllustration(row.topic_id).then(setTopicIllustrationUrl)
+      if (row) {
+        fetchTopicIllustration(row.topic_id).then(setTopicIllustrationUrl)
+        fetchVerifiedTopicVideo(row.topic_id).then(setTopicVideo)
+      }
     })
     fetchLessonContent(lessonId).then(setContent)
     fetchLessonMedia(lessonId).then(setMedia)
@@ -218,6 +226,7 @@ export function LessonPage() {
     setAiError(null)
     setMindMap(null)
     setMindMapError(null)
+    setShowVideo(false)
     setStepIndex((i) => Math.min(i + 1, steps.length - 1))
   }
   function goBack() {
@@ -225,6 +234,7 @@ export function LessonPage() {
     setAiError(null)
     setMindMap(null)
     setMindMapError(null)
+    setShowVideo(false)
     if (stepIndex === 0) navigate(-1)
     else setStepIndex((i) => i - 1)
   }
@@ -290,9 +300,15 @@ export function LessonPage() {
               />
               <TutorChip icon={Sparkles} label={t('lesson.explainDifferently')} onClick={handleRequestAlternateExplanation} />
               <TutorChip icon={Network} label={t('lesson.mindMap')} onClick={handleGenerateMindMap} />
+              {topicVideo && (
+                <TutorChip icon={PlayCircle} label={t('lesson.watchVideo')} onClick={() => setShowVideo((v) => !v)} />
+              )}
             </div>
             <AiExplanationPanel loading={aiLoading} error={aiError} explanation={aiExplanation} />
             <MindMapPanel loading={mindMapLoading} error={mindMapError} mindmap={mindMap} />
+            {showVideo && topicVideo && (
+              <TopicVideoPanel youtubeVideoId={topicVideo.youtube_video_id} title={topicVideo.title} />
+            )}
           </Card>
         )}
 
@@ -341,12 +357,18 @@ export function LessonPage() {
                   />
                   <TutorChip icon={Sparkles} label={t('lesson.explainDifferently')} onClick={handleRequestAlternateExplanation} />
                   <TutorChip icon={Network} label={t('lesson.mindMap')} onClick={handleGenerateMindMap} />
+                  {topicVideo && (
+                    <TutorChip icon={PlayCircle} label={t('lesson.watchVideo')} onClick={() => setShowVideo((v) => !v)} />
+                  )}
                 </div>
               )}
               {step === 'simple_explanation' && (
                 <>
                   <AiExplanationPanel loading={aiLoading} error={aiError} explanation={aiExplanation} />
                   <MindMapPanel loading={mindMapLoading} error={mindMapError} mindmap={mindMap} />
+                  {showVideo && topicVideo && (
+                    <TopicVideoPanel youtubeVideoId={topicVideo.youtube_video_id} title={topicVideo.title} />
+                  )}
                 </>
               )}
             </Card>

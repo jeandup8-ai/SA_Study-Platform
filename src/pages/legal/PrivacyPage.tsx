@@ -78,11 +78,25 @@ export function PrivacyPage() {
         </li>
       </ul>
 
+      <h2>Optional video suggestions</h2>
+      <p>
+        Some lessons include an optional "Watch a video" button. This links to a video hosted on
+        YouTube — never our own content, and never shown automatically. Every video is watched in
+        full and approved by a human on our team before it can appear to any Learner; nothing
+        sourced by search or AI reaches this feature unreviewed. If a Learner chooses to play one,
+        it loads inside the app using YouTube's privacy-enhanced mode
+        (youtube-nocookie.com), which limits but does not fully eliminate what YouTube's own
+        player can collect once playback starts, and we do not control what YouTube (Google) does
+        with that interaction.
+      </p>
+
       <h2>What we do not do</h2>
       <ul>
         <li>
-          <strong>No advertising or analytics tracking.</strong> This product has no analytics,
-          advertising, or tracking scripts of any kind integrated.
+          <strong>No advertising or analytics tracking of our own.</strong> This product has no
+          analytics, advertising, or tracking scripts of its own integrated. The one exception is
+          the optional YouTube videos described above, which a Learner must actively choose to
+          play.
         </li>
         <li>
           <strong>Limited, narrow AI/LLM use.</strong> "Explain again" and "make it easier" work by
