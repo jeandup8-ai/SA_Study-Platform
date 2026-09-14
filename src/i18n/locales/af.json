@@ -342,6 +342,25 @@
     "title": "Eenvoudige, gesinsvriendelike pryse",
     "subtitle": "Begin met 'n 3-dae gratis proeftydperk — kanselleer enige tyd.",
     "getStarted": "Begin nou",
-    "noPlansYet": "Prysplanne word tans afgehandel."
+    "noPlansYet": "Prysplanne word tans afgehandel.",
+    "bestValue": "Beste waarde",
+    "annualSavings": "Bespaar R{{amount}} per jaar teenoor maandeliks betaal",
+    "includedTitle": "Wat op elke plan ingesluit is",
+    "checklist": {
+      "curriculum": "CAPS-belynde lesse en oefening vir Graad 4–7, gebou uit die amptelike kurrikulumdokumente",
+      "aiExplain": "KI-ondersteunde \"verduidelik op 'n ander manier\" vir lastige onderwerpe — slegs gegrond op daardie les se eie inhoud, nooit 'n oop geselsbot nie",
+      "scan": "Scan My Work: laai huiswerkfoto's op vir onmiddellike, fout-gerigte terugvoer",
+      "downloads": "Aflaaibare oefenvraestelle met antwoordmemorandums, plus Onderwerp-opsomming-PDF's",
+      "progress": "Vorderingsopsporing en onderwerp-vir-onderwerp bemeesteringsverslae vir ouers",
+      "gamification": "Punte, kentekens en 'n gesinsleierbord om leerders gemotiveerd te hou",
+      "languages": "Engels en Afrikaans by bekendstelling, met al 11 amptelike tale in die grondslag ingebou"
+    },
+    "whyUsTitle": "Hoe ons verskil",
+    "whyUs": {
+      "specialistTitle": "'n Spesialis, nie 'n veralgemeenaar nie",
+      "specialistBody": "Ons fokus net op Graad 4–7 CAPS, sodat elke les spesifiek vir daardie band gebou is — nie dun versprei oor Graad 1 tot 12 nie.",
+      "safetyTitle": "KI met beskermrade, nie 'n oop geselsbot nie",
+      "safetyBody": "Ons KI-verduidelikings bly gegrond in daardie les se eie inhoud. Jou kind kan nêrens in die app 'n vrye-teks-gesprek met 'n KI begin nie."
+    }
   }
 }
