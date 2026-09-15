@@ -6,9 +6,11 @@ import { useLearner } from '@/context/LearnerContext'
 import { fetchContinueLearning, fetchSubjectMasterySummary, type ContinueLearningItem, type SubjectMasterySummary } from '@/lib/curriculum/dashboard'
 import { recommendNextTopic, type RecommendedTopic } from '@/lib/recommendation/nextTopic'
 import { fetchStreak, type StreakInfo } from '@/lib/streak/streak'
+import { fetchDailyGoalProgress, type DailyGoalProgress } from '@/lib/gamification/dailyGoal'
 import { Card, PressableCard, LearnerAvatarIcon, ProgressRing, Badge } from '@/components/ui'
 import { StreakBadge } from '@/components/dashboard/StreakBadge'
 import { PointsBadge } from '@/components/dashboard/PointsBadge'
+import { DailyGoalBadge } from '@/components/dashboard/DailyGoalBadge'
 import { supabase } from '@/lib/supabase'
 
 export function ChildDashboardPage() {
@@ -19,6 +21,7 @@ export function ChildDashboardPage() {
   const [gradeNumber, setGradeNumber] = useState<number | null>(null)
   const [recommended, setRecommended] = useState<RecommendedTopic | null>(null)
   const [streak, setStreak] = useState<StreakInfo | null>(null)
+  const [dailyGoal, setDailyGoal] = useState<DailyGoalProgress | null>(null)
 
   useEffect(() => {
     if (!activeLearner) return
@@ -26,6 +29,7 @@ export function ChildDashboardPage() {
     fetchSubjectMasterySummary(activeLearner.id, activeLearner.grade_id, activeLearner.preferred_language).then(setSubjects)
     recommendNextTopic(activeLearner.id, activeLearner.grade_id, activeLearner.preferred_language).then(setRecommended)
     fetchStreak(activeLearner.id).then(setStreak)
+    fetchDailyGoalProgress(activeLearner.id, activeLearner.daily_practice_target).then(setDailyGoal)
     supabase
       .from('grades')
       .select('grade_number')
@@ -76,11 +80,12 @@ export function ChildDashboardPage() {
           </Link>
         </div>
       </div>
-      <div className="mt-2 flex items-center justify-between gap-2">
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
         <p className="text-slate-500">{t('dashboard.prompt')}</p>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <PointsBadge totalPoints={activeLearner.total_points} />
           <StreakBadge streak={streak} />
+          <DailyGoalBadge progress={dailyGoal} />
         </div>
       </div>
 

@@ -1233,6 +1233,7 @@ export type Database = {
           birth_year: number | null
           created_at: string
           curriculum_id: string
+          daily_practice_target: number
           display_name: string
           grade_id: string
           id: string
@@ -1246,6 +1247,7 @@ export type Database = {
           birth_year?: number | null
           created_at?: string
           curriculum_id: string
+          daily_practice_target?: number
           display_name: string
           grade_id: string
           id?: string
@@ -1259,6 +1261,7 @@ export type Database = {
           birth_year?: number | null
           created_at?: string
           curriculum_id?: string
+          daily_practice_target?: number
           display_name?: string
           grade_id?: string
           id?: string

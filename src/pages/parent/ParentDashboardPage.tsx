@@ -8,13 +8,18 @@ import { fetchTopicsWithProgress, type TopicWithProgress } from '@/lib/curriculu
 import { fetchWeeklyStats, fetchAttentionNeeded, type WeeklyStats, type TopicAttention } from '@/lib/parent/dashboard'
 import { setSubjectBaseline } from '@/lib/parent/subjectBaseline'
 import { setTopicBaseline } from '@/lib/parent/topicBaseline'
+import { fetchDailyGoalProgress, updateDailyTarget, type DailyGoalProgress } from '@/lib/gamification/dailyGoal'
 import { Card, ProgressRing, Badge, LearnerAvatarIcon, Button } from '@/components/ui'
 import { Trophy } from 'lucide-react'
 
 export function ParentDashboardPage() {
   const { t } = useTranslation()
-  const { learners, activeLearner, setActiveLearnerId } = useLearner()
+  const { learners, activeLearner, setActiveLearnerId, refreshLearners } = useLearner()
   const [stats, setStats] = useState<WeeklyStats | null>(null)
+  const [dailyGoal, setDailyGoal] = useState<DailyGoalProgress | null>(null)
+  const [editingDailyTarget, setEditingDailyTarget] = useState(false)
+  const [dailyTargetValue, setDailyTargetValue] = useState('')
+  const [savingDailyTarget, setSavingDailyTarget] = useState(false)
   const [subjects, setSubjects] = useState<SubjectMasterySummary[]>([])
   const [attention, setAttention] = useState<TopicAttention[]>([])
   const [editingSubjectId, setEditingSubjectId] = useState<string | null>(null)
@@ -46,7 +51,20 @@ export function ParentDashboardPage() {
     fetchWeeklyStats(activeLearner.id).then(setStats)
     loadSubjects()
     fetchAttentionNeeded(activeLearner.id).then(setAttention)
+    fetchDailyGoalProgress(activeLearner.id, activeLearner.daily_practice_target).then(setDailyGoal)
   }, [activeLearner, loadSubjects])
+
+  async function saveDailyTarget() {
+    if (!activeLearner) return
+    const target = Number(dailyTargetValue)
+    if (!Number.isFinite(target) || target < 1) return
+    setSavingDailyTarget(true)
+    await updateDailyTarget(activeLearner.id, target)
+    await refreshLearners()
+    setDailyGoal(await fetchDailyGoalProgress(activeLearner.id, target))
+    setSavingDailyTarget(false)
+    setEditingDailyTarget(false)
+  }
 
   function startEditingBaseline(subject: SubjectMasterySummary) {
     setEditingSubjectId(subject.subjectId)
@@ -162,6 +180,49 @@ export function ParentDashboardPage() {
           <p className="text-xs font-medium text-slate-500">{t('parent.overallMastery')}</p>
         </Card>
       </div>
+
+      <Card className="mt-4">
+        <div className="flex items-center justify-between gap-3">
+          <div>
+            <p className="text-sm font-bold text-slate-800">{t('parent.dailyGoalTitle')}</p>
+            <p className="mt-0.5 text-sm text-slate-500">
+              {dailyGoal
+                ? t('dashboard.dailyGoalProgress', { done: dailyGoal.activitiesToday, target: dailyGoal.target })
+                : t('common.loading')}
+            </p>
+          </div>
+          {!editingDailyTarget && (
+            <button
+              onClick={() => {
+                setEditingDailyTarget(true)
+                setDailyTargetValue(String(activeLearner.daily_practice_target))
+              }}
+              aria-label={t('parent.editDailyGoal')}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            >
+              <Pencil size={14} />
+            </button>
+          )}
+        </div>
+        {editingDailyTarget && (
+          <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3">
+            <label className="text-sm font-medium text-slate-600">{t('parent.dailyGoalLabel')}</label>
+            <input
+              type="number"
+              min={1}
+              value={dailyTargetValue}
+              onChange={(e) => setDailyTargetValue(e.target.value)}
+              className="w-20 rounded-lg border-2 border-slate-200 px-2 py-1 text-sm"
+            />
+            <Button size="md" className="ml-auto" disabled={savingDailyTarget || dailyTargetValue === ''} onClick={() => void saveDailyTarget()}>
+              {t('common.save')}
+            </Button>
+            <Button size="md" variant="ghost" onClick={() => setEditingDailyTarget(false)}>
+              {t('common.cancel')}
+            </Button>
+          </div>
+        )}
+      </Card>
 
       <h2 className="mt-8 text-sm font-bold uppercase tracking-wide text-slate-400">
         {t('parent.subjectsBreakdown')}
