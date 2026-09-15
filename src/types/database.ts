@@ -2539,6 +2539,7 @@ export type Database = {
           channel_name: string
           created_at: string
           id: string
+          language: Database["public"]["Enums"]["language_code"]
           notes: string | null
           reviewer_id: string | null
           suggested_by: string
@@ -2552,6 +2553,7 @@ export type Database = {
           channel_name: string
           created_at?: string
           id?: string
+          language?: Database["public"]["Enums"]["language_code"]
           notes?: string | null
           reviewer_id?: string | null
           suggested_by?: string
@@ -2565,6 +2567,7 @@ export type Database = {
           channel_name?: string
           created_at?: string
           id?: string
+          language?: Database["public"]["Enums"]["language_code"]
           notes?: string | null
           reviewer_id?: string | null
           suggested_by?: string

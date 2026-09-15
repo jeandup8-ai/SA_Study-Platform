@@ -98,7 +98,7 @@ export function LessonPage() {
       setLesson(row)
       if (row) {
         fetchTopicIllustration(row.topic_id).then(setTopicIllustrationUrl)
-        fetchVerifiedTopicVideo(row.topic_id).then(setTopicVideo)
+        fetchVerifiedTopicVideo(row.topic_id, activeLearner.preferred_language).then(setTopicVideo)
       }
     })
     fetchLessonContent(lessonId).then(setContent)

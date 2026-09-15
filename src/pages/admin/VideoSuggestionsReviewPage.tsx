@@ -61,6 +61,8 @@ export function VideoSuggestionsReviewPage() {
                 <p className="text-lg font-bold text-white">{item.title}</p>
                 <p className="text-sm text-slate-400">
                   {item.channel_name}
+                  {' · '}
+                  {item.language.toUpperCase()}
                   {item.topic_name ? ` · ${item.topic_name}` : ''}
                   {item.subject_name ? ` · ${item.subject_name}` : ''}
                   {item.grade_number ? ` · Grade ${item.grade_number}` : ''}
