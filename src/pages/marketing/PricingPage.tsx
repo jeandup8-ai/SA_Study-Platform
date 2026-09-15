@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { BadgeCheck, ScanLine, Download, LineChart, Trophy, Languages, GraduationCap, ShieldCheck } from 'lucide-react'
+import { BadgeCheck, ScanLine, Download, LineChart, Trophy, Languages, GraduationCap, ShieldCheck, Target } from 'lucide-react'
 import { MarketingShell } from '@/components/layout/MarketingShell'
 import { Button, Card } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
@@ -9,8 +9,17 @@ import type { Database } from '@/types/database'
 
 type SubscriptionPlan = Database['public']['Tables']['subscription_plans']['Row']
 
-const CHECKLIST_KEYS = ['curriculum', 'aiExplain', 'scan', 'downloads', 'progress', 'gamification', 'languages'] as const
-const CHECKLIST_ICONS = [GraduationCap, BadgeCheck, ScanLine, Download, LineChart, Trophy, Languages]
+const CHECKLIST_KEYS = [
+  'curriculum',
+  'aiExplain',
+  'scan',
+  'downloads',
+  'progress',
+  'gamification',
+  'dailyGoals',
+  'languages',
+] as const
+const CHECKLIST_ICONS = [GraduationCap, BadgeCheck, ScanLine, Download, LineChart, Trophy, Target, Languages]
 
 const WHY_US_KEYS = [
   { key: 'specialist', icon: GraduationCap },
