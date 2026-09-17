@@ -1,6 +1,10 @@
 import { Routes, Route } from 'react-router-dom'
 import { LandingPage } from '@/pages/marketing/LandingPage'
 import { PricingPage } from '@/pages/marketing/PricingPage'
+import { PracticeHubPage } from '@/pages/practice/PracticeHubPage'
+import { PracticeGradePage } from '@/pages/practice/PracticeGradePage'
+import { PracticeSubjectPage } from '@/pages/practice/PracticeSubjectPage'
+import { PracticeTestPage } from '@/pages/practice/PracticeTestPage'
 import { TermsPage } from '@/pages/legal/TermsPage'
 import { PrivacyPage } from '@/pages/legal/PrivacyPage'
 import { RefundPolicyPage } from '@/pages/legal/RefundPolicyPage'
@@ -29,6 +33,7 @@ import { CurriculumReviewPage } from '@/pages/admin/CurriculumReviewPage'
 import { TerminologyReviewPage } from '@/pages/admin/TerminologyReviewPage'
 import { TopicIllustrationsPage } from '@/pages/admin/TopicIllustrationsPage'
 import { VideoSuggestionsReviewPage } from '@/pages/admin/VideoSuggestionsReviewPage'
+import { PracticeTestsPage } from '@/pages/admin/PracticeTestsPage'
 import { ChildShell } from '@/components/layout/ChildShell'
 import { ParentShell } from '@/components/layout/ParentShell'
 import { AdminShell } from '@/components/layout/AdminShell'
@@ -39,6 +44,12 @@ export default function App() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/pricing" element={<PricingPage />} />
+
+      {/* Free, ungated practice tests. Crawlable and linkable; no auth guard. */}
+      <Route path="/practice" element={<PracticeHubPage />} />
+      <Route path="/practice/:gradeSlug" element={<PracticeGradePage />} />
+      <Route path="/practice/:gradeSlug/:subjectSlug" element={<PracticeSubjectPage />} />
+      <Route path="/practice/:gradeSlug/:subjectSlug/:testSlug" element={<PracticeTestPage />} />
       <Route path="/terms" element={<TermsPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/refund-policy" element={<RefundPolicyPage />} />
@@ -118,6 +129,7 @@ export default function App() {
                 <Route path="terminology" element={<TerminologyReviewPage />} />
                 <Route path="illustrations" element={<TopicIllustrationsPage />} />
                 <Route path="video-suggestions" element={<VideoSuggestionsReviewPage />} />
+                <Route path="practice-tests" element={<PracticeTestsPage />} />
               </Routes>
             </AdminShell>
           </RequireAdmin>

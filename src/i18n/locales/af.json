@@ -343,7 +343,8 @@
     "reviewQueue": "Hersieningswagry",
     "terminology": "Terminologie",
     "illustrations": "Illustrasies",
-    "videoSuggestions": "Video-voorstelle"
+    "videoSuggestions": "Video-voorstelle",
+    "practiceTests": "Oefentoetse"
   },
   "pricing": {
     "title": "Eenvoudige, gesinsvriendelike pryse",
@@ -369,6 +370,51 @@
       "specialistBody": "Ons fokus net op Graad 4–7 CAPS, sodat elke les spesifiek vir daardie band gebou is — nie dun versprei oor Graad 1 tot 12 nie.",
       "safetyTitle": "KI met beskermrade, nie 'n oop geselsbot nie",
       "safetyBody": "Ons KI-verduidelikings bly gegrond in daardie les se eie inhoud. Jou kind kan nêrens in die app 'n vrye-teks-gesprek met 'n KI begin nie."
+    }
+  },
+  "practice": {
+    "freeBadge": "Gratis · Geen registrasie",
+    "hubTitle": "Gratis CAPS-oefentoetse",
+    "hubIntro": "Oefentoetse vir Graad 4 tot 7 wat die Suid-Afrikaanse CAPS-kurrikulum volg. Kies 'n graad, kies 'n vak, en merk elke antwoord soos jy gaan — elke vraag verduidelik homself.",
+    "gradeLabel": "Graad {{grade}}",
+    "gradeHeading": "Graad {{grade}} oefentoetse",
+    "gradeIntro": "Kies 'n vak hieronder. Elke toets is gratis, volg CAPS, en wys 'n verduideliking by elke antwoord.",
+    "subjectHeading": "Graad {{grade}} {{subject}}-toetse",
+    "subjectIntro": "Elke toets merk homself vraag vir vraag en verduidelik die antwoord, reg of verkeerd.",
+    "breadcrumbRoot": "Gratis oefentoetse",
+    "testCount_one": "{{count}} toets",
+    "testCount_other": "{{count}} toetse",
+    "questionCount_one": "{{count}} vraag",
+    "questionCount_other": "{{count}} vrae",
+    "bothLanguages": "Engels & Afrikaans",
+    "comingSoon": "Toetse binnekort",
+    "noTestsForGrade": "Nog geen gratis toetse vir hierdie graad gepubliseer nie. Nuwe toetse kom elke week by.",
+    "noTestsForSubject": "Nog geen gratis toetse vir hierdie vak gepubliseer nie.",
+    "testNotFound": "Ons kon nie daardie toets kry nie.",
+    "testMeta": "Graad {{grade}} · {{subject}} · {{count}} vrae",
+    "questionNumber": "Vraag {{number}}",
+    "languageFallback": "Hierdie toets is nog nie in Afrikaans beskikbaar nie, so ons wys die Engelse weergawe.",
+    "scoreLine": "{{correct}} uit {{total}} korrek",
+    "notSavedNotice": "Hierdie punt word nie gestoor nie. Skep 'n gratis rekening en StudyLegends hou by watter onderwerpe jou kind bemeester het, en waar hulle nog hulp nodig het.",
+    "saveProgressCta": "Stoor my kind se vordering",
+    "moreTests": "Probeer nog 'n toets",
+    "promise": {
+      "free": "Altyd gratis, geen registrasie",
+      "explanations": "'n Verduideliking by elke antwoord",
+      "bilingual": "Engels en Afrikaans"
+    },
+    "upsellTitle": "Die toetse is gratis. Die tutor is die betaalde deel.",
+    "upsellBody": "Oefentoetse wys waar jou kind staan. StudyLegends vat dit verder — CAPS-lesse, bemeestering per onderwerp, eksamengereedheid, en huiswerk wat jy kan afneem vir dadelike hulp.",
+    "upsellCta": "Sien wat ingesluit is",
+    "seo": {
+      "hubTitle": "Gratis CAPS-oefentoetse Graad 4-7 | StudyLegends",
+      "hubDescription": "Gratis CAPS-belynde oefentoetse vir Graad 4 tot 7 in Engels en Afrikaans. Elke antwoord word verduidelik. Geen registrasie nodig nie.",
+      "gradeTitle": "Graad {{grade}} Oefentoetse | Gratis CAPS-toetse | StudyLegends",
+      "gradeDescription": "Gratis Graad {{grade}} CAPS-oefentoetse vir Wiskunde, Natuurwetenskappe, Engels en meer. Dadelik gemerk met 'n verduideliking by elke antwoord.",
+      "subjectTitle": "Graad {{grade}} {{subject}}-toetse | Gratis CAPS-oefening | StudyLegends",
+      "subjectDescription": "Gratis Graad {{grade}} {{subject}}-oefentoetse belyn met CAPS. Antwoord aanlyn, word dadelik gemerk, en sien hoekom elke antwoord reg is.",
+      "testTitle": "{{title}} | Graad {{grade}} {{subject}}-toets | StudyLegends",
+      "testDescription": "{{count}} gratis CAPS-oefenvrae oor {{title}} vir Graad {{grade}}. Dadelik gemerk, met 'n verduideliking by elke antwoord."
     }
   }
 }

@@ -343,7 +343,8 @@
     "reviewQueue": "Review queue",
     "terminology": "Terminology",
     "illustrations": "Illustrations",
-    "videoSuggestions": "Video suggestions"
+    "videoSuggestions": "Video suggestions",
+    "practiceTests": "Practice tests"
   },
   "pricing": {
     "title": "Simple, family-friendly pricing",
@@ -369,6 +370,51 @@
       "specialistBody": "We focus only on Grades 4–7 CAPS, so every lesson is built specifically for that band — not stretched thin across Grade 1 to 12.",
       "safetyTitle": "AI with guardrails, not an open chat",
       "safetyBody": "Our AI explanations stay grounded in that lesson's own content. Your child can't open a free-text chat with an AI anywhere in the app."
+    }
+  },
+  "practice": {
+    "freeBadge": "Free · No sign-up",
+    "hubTitle": "Free CAPS practice tests",
+    "hubIntro": "Grade 4 to 7 practice tests that follow the South African CAPS curriculum. Pick a grade, choose a subject, and mark each answer as you go — every question explains itself.",
+    "gradeLabel": "Grade {{grade}}",
+    "gradeHeading": "Grade {{grade}} practice tests",
+    "gradeIntro": "Choose a subject below. Every test is free, follows CAPS, and shows an explanation with each answer.",
+    "subjectHeading": "Grade {{grade}} {{subject}} tests",
+    "subjectIntro": "Each test marks itself question by question and explains the answer, right or wrong.",
+    "breadcrumbRoot": "Free practice tests",
+    "testCount_one": "{{count}} test",
+    "testCount_other": "{{count}} tests",
+    "questionCount_one": "{{count}} question",
+    "questionCount_other": "{{count}} questions",
+    "bothLanguages": "English & Afrikaans",
+    "comingSoon": "Tests coming soon",
+    "noTestsForGrade": "No free tests published for this grade yet. New tests go up every week.",
+    "noTestsForSubject": "No free tests published for this subject yet.",
+    "testNotFound": "We could not find that test.",
+    "testMeta": "Grade {{grade}} · {{subject}} · {{count}} questions",
+    "questionNumber": "Question {{number}}",
+    "languageFallback": "This test is not available in Afrikaans yet, so we are showing the English version.",
+    "scoreLine": "{{correct}} out of {{total}} correct",
+    "notSavedNotice": "This score is not saved. Create a free account and StudyLegends tracks every topic your child has mastered, and which ones need work.",
+    "saveProgressCta": "Save my child's progress",
+    "moreTests": "Try another test",
+    "promise": {
+      "free": "Always free, no sign-up",
+      "explanations": "An explanation with every answer",
+      "bilingual": "English and Afrikaans"
+    },
+    "upsellTitle": "The tests are free. The tutor is the paid part.",
+    "upsellBody": "Practice tests tell you where your child stands. StudyLegends takes it from there — CAPS lessons, mastery tracking per topic, exam readiness, and homework you can photograph for instant help.",
+    "upsellCta": "See what's included",
+    "seo": {
+      "hubTitle": "Free CAPS Practice Tests Grade 4-7 | StudyLegends",
+      "hubDescription": "Free CAPS-aligned practice tests for Grade 4 to 7 in English and Afrikaans. Every answer is explained. No sign-up needed.",
+      "gradeTitle": "Grade {{grade}} Practice Tests | Free CAPS Tests | StudyLegends",
+      "gradeDescription": "Free Grade {{grade}} CAPS practice tests across Maths, Natural Sciences, English and more. Marked instantly with an explanation for every answer.",
+      "subjectTitle": "Grade {{grade}} {{subject}} Tests | Free CAPS Practice | StudyLegends",
+      "subjectDescription": "Free Grade {{grade}} {{subject}} practice tests aligned to CAPS. Answer online, get marked instantly, and see why each answer is right.",
+      "testTitle": "{{title}} | Grade {{grade}} {{subject}} Test | StudyLegends",
+      "testDescription": "{{count}} free CAPS practice questions on {{title}} for Grade {{grade}}. Marked instantly, with an explanation for every answer."
     }
   }
 }

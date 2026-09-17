@@ -1849,6 +1849,109 @@ export type Database = {
           },
         ]
       }
+      practice_test_questions: {
+        Row: {
+          practice_test_id: string
+          question_id: string
+          sort_order: number
+        }
+        Insert: {
+          practice_test_id: string
+          question_id: string
+          sort_order?: number
+        }
+        Update: {
+          practice_test_id?: string
+          question_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_test_questions_practice_test_id_fkey"
+            columns: ["practice_test_id"]
+            isOneToOne: false
+            referencedRelation: "practice_tests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "practice_test_questions_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      practice_tests: {
+        Row: {
+          created_at: string
+          grade_id: string
+          id: string
+          is_published: boolean
+          slug: string
+          sort_order: number
+          subject_id: string
+          summary_af: string | null
+          summary_en: string | null
+          title_af: string | null
+          title_en: string
+          topic_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          grade_id: string
+          id?: string
+          is_published?: boolean
+          slug: string
+          sort_order?: number
+          subject_id: string
+          summary_af?: string | null
+          summary_en?: string | null
+          title_af?: string | null
+          title_en: string
+          topic_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          grade_id?: string
+          id?: string
+          is_published?: boolean
+          slug?: string
+          sort_order?: number
+          subject_id?: string
+          summary_af?: string | null
+          summary_en?: string | null
+          title_af?: string | null
+          title_en?: string
+          topic_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "practice_tests_grade_id_fkey"
+            columns: ["grade_id"]
+            isOneToOne: false
+            referencedRelation: "grades"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "practice_tests_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "practice_tests_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       question_options: {
         Row: {
           id: string
@@ -2257,6 +2360,7 @@ export type Database = {
           id: string
           name: string
           name_af: string | null
+          slug: string
         }
         Insert: {
           code: string
@@ -2267,6 +2371,7 @@ export type Database = {
           id?: string
           name: string
           name_af?: string | null
+          slug: string
         }
         Update: {
           code?: string
@@ -2277,6 +2382,7 @@ export type Database = {
           id?: string
           name?: string
           name_af?: string | null
+          slug?: string
         }
         Relationships: [
           {
@@ -2612,6 +2718,7 @@ export type Database = {
           name: string
           name_af: string | null
           secondary_extraction_match: boolean | null
+          slug: string
           sort_order: number
           source_coordinates: Json | null
           source_id: string | null
@@ -2644,6 +2751,7 @@ export type Database = {
           name: string
           name_af?: string | null
           secondary_extraction_match?: boolean | null
+          slug: string
           sort_order?: number
           source_coordinates?: Json | null
           source_id?: string | null
@@ -2676,6 +2784,7 @@ export type Database = {
           name?: string
           name_af?: string | null
           secondary_extraction_match?: boolean | null
+          slug?: string
           sort_order?: number
           source_coordinates?: Json | null
           source_id?: string | null

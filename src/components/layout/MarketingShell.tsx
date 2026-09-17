@@ -20,6 +20,7 @@ export function MarketingShell({ children }: { children: ReactNode }) {
           </Link>
           <nav className="hidden items-center gap-6 text-sm font-semibold text-slate-600 sm:flex">
             <a href="#features">{t('nav.subjects')}</a>
+            <Link to="/practice">{t('practice.breadcrumbRoot')}</Link>
             <Link to="/pricing">{t('landing.footer.pricing')}</Link>
           </nav>
           <div className="flex items-center gap-2">
@@ -42,6 +43,9 @@ export function MarketingShell({ children }: { children: ReactNode }) {
           <p className="font-semibold text-slate-700">{t('common.appName')}</p>
           <p className="mt-1 max-w-md">{t('landing.footer.tagline')}</p>
           <nav className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-xs font-semibold text-slate-500">
+            <Link to="/practice" className="hover:text-slate-700">
+              {t('practice.breadcrumbRoot')}
+            </Link>
             <Link to="/terms" className="hover:text-slate-700">
               {t('landing.footer.termsOfService')}
             </Link>

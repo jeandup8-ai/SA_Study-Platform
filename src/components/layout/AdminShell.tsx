@@ -11,6 +11,7 @@ const TABS = [
   { to: '/admin/terminology', labelKey: 'adminNav.terminology', end: false },
   { to: '/admin/illustrations', labelKey: 'adminNav.illustrations', end: false },
   { to: '/admin/video-suggestions', labelKey: 'adminNav.videoSuggestions', end: false },
+  { to: '/admin/practice-tests', labelKey: 'adminNav.practiceTests', end: false },
 ] as const
 
 export function AdminShell({ children }: { children: ReactNode }) {
