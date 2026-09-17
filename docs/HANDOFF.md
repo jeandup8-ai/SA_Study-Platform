@@ -96,15 +96,32 @@ the bank held 8 questions total.**
   question without exactly one correct option, and approving a test flips its
   questions to `PUBLISHED` in the same action.
 
+- `0048_practice_tests_anon_read_fix.sql` — see the RLS gotcha below.
+
 ### State of the content
-One test seeded and verified: Grade 5 Mathematics `place-value`, 3 EN + 3 AF,
-zero integrity errors, **not yet published**. Everything else is still to author.
+
+| Grade | Subject | Tests | EN | AF | Integrity errors |
+|---|---|---|---|---|---|
+| 4 | Mathematics | 8 | 64 | 64 | 0 |
+| 5 | Mathematics | 10 | 80 | 80 | 0 |
+| 5 | Natural Sciences | 6 | 48 | 48 | 0 |
+| | **Total** | **24** | **192** | **192** | **0** |
+
+Every question has an explanation in both languages. One test (Grade 5 Maths
+`place-value`) is **published** as a live sample; the other 23 are
+`REVIEW_REQUIRED` and awaiting a human at `/admin/practice-tests`.
 
 ### Next step
-Author tests batch by batch with `internal.upsert_practice_test`, then have a
-human publish them from `/admin/practice-tests`. Suggested order by search
-demand: Grade 4–7 Mathematics, then Natural Sciences, then English HL, then
-Social Sciences. Target ~8–10 questions per test, EN and AF wherever possible.
+Keep authoring with `internal.upsert_practice_test`, then publish from the
+admin console. Remaining by search demand: Grade 6 and 7 Mathematics, Natural
+Sciences for Grades 4, 6 and 7, then English Home Language, then Social
+Sciences. Target 8 questions per test, EN and AF.
+
+**Topics that need diagrams before they can become tests** — do not author
+these as text-only multiple choice: Grade 5 `views-of-simple3-d-objects`,
+`3-2-transformation-geometry-transformations-tessellations`, and
+`locate-position-on-a-grid-or-map`. A grid-reference or 3-D-view question is
+meaningless without the picture.
 
 Payload shape:
 
@@ -122,6 +139,21 @@ Payload shape:
 ```
 
 `correct` is a 0-based index into `options`. `difficulty` is `easy|medium|hard`.
+
+### Two gotchas that cost time
+
+1. **RLS and `internal.is_admin()`.** A policy of the form
+   `using (is_published or internal.is_admin())` fails outright for anonymous
+   visitors — `anon` has no EXECUTE grant on the function, and Postgres does
+   not promise to short-circuit the OR. Write two separate policies instead
+   and scope the admin one `TO authenticated`. Policies are OR'd, so the
+   anonymous path never reaches the function. Always verify a public read with
+   `set local role anon;` before believing it works.
+2. **Afrikaans `'n` and SQL quoting.** The indefinite article is `'n`, which
+   breaks single-quoted SQL. Use dollar-quoting (`$json$ ... $json$`) for the
+   seed payloads. A repair pass, if needed:
+   `regexp_replace(col, '(^|[ (])n ', '\1''n ', 'g')` over prompts,
+   explanations, option labels, `title_af` and `summary_af`.
 
 ## Environment limits seen this session
 
