@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react'
-import { fetchReviewQueue, updateTopicWorkflowStatus, type ReviewQueueItem } from '@/lib/admin/curriculum'
+import {
+  fetchReviewQueue,
+  updateTopicWorkflowStatus,
+  type ReviewQueueItem,
+} from '@/lib/admin/curriculum'
 
 /**
  * The review queue (spec section 35): for every extracted-but-unverified
@@ -34,24 +38,26 @@ export function CurriculumReviewPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold text-white">Curriculum review queue</h1>
-      <p className="mt-1 text-sm text-slate-400">
-        Records extracted by the curriculum importer, awaiting human verification against the original
-        source document before they can ever reach a learner.
+      <h1 className="font-display text-2xl font-extrabold tracking-tight text-white">
+        Curriculum review queue
+      </h1>
+      <p className="mt-1 text-sm text-ink-300">
+        Records extracted by the curriculum importer, awaiting human verification against
+        the original source document before they can ever reach a learner.
       </p>
 
-      {loading && <p className="mt-6 text-slate-500">Loading...</p>}
+      {loading && <p className="mt-6 text-ink-400">Loading...</p>}
       {!loading && items.length === 0 && (
-        <p className="mt-6 text-slate-500">Nothing waiting for review right now.</p>
+        <p className="mt-6 text-ink-400">Nothing waiting for review right now.</p>
       )}
 
       <div className="mt-6 space-y-3">
         {items.map((item) => (
-          <div key={item.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
+          <div key={item.id} className="rounded-2xl border border-ink-700 bg-ink-800 p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-lg font-bold text-white">{item.name}</p>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-ink-300">
                   Grade {item.grade_number} · {item.subject_name}
                 </p>
               </div>
@@ -71,28 +77,29 @@ export function CurriculumReviewPage() {
               </div>
             </div>
 
-            <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-slate-500 sm:grid-cols-4">
+            <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-ink-400 sm:grid-cols-4">
               <div>
-                <dt className="font-semibold text-slate-400">Source</dt>
+                <dt className="font-semibold text-ink-300">Source</dt>
                 <dd>{item.source_title ?? 'unknown'}</dd>
               </div>
               <div>
-                <dt className="font-semibold text-slate-400">Page</dt>
+                <dt className="font-semibold text-ink-300">Page</dt>
                 <dd>{item.source_page ?? '—'}</dd>
               </div>
               <div>
-                <dt className="font-semibold text-slate-400">Section</dt>
+                <dt className="font-semibold text-ink-300">Section</dt>
                 <dd>{item.source_section ?? '—'}</dd>
               </div>
               <div>
-                <dt className="font-semibold text-slate-400">Detected term</dt>
+                <dt className="font-semibold text-ink-300">Detected term</dt>
                 <dd>{item.term_id ?? 'none detected'}</dd>
               </div>
             </dl>
 
             <p className="mt-3 rounded-lg bg-amber-950/40 px-3 py-2 text-xs text-amber-200">
-              Open the source document to page {item.source_page ?? '?'} and confirm this matches before
-              verifying. Heuristic extraction is not authoritative on its own.
+              Open the source document to page {item.source_page ?? '?'} and confirm this
+              matches before verifying. Heuristic extraction is not authoritative on its
+              own.
             </p>
           </div>
         ))}

@@ -28,9 +28,19 @@ export function AdminDashboardPage() {
 
   useEffect(() => {
     async function load() {
-      const tables = ['grades', 'subjects', 'topics', 'lessons', 'questions', 'parents', 'learners'] as const
+      const tables = [
+        'grades',
+        'subjects',
+        'topics',
+        'lessons',
+        'questions',
+        'parents',
+        'learners',
+      ] as const
       const results = await Promise.all(
-        tables.map((table) => supabase.from(table).select('id', { count: 'exact', head: true })),
+        tables.map((table) =>
+          supabase.from(table).select('id', { count: 'exact', head: true }),
+        ),
       )
       const next = {} as Counts
       tables.forEach((table, i) => {
@@ -51,11 +61,14 @@ export function AdminDashboardPage() {
   return (
     <div>
       <p className="rounded-2xl border border-amber-800 bg-amber-950/40 px-4 py-3 text-sm text-amber-200">
-        Foundation admin view — read-only overview today. Full curriculum/lesson/question CRUD editing,
-        translation management, and moderation review actions are the next build phase.
+        Foundation admin view — read-only overview today. Full curriculum/lesson/question
+        CRUD editing, translation management, and moderation review actions are the next
+        build phase.
       </p>
 
-      <h2 className="mt-6 text-sm font-bold uppercase tracking-wide text-slate-500">{t('admin.curriculum')}</h2>
+      <h2 className="mt-6 text-sm font-bold uppercase tracking-wide text-ink-400">
+        {t('admin.curriculum')}
+      </h2>
       <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Stat label={t('admin.curriculum')} value={counts?.grades} sub="grades" />
         <Stat label="" value={counts?.subjects} sub="subjects" />
@@ -66,10 +79,12 @@ export function AdminDashboardPage() {
         <Stat label="" value={counts?.learners} sub="learners" />
       </div>
 
-      <h2 className="mt-8 text-sm font-bold uppercase tracking-wide text-slate-500">{t('admin.moderation')}</h2>
-      <div className="mt-3 overflow-hidden rounded-2xl border border-slate-800">
+      <h2 className="mt-8 text-sm font-bold uppercase tracking-wide text-ink-400">
+        {t('admin.moderation')}
+      </h2>
+      <div className="mt-3 overflow-hidden rounded-2xl border border-ink-700">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-900 text-slate-400">
+          <thead className="bg-ink-800 text-ink-300">
             <tr>
               <th className="px-4 py-2 font-medium">Type</th>
               <th className="px-4 py-2 font-medium">Decision</th>
@@ -80,25 +95,35 @@ export function AdminDashboardPage() {
           </thead>
           <tbody>
             {moderation.map((row) => (
-              <tr key={row.id} className="border-t border-slate-800">
+              <tr key={row.id} className="border-t border-ink-700">
                 <td className="px-4 py-2">{row.content_type}</td>
                 <td className="px-4 py-2">
-                  <span className={row.decision === 'approved' ? 'text-success-400' : 'text-danger-400'}>
+                  <span
+                    className={
+                      row.decision === 'approved' ? 'text-success-400' : 'text-danger-400'
+                    }
+                  >
                     {row.decision}
                   </span>
                 </td>
                 <td className="px-4 py-2">
-                  <span className={row.visual_safety_checked ? 'text-success-400' : 'text-slate-500'}>
+                  <span
+                    className={
+                      row.visual_safety_checked ? 'text-success-400' : 'text-ink-400'
+                    }
+                  >
                     {row.visual_safety_checked ? 'checked' : 'not connected'}
                   </span>
                 </td>
-                <td className="px-4 py-2 text-slate-400">{row.provider}</td>
-                <td className="px-4 py-2 text-slate-400">{new Date(row.created_at).toLocaleString()}</td>
+                <td className="px-4 py-2 text-ink-300">{row.provider}</td>
+                <td className="px-4 py-2 text-ink-300">
+                  {new Date(row.created_at).toLocaleString()}
+                </td>
               </tr>
             ))}
             {moderation.length === 0 && (
               <tr>
-                <td className="px-4 py-6 text-center text-slate-500" colSpan={5}>
+                <td className="px-4 py-6 text-center text-ink-400" colSpan={5}>
                   No moderation events yet.
                 </td>
               </tr>
@@ -110,11 +135,19 @@ export function AdminDashboardPage() {
   )
 }
 
-function Stat({ label, value, sub }: { label: string; value: number | undefined; sub: string }) {
+function Stat({
+  label,
+  value,
+  sub,
+}: {
+  label: string
+  value: number | undefined
+  sub: string
+}) {
   return (
-    <div className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
+    <div className="rounded-2xl border border-ink-700 bg-ink-800 p-4">
       <p className="text-2xl font-extrabold text-white">{value ?? '—'}</p>
-      <p className="text-xs text-slate-500">{label || sub}</p>
+      <p className="text-xs text-ink-400">{label || sub}</p>
     </div>
   )
 }

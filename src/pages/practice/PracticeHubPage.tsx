@@ -46,8 +46,12 @@ export function PracticeHubPage() {
       <div className="mx-auto max-w-4xl px-4 py-12">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-bold uppercase tracking-wide text-brand-600">{t('practice.freeBadge')}</p>
-            <h1 className="mt-1 text-3xl font-extrabold text-slate-900">{t('practice.hubTitle')}</h1>
+            <p className="text-sm font-bold uppercase tracking-wide text-brand-600">
+              {t('practice.freeBadge')}
+            </p>
+            <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-slate-900">
+              {t('practice.hubTitle')}
+            </h1>
             <p className="mt-2 max-w-xl text-slate-600">{t('practice.hubIntro')}</p>
           </div>
           <PracticeLanguageToggle />
@@ -55,13 +59,16 @@ export function PracticeHubPage() {
 
         <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-slate-600">
           <li className="flex items-center gap-2">
-            <CheckCircle2 size={16} className="text-success-600" /> {t('practice.promise.free')}
+            <CheckCircle2 size={16} className="text-success-600" />{' '}
+            {t('practice.promise.free')}
           </li>
           <li className="flex items-center gap-2">
-            <BookOpenCheck size={16} className="text-success-600" /> {t('practice.promise.explanations')}
+            <BookOpenCheck size={16} className="text-success-600" />{' '}
+            {t('practice.promise.explanations')}
           </li>
           <li className="flex items-center gap-2">
-            <Languages size={16} className="text-success-600" /> {t('practice.promise.bilingual')}
+            <Languages size={16} className="text-success-600" />{' '}
+            {t('practice.promise.bilingual')}
           </li>
         </ul>
 
@@ -71,9 +78,13 @@ export function PracticeHubPage() {
             return (
               <Link key={grade} to={`/practice/grade-${grade}`}>
                 <Card className="h-full transition-shadow hover:shadow-md">
-                  <p className="text-2xl font-extrabold text-slate-900">{t('practice.gradeLabel', { grade })}</p>
+                  <p className="text-2xl font-extrabold text-slate-900">
+                    {t('practice.gradeLabel', { grade })}
+                  </p>
                   <p className="mt-1 text-sm text-slate-500">
-                    {count > 0 ? t('practice.testCount', { count }) : t('practice.comingSoon')}
+                    {count > 0
+                      ? t('practice.testCount', { count })
+                      : t('practice.comingSoon')}
                   </p>
                 </Card>
               </Link>
@@ -84,7 +95,10 @@ export function PracticeHubPage() {
         <div className="mt-12 rounded-3xl bg-brand-50 p-6">
           <h2 className="font-bold text-slate-900">{t('practice.upsellTitle')}</h2>
           <p className="mt-1.5 text-sm text-slate-600">{t('practice.upsellBody')}</p>
-          <Link to="/pricing" className="mt-3 inline-block text-sm font-bold text-brand-700 underline">
+          <Link
+            to="/pricing"
+            className="mt-3 inline-block text-sm font-bold text-brand-700 underline"
+          >
             {t('practice.upsellCta')}
           </Link>
         </div>

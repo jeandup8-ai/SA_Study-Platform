@@ -62,9 +62,11 @@ export function CreateLearnerPage() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-4 py-10">
+    <div className="app-canvas flex min-h-dvh items-center justify-center px-4 py-10">
       <Card className="w-full max-w-lg">
-        <h1 className="text-2xl font-extrabold text-slate-900">{t('onboarding.title')}</h1>
+        <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900">
+          {t('onboarding.title')}
+        </h1>
         <p className="mt-1 text-sm text-slate-500">{t('onboarding.minimalDataNote')}</p>
 
         <div className="mt-6 space-y-6">

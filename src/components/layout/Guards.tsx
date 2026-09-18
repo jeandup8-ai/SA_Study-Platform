@@ -27,10 +27,21 @@ export function RequireAdmin({ children }: { children: ReactNode }) {
   return <>{children}</>
 }
 
-function FullScreenLoading() {
+/** Also the Suspense fallback for lazily loaded routes in App.tsx. */
+export function FullScreenLoading() {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-slate-50">
-      <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
+    <div
+      role="status"
+      aria-busy="true"
+      className="app-canvas flex min-h-dvh items-center justify-center"
+    >
+      <span
+        aria-hidden
+        className="h-10 w-10 animate-spin rounded-full border-4 border-volt-100 border-t-volt-500"
+      />
+      {/* The spinner is the whole screen while auth resolves, so it needs a
+          name -- otherwise a screen reader lands on an empty page. */}
+      <span className="sr-only">Loading</span>
     </div>
   )
 }

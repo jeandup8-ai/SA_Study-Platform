@@ -3,7 +3,10 @@ import { useTranslation } from 'react-i18next'
 import { Trash2 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useLearner } from '@/context/LearnerContext'
-import { fetchWeeklyDigestEnabled, setWeeklyDigestEnabled } from '@/lib/parent/emailPreferences'
+import {
+  fetchWeeklyDigestEnabled,
+  setWeeklyDigestEnabled,
+} from '@/lib/parent/emailPreferences'
 import { Button, Card, LearnerAvatarIcon } from '@/components/ui'
 
 export function SettingsPage() {
@@ -52,7 +55,9 @@ export function SettingsPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-extrabold text-slate-900">{t('parent.settingsTitle')}</h1>
+      <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900">
+        {t('parent.settingsTitle')}
+      </h1>
 
       <Card className="mt-6">
         <div className="flex items-start justify-between gap-4">
@@ -72,7 +77,11 @@ export function SettingsPage() {
             <div className="h-7 w-12 rounded-full bg-slate-300 after:absolute after:left-1 after:top-1 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-brand-600 peer-checked:after:translate-x-5 peer-disabled:opacity-50" />
           </label>
         </div>
-        {saveFailed && <p className="mt-3 text-sm font-medium text-danger-600">{t('parent.settingsSaveFailed')}</p>}
+        {saveFailed && (
+          <p className="mt-3 text-sm font-medium text-danger-600">
+            {t('parent.settingsSaveFailed')}
+          </p>
+        )}
       </Card>
 
       <p className="mt-4 text-xs text-slate-400">{t('parent.essentialEmailsNote')}</p>
@@ -94,7 +103,9 @@ export function SettingsPage() {
                       disabled={removingId === l.id}
                       onClick={() => void onConfirmRemove(l.id)}
                     >
-                      {removingId === l.id ? t('common.loading') : t('parent.removeLearnerConfirmButton')}
+                      {removingId === l.id
+                        ? t('common.loading')
+                        : t('parent.removeLearnerConfirmButton')}
                     </Button>
                     <Button
                       size="md"
@@ -125,7 +136,11 @@ export function SettingsPage() {
             </div>
           ))}
         </div>
-        {removeFailed && <p className="mt-3 text-sm font-medium text-danger-600">{t('parent.removeLearnerFailed')}</p>}
+        {removeFailed && (
+          <p className="mt-3 text-sm font-medium text-danger-600">
+            {t('parent.removeLearnerFailed')}
+          </p>
+        )}
       </Card>
     </div>
   )

@@ -64,7 +64,11 @@ export function normaliseTopicName(raw: string): string {
     // invites the model to render it as a label. Spelled out, it survives the
     // digit strip below and reads better in the prompt.
     .replace(/(\d)\s*-?\s*D\b/g, (_m, d: string) =>
-      d === '2' ? 'two-dimensional' : d === '3' ? 'three-dimensional' : `${d}-dimensional`,
+      d === '2'
+        ? 'two-dimensional'
+        : d === '3'
+          ? 'three-dimensional'
+          : `${d}-dimensional`,
     )
     // "in two-dimensional" is what the rule above leaves behind; the noun
     // form is what a person would actually say.
@@ -152,65 +156,257 @@ const SUBJECT_DIRECTION: { match: RegExp; direction: string }[] = [
  * the first two matches are used so the prompt stays focused.
  */
 const TOPIC_SCENE: { match: RegExp; scene: string }[] = [
-  { match: /water cycle/i, scene: 'clouds, rain falling on hills, a river running to the sea, and sunlight drawing mist upward' },
-  { match: /life cycle/i, scene: 'the stages of one animal arranged in a ring, egg through to adult' },
-  { match: /food (web|chain)|ecosystem/i, scene: 'grassland animals and plants connected by curved arrows' },
-  { match: /vertebrate|invertebrate|skeleton|bones|muscle/i, scene: 'a friendly cutaway of an animal showing its bones, beside insects and a fish' },
-  { match: /habitat|adaptation/i, scene: 'four small vignettes -- desert, ocean, polar ice and grassland -- each with its animal' },
-  { match: /micro-?organism|bacteria|mould|yeast/i, scene: 'a microscope on a bench with oversized friendly rounded microbe shapes floating above it' },
-  { match: /electric|circuit|energy transfer/i, scene: 'a simple battery, wires and a glowing bulb laid out on a desk' },
-  { match: /energy|fuel|renewable/i, scene: 'wind turbines on a hill, solar panels on a roof, and the sun above' },
-  { match: /sun|light|heat|shadow/i, scene: 'a bright sun over a schoolyard with long shadows stretching from a tree and a child' },
-  { match: /solid|liquid|gas|matter|mixture|separat/i, scene: 'three glass containers on a bench holding ice, water and steam, with a sieve and filter beside them' },
-  { match: /metal|non-?metal|material|propert/i, scene: 'a tray of sorted materials -- wood, metal, fabric, plastic, glass, clay' },
-  { match: /earth|planet|moon|space|solar system/i, scene: 'the Earth and Moon in space with the sun beyond, no writing on anything' },
-  { match: /rock|soil|volcano|earthquake/i, scene: 'a cutaway hillside showing rock layers, with a smoking volcano in the distance' },
-  { match: /weather|climate|vegetation/i, scene: 'one landscape shown in four weather moods across the seasons' },
-  { match: /\bmap|settlement|population/i, scene: 'an unlabelled stylised map shape with small buildings, roads and rivers drawn on it' },
-  { match: /trade|market|money|economy/i, scene: 'a busy open-air market with stalls, baskets of produce and shoppers' },
-  { match: /farm|agricult|resource|conservation/i, scene: 'farmland with crops, a windpump, cattle and hills behind' },
-  { match: /transport|travel|ship|journey/i, scene: 'a sailing ship on the ocean with a coastline in the distance' },
-  { match: /fraction|decimal|percent/i, scene: 'fraction circles and strips laid out on a desk beside a measuring jug' },
-  { match: /place value|whole number|counting|number pattern/i, scene: 'base-ten blocks and counting beads sorted into neat groups on a desk' },
-  { match: /shape|geometr|angle|symmetr/i, scene: 'wooden pattern blocks and shape tiles arranged into a design' },
-  { match: /measure|\bmass\b|length|capacity|\btime\b/i, scene: 'a balance scale, a measuring tape, a jug of water and a sand timer on a bench' },
-  { match: /reading|story|comprehension|poem|literature/i, scene: 'a cosy reading corner with cushions and open books with blank pages' },
-  { match: /writ(e|ing)|paragraph|essay|letter/i, scene: 'a desk with a notebook of blank pages, pencils and an eraser' },
-  { match: /speech|conversation|listening|oral/i, scene: 'two children talking, with empty rounded speech bubbles between them' },
-  { match: /health|nutrition|hygiene|safety|first aid/i, scene: 'a table of fresh fruit and vegetables with a water bottle and a washbasin' },
-  { match: /dance|movement|choreograph/i, scene: 'children dancing together in a school hall, mid-movement' },
-  { match: /music|instrument|rhythm|listening|composition/i, scene: 'children playing marimbas, drums and shakers together' },
-  { match: /drama|\bplay|folktale|perform|acting|theatre/i, scene: 'children acting out a story on a simple stage with handmade props' },
-  { match: /create in 2d|drawing|painting|pattern|lettering/i, scene: 'a table covered in paint, brushes, paper and bright abstract pattern work' },
-  { match: /create in 3d|model|sculpt|relief|clay/i, scene: 'hands shaping clay and card models on a craft table' },
-  { match: /career/i, scene: 'a row of people at work in different trades -- a nurse, a builder, a farmer, a teacher' },
-  { match: /\bself\b|identity|emotion|esteem|body image|bullying/i, scene: 'a child looking thoughtfully into a mirror, with friends nearby' },
-  { match: /\bright|responsibilit|community|caring/i, scene: 'neighbours helping each other in a community garden' },
-  { match: /visual literacy/i, scene: 'a wall of children\'s artwork being looked at and discussed' },
-    { match: /halv|doubl/i, scene: 'a pile of base-ten blocks being split into two equal piles on a desk' },
-  { match: /large number|million|milliard|billion|trillion/i, scene: 'towers of base-ten blocks growing from a single cube to a huge stack' },
-  { match: /even and odd|multiple|factor|divisib/i, scene: 'counters on a desk sorted into paired rows and leftover singles' },
-  { match: /synonym|antonym|vocabular|noun|pronoun|adjective|adverb|verb|tense|conjunction|sentence structure/i, scene: 'a classroom word wall of blank coloured cards pinned in neat rows, with no writing on them' },
-  { match: /main idea|summaris|summariz|comprehen/i, scene: 'a child highlighting a passage in an open book of blank pages, with a short list of blank cards beside it' },
-  { match: /figurative|simile|metaphor|persuasi|fact versus opinion|formal|informal/i, scene: 'two children in conversation with imaginative shapes drifting between them' },
-  { match: /mental (calculation|math)|ratio|rate/i, scene: 'a child at a desk with counters and a balance scale, thinking' },
-  { match: /physical feature|mining|mineral/i, scene: 'a South African landscape of mountains, plateau and coast with a mine headgear in the distance' },
-  { match: /ancient egypt|explorer/i, scene: 'pyramids beside a river, with a sailing ship and desert beyond' },
-  { match: /water in|river|dam/i, scene: 'a dam and river feeding farmland, with a tap and water tank in a village' },
-  { match: /communication|medicine|then and now/i, scene: 'a split scene contrasting an old way and a modern way of doing the same thing' },
-  { match: /people who|made a difference|constitution|revolution/i, scene: 'a crowd of people of many ages standing together, seen from behind' },
-  { match: /slave|slavery/i, scene: 'a sombre coastal scene at dusk with a distant sailing ship, respectful and non-graphic' },
-  { match: /kingdom|colony|empire/i, scene: 'a historic southern African settlement of round homesteads with cattle and hills beyond' },
-  { match: /biosphere|variation|living things|reproduction/i, scene: 'a lush landscape layered from soil and plants up through animals to birds and sky' },
-  { match: /\bview|sketch|three-dimensional|two-dimensional|tessellation|transformation/i, scene: 'wooden blocks on a desk seen from the front, side and above' },
+  {
+    match: /water cycle/i,
+    scene:
+      'clouds, rain falling on hills, a river running to the sea, and sunlight drawing mist upward',
+  },
+  {
+    match: /life cycle/i,
+    scene: 'the stages of one animal arranged in a ring, egg through to adult',
+  },
+  {
+    match: /food (web|chain)|ecosystem/i,
+    scene: 'grassland animals and plants connected by curved arrows',
+  },
+  {
+    match: /vertebrate|invertebrate|skeleton|bones|muscle/i,
+    scene: 'a friendly cutaway of an animal showing its bones, beside insects and a fish',
+  },
+  {
+    match: /habitat|adaptation/i,
+    scene:
+      'four small vignettes -- desert, ocean, polar ice and grassland -- each with its animal',
+  },
+  {
+    match: /micro-?organism|bacteria|mould|yeast/i,
+    scene:
+      'a microscope on a bench with oversized friendly rounded microbe shapes floating above it',
+  },
+  {
+    match: /electric|circuit|energy transfer/i,
+    scene: 'a simple battery, wires and a glowing bulb laid out on a desk',
+  },
+  {
+    match: /energy|fuel|renewable/i,
+    scene: 'wind turbines on a hill, solar panels on a roof, and the sun above',
+  },
+  {
+    match: /sun|light|heat|shadow/i,
+    scene:
+      'a bright sun over a schoolyard with long shadows stretching from a tree and a child',
+  },
+  {
+    match: /solid|liquid|gas|matter|mixture|separat/i,
+    scene:
+      'three glass containers on a bench holding ice, water and steam, with a sieve and filter beside them',
+  },
+  {
+    match: /metal|non-?metal|material|propert/i,
+    scene: 'a tray of sorted materials -- wood, metal, fabric, plastic, glass, clay',
+  },
+  {
+    match: /earth|planet|moon|space|solar system/i,
+    scene: 'the Earth and Moon in space with the sun beyond, no writing on anything',
+  },
+  {
+    match: /rock|soil|volcano|earthquake/i,
+    scene:
+      'a cutaway hillside showing rock layers, with a smoking volcano in the distance',
+  },
+  {
+    match: /weather|climate|vegetation/i,
+    scene: 'one landscape shown in four weather moods across the seasons',
+  },
+  {
+    match: /\bmap|settlement|population/i,
+    scene:
+      'an unlabelled stylised map shape with small buildings, roads and rivers drawn on it',
+  },
+  {
+    match: /trade|market|money|economy/i,
+    scene: 'a busy open-air market with stalls, baskets of produce and shoppers',
+  },
+  {
+    match: /farm|agricult|resource|conservation/i,
+    scene: 'farmland with crops, a windpump, cattle and hills behind',
+  },
+  {
+    match: /transport|travel|ship|journey/i,
+    scene: 'a sailing ship on the ocean with a coastline in the distance',
+  },
+  {
+    match: /fraction|decimal|percent/i,
+    scene: 'fraction circles and strips laid out on a desk beside a measuring jug',
+  },
+  {
+    match: /place value|whole number|counting|number pattern/i,
+    scene: 'base-ten blocks and counting beads sorted into neat groups on a desk',
+  },
+  {
+    match: /shape|geometr|angle|symmetr/i,
+    scene: 'wooden pattern blocks and shape tiles arranged into a design',
+  },
+  {
+    match: /measure|\bmass\b|length|capacity|\btime\b/i,
+    scene:
+      'a balance scale, a measuring tape, a jug of water and a sand timer on a bench',
+  },
+  {
+    match: /reading|story|comprehension|poem|literature/i,
+    scene: 'a cosy reading corner with cushions and open books with blank pages',
+  },
+  {
+    match: /writ(e|ing)|paragraph|essay|letter/i,
+    scene: 'a desk with a notebook of blank pages, pencils and an eraser',
+  },
+  {
+    match: /speech|conversation|listening|oral/i,
+    scene: 'two children talking, with empty rounded speech bubbles between them',
+  },
+  {
+    match: /health|nutrition|hygiene|safety|first aid/i,
+    scene: 'a table of fresh fruit and vegetables with a water bottle and a washbasin',
+  },
+  {
+    match: /dance|movement|choreograph/i,
+    scene: 'children dancing together in a school hall, mid-movement',
+  },
+  {
+    match: /music|instrument|rhythm|listening|composition/i,
+    scene: 'children playing marimbas, drums and shakers together',
+  },
+  {
+    match: /drama|\bplay|folktale|perform|acting|theatre/i,
+    scene: 'children acting out a story on a simple stage with handmade props',
+  },
+  {
+    match: /create in 2d|drawing|painting|pattern|lettering/i,
+    scene: 'a table covered in paint, brushes, paper and bright abstract pattern work',
+  },
+  {
+    match: /create in 3d|model|sculpt|relief|clay/i,
+    scene: 'hands shaping clay and card models on a craft table',
+  },
+  {
+    match: /career/i,
+    scene:
+      'a row of people at work in different trades -- a nurse, a builder, a farmer, a teacher',
+  },
+  {
+    match: /\bself\b|identity|emotion|esteem|body image|bullying/i,
+    scene: 'a child looking thoughtfully into a mirror, with friends nearby',
+  },
+  {
+    match: /\bright|responsibilit|community|caring/i,
+    scene: 'neighbours helping each other in a community garden',
+  },
+  {
+    match: /visual literacy/i,
+    scene: "a wall of children's artwork being looked at and discussed",
+  },
+  {
+    match: /halv|doubl/i,
+    scene: 'a pile of base-ten blocks being split into two equal piles on a desk',
+  },
+  {
+    match: /large number|million|milliard|billion|trillion/i,
+    scene: 'towers of base-ten blocks growing from a single cube to a huge stack',
+  },
+  {
+    match: /even and odd|multiple|factor|divisib/i,
+    scene: 'counters on a desk sorted into paired rows and leftover singles',
+  },
+  {
+    match:
+      /synonym|antonym|vocabular|noun|pronoun|adjective|adverb|verb|tense|conjunction|sentence structure/i,
+    scene:
+      'a classroom word wall of blank coloured cards pinned in neat rows, with no writing on them',
+  },
+  {
+    match: /main idea|summaris|summariz|comprehen/i,
+    scene:
+      'a child highlighting a passage in an open book of blank pages, with a short list of blank cards beside it',
+  },
+  {
+    match: /figurative|simile|metaphor|persuasi|fact versus opinion|formal|informal/i,
+    scene: 'two children in conversation with imaginative shapes drifting between them',
+  },
+  {
+    match: /mental (calculation|math)|ratio|rate/i,
+    scene: 'a child at a desk with counters and a balance scale, thinking',
+  },
+  {
+    match: /physical feature|mining|mineral/i,
+    scene:
+      'a South African landscape of mountains, plateau and coast with a mine headgear in the distance',
+  },
+  {
+    match: /ancient egypt|explorer/i,
+    scene: 'pyramids beside a river, with a sailing ship and desert beyond',
+  },
+  {
+    match: /water in|river|dam/i,
+    scene: 'a dam and river feeding farmland, with a tap and water tank in a village',
+  },
+  {
+    match: /communication|medicine|then and now/i,
+    scene:
+      'a split scene contrasting an old way and a modern way of doing the same thing',
+  },
+  {
+    match: /people who|made a difference|constitution|revolution/i,
+    scene: 'a crowd of people of many ages standing together, seen from behind',
+  },
+  {
+    match: /slave|slavery/i,
+    scene:
+      'a sombre coastal scene at dusk with a distant sailing ship, respectful and non-graphic',
+  },
+  {
+    match: /kingdom|colony|empire/i,
+    scene:
+      'a historic southern African settlement of round homesteads with cattle and hills beyond',
+  },
+  {
+    match: /biosphere|variation|living things|reproduction/i,
+    scene:
+      'a lush landscape layered from soil and plants up through animals to birds and sky',
+  },
+  {
+    match: /\bview|sketch|three-dimensional|two-dimensional|tessellation|transformation/i,
+    scene: 'wooden blocks on a desk seen from the front, side and above',
+  },
   // Afrikaans FAL topic names.
-  { match: /groete|voorstel|familie/i, scene: 'a family greeting each other warmly at a front door' },
-  { match: /kleur|getal/i, scene: 'brightly coloured paint pots and counting beads on a desk' },
-  { match: /klaskamer|skool/i, scene: 'a cheerful primary school classroom with desks and supplies' },
-  { match: /weer|seisoen/i, scene: 'one landscape shown in four weather moods across the seasons' },
-  { match: /winkel|inkopies/i, scene: 'a small neighbourhood shop with shelves of groceries' },
-  { match: /\bsin|paragraaf|skryf|lees/i, scene: 'a desk with an open notebook of blank pages and pencils' },
-  { match: /werkwoord|naamwoord|meervoud|voorsetsel|vraagwoord/i, scene: 'a bright classroom wall display of colourful abstract shapes and arrows, with no writing' },
+  {
+    match: /groete|voorstel|familie/i,
+    scene: 'a family greeting each other warmly at a front door',
+  },
+  {
+    match: /kleur|getal/i,
+    scene: 'brightly coloured paint pots and counting beads on a desk',
+  },
+  {
+    match: /klaskamer|skool/i,
+    scene: 'a cheerful primary school classroom with desks and supplies',
+  },
+  {
+    match: /weer|seisoen/i,
+    scene: 'one landscape shown in four weather moods across the seasons',
+  },
+  {
+    match: /winkel|inkopies/i,
+    scene: 'a small neighbourhood shop with shelves of groceries',
+  },
+  {
+    match: /\bsin|paragraaf|skryf|lees/i,
+    scene: 'a desk with an open notebook of blank pages and pencils',
+  },
+  {
+    match: /werkwoord|naamwoord|meervoud|voorsetsel|vraagwoord/i,
+    scene:
+      'a bright classroom wall display of colourful abstract shapes and arrows, with no writing',
+  },
 ]
 
 export interface PromptInput {
@@ -258,7 +454,12 @@ export function buildIllustrationPrompt({
     // constraints are the last instruction the model reads.
     // Digits are stripped here too -- a reviewer typing "show 3 children"
     // would otherwise put a numeral back into a prompt that must have none.
-    const cleanHint = sceneHint.trim().slice(0, 300).replace(/\d+/g, '').replace(/\s{2,}/g, ' ').trim()
+    const cleanHint = sceneHint
+      .trim()
+      .slice(0, 300)
+      .replace(/\d+/g, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim()
     if (cleanHint) parts.push(`Additional direction from the reviewer: ${cleanHint}`)
   }
 

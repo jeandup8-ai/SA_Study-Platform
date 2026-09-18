@@ -46,11 +46,15 @@ export function PracticeTestsPage() {
   }, [load])
 
   const grades = useMemo(
-    () => [...new Set(tests.map((t) => t.gradeNumber).filter((g): g is number => g != null))].sort(),
+    () =>
+      [
+        ...new Set(tests.map((t) => t.gradeNumber).filter((g): g is number => g != null)),
+      ].sort(),
     [tests],
   )
   const visible = useMemo(
-    () => (gradeFilter === 'all' ? tests : tests.filter((t) => t.gradeNumber === gradeFilter)),
+    () =>
+      gradeFilter === 'all' ? tests : tests.filter((t) => t.gradeNumber === gradeFilter),
     [tests, gradeFilter],
   )
   const publishedCount = visible.filter((t) => t.isPublished).length
@@ -61,7 +65,11 @@ export function PracticeTestsPage() {
     setError(null)
     try {
       await setPracticeTestPublished(test, !test.isPublished)
-      setTests((prev) => prev.map((t) => (t.id === test.id ? { ...t, isPublished: !test.isPublished } : t)))
+      setTests((prev) =>
+        prev.map((t) =>
+          t.id === test.id ? { ...t, isPublished: !test.isPublished } : t,
+        ),
+      )
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -91,23 +99,27 @@ export function PracticeTestsPage() {
     }
   }
 
-  if (loading) return <p className="text-slate-500">Loading...</p>
+  if (loading) return <p className="text-ink-400">Loading...</p>
 
   return (
     <div>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-white">Free practice tests</h1>
-          <p className="mt-1 max-w-2xl text-sm text-slate-400">
-            The public, ungated tests at <span className="font-mono text-slate-300">/practice</span>. Check the answers
-            and the explanations, then publish — nothing is visible to the public until you do.
+          <h1 className="font-display text-2xl font-extrabold tracking-tight text-white">
+            Free practice tests
+          </h1>
+          <p className="mt-1 max-w-2xl text-sm text-ink-300">
+            The public, ungated tests at{' '}
+            <span className="font-mono text-ink-200">/practice</span>. Check the answers
+            and the explanations, then publish — nothing is visible to the public until
+            you do.
           </p>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-900 px-4 py-2 text-right">
+        <div className="rounded-xl border border-ink-700 bg-ink-800 px-4 py-2 text-right">
           <p className="text-2xl font-extrabold text-white">
             {publishedCount}/{visible.length}
           </p>
-          <p className="text-xs text-slate-400">published</p>
+          <p className="text-xs text-ink-300">published</p>
         </div>
       </div>
 
@@ -120,8 +132,8 @@ export function PracticeTestsPage() {
       {brokenCount > 0 && (
         <p className="mt-4 flex items-center gap-2 rounded-lg border border-amber-700 bg-amber-950/60 px-3 py-2 text-sm font-semibold text-amber-200">
           <AlertTriangle size={16} />
-          {brokenCount} test{brokenCount === 1 ? '' : 's'} contain a question without exactly one correct answer and
-          cannot be published.
+          {brokenCount} test{brokenCount === 1 ? '' : 's'} contain a question without
+          exactly one correct answer and cannot be published.
         </p>
       )}
 
@@ -130,13 +142,19 @@ export function PracticeTestsPage() {
           All ({tests.length})
         </FilterChip>
         {grades.map((g) => (
-          <FilterChip key={g} active={gradeFilter === g} onClick={() => setGradeFilter(g)}>
+          <FilterChip
+            key={g}
+            active={gradeFilter === g}
+            onClick={() => setGradeFilter(g)}
+          >
             Grade {g} ({tests.filter((t) => t.gradeNumber === g).length})
           </FilterChip>
         ))}
       </div>
 
-      {visible.length === 0 && <p className="mt-6 text-slate-500">No practice tests yet.</p>}
+      {visible.length === 0 && (
+        <p className="mt-6 text-ink-400">No practice tests yet.</p>
+      )}
 
       <div className="mt-4 space-y-2">
         {visible.map((test) => {
@@ -144,12 +162,15 @@ export function PracticeTestsPage() {
           const expanded = expandedId === test.id
           const broken = test.brokenQuestionIds.length > 0
           return (
-            <div key={test.id} className="rounded-2xl border border-slate-800 bg-slate-900">
+            <div key={test.id} className="rounded-2xl border border-ink-700 bg-ink-800">
               <div className="flex flex-wrap items-start justify-between gap-3 p-4">
-                <button className="min-w-0 text-left" onClick={() => setExpandedId(expanded ? null : test.id)}>
+                <button
+                  className="min-w-0 text-left"
+                  onClick={() => setExpandedId(expanded ? null : test.id)}
+                >
                   <p className="font-bold text-white">{test.titleEn}</p>
-                  {test.titleAf && <p className="text-sm text-slate-400">{test.titleAf}</p>}
-                  <p className="mt-1 text-xs text-slate-500">
+                  {test.titleAf && <p className="text-sm text-ink-300">{test.titleAf}</p>}
+                  <p className="mt-1 text-xs text-ink-400">
                     Grade {test.gradeNumber} · {test.subjectName} ·{' '}
                     {Object.entries(counts)
                       .map(([lang, n]) => `${n} ${lang.toUpperCase()}`)
@@ -158,13 +179,15 @@ export function PracticeTestsPage() {
                 </button>
                 <div className="flex shrink-0 items-center gap-2">
                   {broken && <AlertTriangle size={18} className="text-amber-400" />}
-                  {test.isPublished && !broken && <CheckCircle2 size={18} className="text-success-600" />}
+                  {test.isPublished && !broken && (
+                    <CheckCircle2 size={18} className="text-success-600" />
+                  )}
                   {test.isPublished && test.gradeNumber && test.subjectSlug && (
                     <a
                       href={`/practice/grade-${test.gradeNumber}/${test.subjectSlug}/${test.slug}`}
                       target="_blank"
                       rel="noreferrer noopener"
-                      className="rounded-lg border border-slate-700 p-2 text-slate-400 hover:text-white"
+                      className="rounded-lg border border-ink-600 p-2 text-ink-300 hover:text-white"
                       aria-label="Open public page"
                     >
                       <ExternalLink size={16} />
@@ -172,9 +195,13 @@ export function PracticeTestsPage() {
                   )}
                   <button
                     onClick={() => void togglePublished(test)}
-                    disabled={busyId === test.id || (broken && !test.isPublished) || test.questions.length === 0}
+                    disabled={
+                      busyId === test.id ||
+                      (broken && !test.isPublished) ||
+                      test.questions.length === 0
+                    }
                     className={`rounded-lg px-4 py-2 text-sm font-semibold text-white disabled:opacity-50 ${
-                      test.isPublished ? 'bg-slate-700' : 'bg-success-600'
+                      test.isPublished ? 'bg-ink-600' : 'bg-success-600'
                     }`}
                   >
                     {test.isPublished ? 'Unpublish' : 'Publish'}
@@ -183,20 +210,26 @@ export function PracticeTestsPage() {
               </div>
 
               {expanded && (
-                <div className="space-y-3 border-t border-slate-800 p-4">
-                  {test.questions.length === 0 && <p className="text-sm text-slate-500">No questions attached.</p>}
+                <div className="space-y-3 border-t border-ink-700 p-4">
+                  {test.questions.length === 0 && (
+                    <p className="text-sm text-ink-400">No questions attached.</p>
+                  )}
                   {test.questions.map((question) => {
-                    const correctCount = question.options.filter((o) => o.is_correct).length
+                    const correctCount = question.options.filter(
+                      (o) => o.is_correct,
+                    ).length
                     return (
                       <div
                         key={question.id}
                         className={`rounded-xl border p-3 ${
-                          correctCount === 1 ? 'border-slate-800' : 'border-amber-700 bg-amber-950/40'
+                          correctCount === 1
+                            ? 'border-ink-700'
+                            : 'border-amber-700 bg-amber-950/40'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <p className="font-semibold text-white">
-                            <span className="mr-2 rounded bg-slate-800 px-1.5 text-xs uppercase text-slate-300">
+                            <span className="mr-2 rounded bg-ink-700 px-1.5 text-xs uppercase text-ink-200">
                               {question.language}
                             </span>
                             {question.prompt}
@@ -213,7 +246,11 @@ export function PracticeTestsPage() {
                           {question.options.map((option) => (
                             <li
                               key={option.id}
-                              className={option.is_correct ? 'font-bold text-success-600' : 'text-slate-400'}
+                              className={
+                                option.is_correct
+                                  ? 'font-bold text-success-600'
+                                  : 'text-ink-300'
+                              }
                             >
                               {option.is_correct ? '✓ ' : '· '}
                               {option.label}
@@ -226,7 +263,7 @@ export function PracticeTestsPage() {
                           </p>
                         )}
                         {question.explanation && (
-                          <p className="mt-2 border-l-2 border-slate-700 pl-3 text-sm text-slate-300">
+                          <p className="mt-2 border-l-2 border-ink-600 pl-3 text-sm text-ink-200">
                             {question.explanation}
                           </p>
                         )}
@@ -243,12 +280,20 @@ export function PracticeTestsPage() {
   )
 }
 
-function FilterChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
   return (
     <button
       onClick={onClick}
       className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
-        active ? 'bg-brand-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+        active ? 'bg-brand-600 text-white' : 'bg-ink-700 text-ink-200 hover:bg-ink-600'
       }`}
     >
       {children}

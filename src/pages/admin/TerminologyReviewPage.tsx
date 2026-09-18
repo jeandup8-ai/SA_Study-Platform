@@ -41,27 +41,30 @@ export function TerminologyReviewPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold text-white">Terminology review queue</h1>
-      <p className="mt-1 text-sm text-slate-400">
-        Subject-specific translations awaiting human verification. A generic machine translation of a
-        technical term is often wrong — nothing here reaches a learner or the AI tutor until a reviewer
-        confirms it against the source.
+      <h1 className="font-display text-2xl font-extrabold tracking-tight text-white">
+        Terminology review queue
+      </h1>
+      <p className="mt-1 text-sm text-ink-300">
+        Subject-specific translations awaiting human verification. A generic machine
+        translation of a technical term is often wrong — nothing here reaches a learner or
+        the AI tutor until a reviewer confirms it against the source.
       </p>
 
-      {loading && <p className="mt-6 text-slate-500">Loading...</p>}
+      {loading && <p className="mt-6 text-ink-400">Loading...</p>}
       {!loading && items.length === 0 && (
-        <p className="mt-6 text-slate-500">Nothing waiting for review right now.</p>
+        <p className="mt-6 text-ink-400">Nothing waiting for review right now.</p>
       )}
 
       <div className="mt-6 space-y-3">
         {items.map((item) => (
-          <div key={item.id} className="rounded-2xl border border-slate-800 bg-slate-900 p-4">
+          <div key={item.id} className="rounded-2xl border border-ink-700 bg-ink-800 p-4">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <p className="text-lg font-bold text-white">
-                  {item.term} <span className="text-slate-500">→</span> {item.translation ?? '—'}
+                  {item.term} <span className="text-ink-400">→</span>{' '}
+                  {item.translation ?? '—'}
                 </p>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-ink-300">
                   {item.language.toUpperCase()}
                   {item.subject_name ? ` · ${item.subject_name}` : ''}
                   {item.grade_number ? ` · Grade ${item.grade_number}` : ''}
@@ -83,11 +86,14 @@ export function TerminologyReviewPage() {
               </div>
             </div>
 
-            {item.definition && <p className="mt-3 text-sm text-slate-300">{item.definition}</p>}
+            {item.definition && (
+              <p className="mt-3 text-sm text-ink-200">{item.definition}</p>
+            )}
 
             <p className="mt-3 rounded-lg bg-amber-950/40 px-3 py-2 text-xs text-amber-200">
-              Source: {item.source_title ?? 'unknown'}. Confirm the translation before verifying — this
-              becomes visible to learners and the AI tutor as soon as it is marked verified.
+              Source: {item.source_title ?? 'unknown'}. Confirm the translation before
+              verifying — this becomes visible to learners and the AI tutor as soon as it
+              is marked verified.
             </p>
           </div>
         ))}

@@ -67,10 +67,15 @@ export function PracticeTestPage() {
       ).length,
     [test, marked, answers],
   )
-  const allMarked = Boolean(test) && markedCount === test!.questions.length && markedCount > 0
+  const allMarked =
+    Boolean(test) && markedCount === test!.questions.length && markedCount > 0
 
   useSeo({
-    title: t('practice.seo.testTitle', { grade: gradeNumber, title, subject: subjectName }),
+    title: t('practice.seo.testTitle', {
+      grade: gradeNumber,
+      title,
+      subject: subjectName,
+    }),
     description: t('practice.seo.testDescription', {
       grade: gradeNumber,
       title,
@@ -111,7 +116,10 @@ export function PracticeTestPage() {
       <div className="mx-auto max-w-2xl px-4 py-12">
         <PracticeBreadcrumbs
           items={[
-            { label: t('practice.gradeLabel', { grade: gradeNumber }), to: `/practice/grade-${gradeNumber}` },
+            {
+              label: t('practice.gradeLabel', { grade: gradeNumber }),
+              to: `/practice/grade-${gradeNumber}`,
+            },
             { label: subjectName, to: `/practice/grade-${gradeNumber}/${subjectSlug}` },
             { label: title || (testSlug ?? '') },
           ]}
@@ -122,7 +130,10 @@ export function PracticeTestPage() {
         {!loading && !test && (
           <Card className="mt-8 text-center text-slate-500">
             <p>{t('practice.testNotFound')}</p>
-            <Link to="/practice" className="mt-3 inline-block text-sm font-bold text-brand-700 underline">
+            <Link
+              to="/practice"
+              className="mt-3 inline-block text-sm font-bold text-brand-700 underline"
+            >
               {t('practice.breadcrumbRoot')}
             </Link>
           </Card>
@@ -132,7 +143,9 @@ export function PracticeTestPage() {
           <>
             <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-extrabold text-slate-900">{title}</h1>
+                <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900">
+                  {title}
+                </h1>
                 <p className="mt-1 text-sm text-slate-500">
                   {t('practice.testMeta', {
                     grade: gradeNumber,
@@ -180,7 +193,12 @@ export function PracticeTestPage() {
                             key={option.id}
                             type="button"
                             disabled={isMarked}
-                            onClick={() => setAnswers((prev) => ({ ...prev, [question.id]: option.id }))}
+                            onClick={() =>
+                              setAnswers((prev) => ({
+                                ...prev,
+                                [question.id]: option.id,
+                              }))
+                            }
                             className={`flex min-h-12 w-full items-center gap-2 rounded-2xl border-2 px-4 py-2 text-left font-semibold transition-colors ${
                               showCorrect
                                 ? 'border-success-500 bg-success-50 text-success-700'
@@ -191,7 +209,9 @@ export function PracticeTestPage() {
                                     : 'border-slate-200 text-slate-700'
                             }`}
                           >
-                            {showCorrect && <CheckCircle2 size={18} className="shrink-0" />}
+                            {showCorrect && (
+                              <CheckCircle2 size={18} className="shrink-0" />
+                            )}
                             {showIncorrect && <XCircle size={18} className="shrink-0" />}
                             <span>{option.label}</span>
                           </button>
@@ -200,7 +220,11 @@ export function PracticeTestPage() {
                     </div>
 
                     {!isMarked ? (
-                      <Button className="mt-4 w-full" disabled={!selectedId} onClick={() => mark(question.id)}>
+                      <Button
+                        className="mt-4 w-full"
+                        disabled={!selectedId}
+                        onClick={() => mark(question.id)}
+                      >
                         {t('lesson.checkAnswer')}
                       </Button>
                     ) : (
@@ -210,10 +234,14 @@ export function PracticeTestPage() {
                             selected?.is_correct ? 'text-success-600' : 'text-danger-600'
                           }`}
                         >
-                          {selected?.is_correct ? t('lesson.correct') : t('lesson.incorrect')}
+                          {selected?.is_correct
+                            ? t('lesson.correct')
+                            : t('lesson.incorrect')}
                         </p>
                         {question.explanation && (
-                          <p className="mt-1.5 text-sm text-slate-600">{question.explanation}</p>
+                          <p className="mt-1.5 text-sm text-slate-600">
+                            {question.explanation}
+                          </p>
                         )}
                       </div>
                     )}
@@ -230,11 +258,16 @@ export function PracticeTestPage() {
                   strokeWidth={9}
                 />
                 <p className="font-bold text-slate-800">
-                  {t('practice.scoreLine', { correct: correctCount, total: test.questions.length })}
+                  {t('practice.scoreLine', {
+                    correct: correctCount,
+                    total: test.questions.length,
+                  })}
                 </p>
                 {allMarked && (
                   <>
-                    <p className="max-w-sm text-sm text-slate-500">{t('practice.notSavedNotice')}</p>
+                    <p className="max-w-sm text-sm text-slate-500">
+                      {t('practice.notSavedNotice')}
+                    </p>
                     <Link to="/sign-up" className="w-full max-w-xs">
                       <Button className="w-full">{t('practice.saveProgressCta')}</Button>
                     </Link>

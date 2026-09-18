@@ -35,10 +35,12 @@ export function SignUpPage() {
 
   if (awaitingConfirmation) {
     return (
-      <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-4 py-10">
+      <div className="app-canvas flex min-h-dvh items-center justify-center px-4 py-10">
         <Card className="w-full max-w-md text-center">
           <p className="text-4xl">📩</p>
-          <h1 className="mt-3 text-xl font-extrabold text-slate-900">{t('auth.checkYourEmail')}</h1>
+          <h1 className="mt-3 font-display text-2xl font-extrabold tracking-tight text-slate-900">
+            {t('auth.checkYourEmail')}
+          </h1>
           <p className="mt-2 text-sm text-slate-600">
             {t('auth.confirmationSentBefore')}
             <span className="font-semibold">{email}</span>
@@ -53,9 +55,11 @@ export function SignUpPage() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-4 py-10">
+    <div className="app-canvas flex min-h-dvh items-center justify-center px-4 py-10">
       <Card className="w-full max-w-md">
-        <h1 className="text-2xl font-extrabold text-slate-900">{t('auth.signUp')}</h1>
+        <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900">
+          {t('auth.signUp')}
+        </h1>
         <form className="mt-6 space-y-4" onSubmit={onSubmit}>
           <Field label={t('auth.fullName')}>
             <input

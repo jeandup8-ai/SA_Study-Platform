@@ -23,7 +23,9 @@ export function LegalPageLayout({
     <MarketingShell>
       <div className="mx-auto max-w-3xl px-4 py-16">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-3xl font-extrabold text-slate-900">{title}</h1>
+          <h1 className="font-display text-3xl font-extrabold tracking-tight text-slate-900">
+            {title}
+          </h1>
           {draft && <Badge tone="warning">Draft — pending legal review</Badge>}
         </div>
         <p className="mt-2 text-sm text-slate-400">Last updated: {lastUpdated}</p>

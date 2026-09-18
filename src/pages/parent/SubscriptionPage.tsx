@@ -50,7 +50,12 @@ export function SubscriptionPage() {
   }
 
   useEffect(() => {
-    supabase.from('subscription_plans').select('*').eq('is_active', true).order('price_cents').then(({ data }) => setPlans(data ?? []))
+    supabase
+      .from('subscription_plans')
+      .select('*')
+      .eq('is_active', true)
+      .order('price_cents')
+      .then(({ data }) => setPlans(data ?? []))
     loadSubscription()
   }, [parent])
 
@@ -61,7 +66,12 @@ export function SubscriptionPage() {
     trialEnd.setDate(trialEnd.getDate() + TRIAL_DAYS)
     const { data } = await supabase
       .from('subscriptions')
-      .insert({ parent_id: parent.id, plan_id: planId, status: 'trialing', trial_ends_at: trialEnd.toISOString() })
+      .insert({
+        parent_id: parent.id,
+        plan_id: planId,
+        status: 'trialing',
+        trial_ends_at: trialEnd.toISOString(),
+      })
       .select('*')
       .single()
     setSubscription(data ?? null)
@@ -71,7 +81,9 @@ export function SubscriptionPage() {
   async function checkout(planId: string) {
     setCheckingOut(planId)
     setCheckoutError(null)
-    const { data, error } = await supabase.functions.invoke('payfast-checkout', { body: { planId } })
+    const { data, error } = await supabase.functions.invoke('payfast-checkout', {
+      body: { planId },
+    })
     setCheckingOut(null)
     if (error || !data?.action || !data?.fields) {
       setCheckoutError(
@@ -91,11 +103,14 @@ export function SubscriptionPage() {
     loadSubscription()
   }
 
-  const isPayingStatus = subscription && ['active', 'past_due', 'incomplete'].includes(subscription.status)
+  const isPayingStatus =
+    subscription && ['active', 'past_due', 'incomplete'].includes(subscription.status)
 
   return (
     <div>
-      <h1 className="text-2xl font-extrabold text-slate-900">{t('parent.manageSubscription')}</h1>
+      <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900">
+        {t('parent.manageSubscription')}
+      </h1>
 
       {paymentResult === 'success' && (
         <Card className="mt-4 bg-green-50">
@@ -110,24 +125,43 @@ export function SubscriptionPage() {
 
       {subscription && (
         <Card className="mt-4 bg-brand-50">
-          <Badge tone={subscription.status === 'active' ? 'success' : subscription.status === 'trialing' ? 'sun' : 'warning'}>
+          <Badge
+            tone={
+              subscription.status === 'active'
+                ? 'success'
+                : subscription.status === 'trialing'
+                  ? 'sun'
+                  : 'warning'
+            }
+          >
             {t(`parent.subscriptionStatus.${subscription.status}`)}
           </Badge>
           {subscription.trial_ends_at && subscription.status === 'trialing' && (
             <p className="mt-2 text-sm text-brand-800">
-              {t('parent.trialEndsOn', { date: new Date(subscription.trial_ends_at).toLocaleDateString() })}
+              {t('parent.trialEndsOn', {
+                date: new Date(subscription.trial_ends_at).toLocaleDateString(),
+              })}
             </p>
           )}
           {subscription.current_period_end && subscription.status === 'active' && (
             <p className="mt-2 text-sm text-brand-800">
-              {t('parent.nextBillingDate', { date: new Date(subscription.current_period_end).toLocaleDateString() })}
+              {t('parent.nextBillingDate', {
+                date: new Date(subscription.current_period_end).toLocaleDateString(),
+              })}
             </p>
           )}
           {subscription.cancel_requested_at && (
-            <p className="mt-2 text-sm text-brand-800">{t('parent.cancellationRequestedNote')}</p>
+            <p className="mt-2 text-sm text-brand-800">
+              {t('parent.cancellationRequestedNote')}
+            </p>
           )}
           {isPayingStatus && !subscription.cancel_requested_at && (
-            <Button className="mt-3" variant="secondary" disabled={canceling} onClick={cancelSubscription}>
+            <Button
+              className="mt-3"
+              variant="secondary"
+              disabled={canceling}
+              onClick={cancelSubscription}
+            >
               {canceling ? t('common.loading') : t('parent.cancelSubscription')}
             </Button>
           )}
@@ -141,16 +175,24 @@ export function SubscriptionPage() {
           <Card key={plan.id}>
             <p className="font-bold text-slate-900">{plan.name}</p>
             <p className="mt-1 text-2xl font-extrabold text-brand-700">
-              {plan.price_cents != null ? `R${(plan.price_cents / 100).toFixed(0)}` : t('common.priceTbc')}
-              <span className="text-sm font-medium text-slate-500">/{plan.billing_interval === 'monthly' ? 'mo' : 'yr'}</span>
+              {plan.price_cents != null
+                ? `R${(plan.price_cents / 100).toFixed(0)}`
+                : t('common.priceTbc')}
+              <span className="text-sm font-medium text-slate-500">
+                /{plan.billing_interval === 'monthly' ? 'mo' : 'yr'}
+              </span>
             </p>
-            <p className="text-sm text-slate-500">{t('parent.maxLearnersOnPlan', { count: plan.max_learners })}</p>
+            <p className="text-sm text-slate-500">
+              {t('parent.maxLearnersOnPlan', { count: plan.max_learners })}
+            </p>
             <Button
               className="mt-4 w-full"
               disabled={checkingOut === plan.id}
               onClick={() => checkout(plan.id)}
             >
-              {checkingOut === plan.id ? t('common.loading') : t('parent.subscribeWithPayfast')}
+              {checkingOut === plan.id
+                ? t('common.loading')
+                : t('parent.subscribeWithPayfast')}
             </Button>
             <Button
               className="mt-2 w-full"
@@ -158,11 +200,15 @@ export function SubscriptionPage() {
               disabled={startingTrial === plan.id}
               onClick={() => startTrial(plan.id)}
             >
-              {startingTrial === plan.id ? t('common.loading') : t('parent.startFreeTrial')}
+              {startingTrial === plan.id
+                ? t('common.loading')
+                : t('parent.startFreeTrial')}
             </Button>
           </Card>
         ))}
-        {plans.length === 0 && <p className="text-sm text-slate-400">{t('parent.noPlansYet')}</p>}
+        {plans.length === 0 && (
+          <p className="text-sm text-slate-400">{t('parent.noPlansYet')}</p>
+        )}
       </div>
     </div>
   )

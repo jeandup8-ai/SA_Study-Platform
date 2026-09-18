@@ -1,18 +1,40 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { ChevronLeft, RotateCcw, Wand2, Lightbulb, Sparkles, Network, PlayCircle } from 'lucide-react'
+import {
+  ChevronLeft,
+  RotateCcw,
+  Wand2,
+  Lightbulb,
+  Sparkles,
+  Network,
+  PlayCircle,
+} from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
-import { fetchLesson, fetchLessonContent, fetchLessonMedia, fetchTopicIllustration } from '@/lib/curriculum/queries'
+import {
+  fetchLesson,
+  fetchLessonContent,
+  fetchLessonMedia,
+  fetchTopicIllustration,
+} from '@/lib/curriculum/queries'
 import { fetchVerifiedTopicVideo } from '@/lib/curriculum/topicVideos'
 import type { Database } from '@/types/database'
-import { fetchQuestionsForTopic, fetchMiniQuizForLesson } from '@/lib/curriculum/questions'
+import {
+  fetchQuestionsForTopic,
+  fetchMiniQuizForLesson,
+} from '@/lib/curriculum/questions'
 import { recordQuizResult } from '@/lib/mastery/engine'
-import { requestAlternateExplanation, type AlternateExplanation } from '@/lib/tutor/explainDifferently'
+import {
+  requestAlternateExplanation,
+  type AlternateExplanation,
+} from '@/lib/tutor/explainDifferently'
 import { generateMindMap, type MindMap } from '@/lib/tutor/generateMindmap'
 import { AlternateExplanationCard } from '@/components/lesson/AlternateExplanationCard'
 import { MindMapView } from '@/components/lesson/MindMapView'
-import { awardFlatPoints, POINTS_PER_PRACTICE_SET_COMPLETED } from '@/lib/gamification/points'
+import {
+  awardFlatPoints,
+  POINTS_PER_PRACTICE_SET_COMPLETED,
+} from '@/lib/gamification/points'
 import { checkAndAwardBadges, type BadgeCode } from '@/lib/gamification/badges'
 import { fetchStreak } from '@/lib/streak/streak'
 import { PointsEarnedBanner } from '@/components/lesson/PointsEarnedBanner'
@@ -31,7 +53,10 @@ import { LessonVisual } from '@/components/lesson/LessonVisual'
 import { StoryboardSlides } from '@/components/lesson/StoryboardSlides'
 import { WorkedExampleCard } from '@/components/lesson/WorkedExampleCard'
 import { PracticeSelfCheck } from '@/components/lesson/PracticeSelfCheck'
-import { QuestionRunner, type QuestionWithOptions } from '@/components/lesson/QuestionRunner'
+import {
+  QuestionRunner,
+  type QuestionWithOptions,
+} from '@/components/lesson/QuestionRunner'
 import type { Lesson, LessonContent, Media, LessonSectionType } from '@/types/curriculum'
 
 // Legacy demo lessons: narrative content lives in lesson_content rows, visuals
@@ -73,11 +98,17 @@ export function LessonPage() {
   const [stepIndex, setStepIndex] = useState(0)
   const [simplified, setSimplified] = useState(false)
   const [practiceQuestions, setPracticeQuestions] = useState<QuestionWithOptions[]>([])
-  const [quiz, setQuiz] = useState<{ assessmentId: string | null; questions: QuestionWithOptions[] }>({
+  const [quiz, setQuiz] = useState<{
+    assessmentId: string | null
+    questions: QuestionWithOptions[]
+  }>({
     assessmentId: null,
     questions: [],
   })
-  const [quizResult, setQuizResult] = useState<{ correctCount: number; total: number } | null>(null)
+  const [quizResult, setQuizResult] = useState<{
+    correctCount: number
+    total: number
+  } | null>(null)
   const [pointsEarned, setPointsEarned] = useState(0)
   const [newBadges, setNewBadges] = useState<BadgeCode[]>([])
   const [nextLesson, setNextLesson] = useState<Lesson | null>(null)
@@ -89,7 +120,9 @@ export function LessonPage() {
   const [mindMapLoading, setMindMapLoading] = useState(false)
   const [mindMapError, setMindMapError] = useState<string | null>(null)
   const [topicIllustrationUrl, setTopicIllustrationUrl] = useState<string | null>(null)
-  const [topicVideo, setTopicVideo] = useState<Database['public']['Tables']['topic_videos']['Row'] | null>(null)
+  const [topicVideo, setTopicVideo] = useState<
+    Database['public']['Tables']['topic_videos']['Row'] | null
+  >(null)
   const [showVideo, setShowVideo] = useState(false)
 
   useEffect(() => {
@@ -98,7 +131,9 @@ export function LessonPage() {
       setLesson(row)
       if (row) {
         fetchTopicIllustration(row.topic_id).then(setTopicIllustrationUrl)
-        fetchVerifiedTopicVideo(row.topic_id, activeLearner.preferred_language).then(setTopicVideo)
+        fetchVerifiedTopicVideo(row.topic_id, activeLearner.preferred_language).then(
+          setTopicVideo,
+        )
       }
     })
     fetchLessonContent(lessonId).then(setContent)
@@ -126,23 +161,27 @@ export function LessonPage() {
     const currentStep = currentSteps[stepIndex]
 
     if (!v2 && currentStep === 'practice_questions' && practiceQuestions.length === 0) {
-      fetchQuestionsForTopic({ topicId: lesson.topic_id, language: activeLearner.preferred_language, limit: 3 }).then(
-        setPracticeQuestions,
-      )
+      fetchQuestionsForTopic({
+        topicId: lesson.topic_id,
+        language: activeLearner.preferred_language,
+        limit: 3,
+      }).then(setPracticeQuestions)
     }
     if (!v2 && currentStep === 'mini_quiz' && quiz.questions.length === 0) {
-      fetchMiniQuizForLesson(lesson.id, activeLearner.preferred_language).then(async (result) => {
-        if (result.questions.length > 0) {
-          setQuiz(result)
-        } else {
-          const fallback = await fetchQuestionsForTopic({
-            topicId: lesson.topic_id,
-            language: activeLearner.preferred_language,
-            limit: 3,
-          })
-          setQuiz({ assessmentId: null, questions: fallback })
-        }
-      })
+      fetchMiniQuizForLesson(lesson.id, activeLearner.preferred_language).then(
+        async (result) => {
+          if (result.questions.length > 0) {
+            setQuiz(result)
+          } else {
+            const fallback = await fetchQuestionsForTopic({
+              topicId: lesson.topic_id,
+              language: activeLearner.preferred_language,
+              limit: 3,
+            })
+            setQuiz({ assessmentId: null, questions: fallback })
+          }
+        },
+      )
     }
     if (currentStep === 'next_step') {
       supabase
@@ -160,7 +199,9 @@ export function LessonPage() {
         .update({
           status: 'completed',
           completed_at: new Date().toISOString(),
-          score: quizResult ? (quizResult.correctCount / Math.max(quizResult.total, 1)) * 100 : null,
+          score: quizResult
+            ? (quizResult.correctCount / Math.max(quizResult.total, 1)) * 100
+            : null,
           updated_at: new Date().toISOString(),
         })
         .eq('learner_id', activeLearner.id)
@@ -182,18 +223,30 @@ export function LessonPage() {
   const steps = isV2 ? V2_STEPS : STEPS
   const step = steps[stepIndex]
 
-  const narrationParagraphs = isV2 ? paragraphize(getNarration(lesson, activeLearner.preferred_language)) : []
+  const narrationParagraphs = isV2
+    ? paragraphize(getNarration(lesson, activeLearner.preferred_language))
+    : []
   const storyboard = isV2 ? getStoryboard(lesson, activeLearner.preferred_language) : []
-  const workedExample = isV2 ? getWorkedExample(lesson, activeLearner.preferred_language) : null
-  const v2PracticeQuestions = isV2 ? getPracticeQuestions(lesson, activeLearner.preferred_language) : []
+  const workedExample = isV2
+    ? getWorkedExample(lesson, activeLearner.preferred_language)
+    : null
+  const v2PracticeQuestions = isV2
+    ? getPracticeQuestions(lesson, activeLearner.preferred_language)
+    : []
 
   const currentContent = (() => {
-    const rows = content.filter((c) => c.section_type === step).sort((a, b) => a.sort_order - b.sort_order)
+    const rows = content
+      .filter((c) => c.section_type === step)
+      .sort((a, b) => a.sort_order - b.sort_order)
     if (step === 'simple_explanation' && simplified && rows.length > 1) return rows[1]
     return rows[0]
   })()
 
-  async function handleQuizComplete(result: { correctCount: number; total: number; answers: import('@/components/lesson/QuestionRunner').QuestionAnswerRecord[] }) {
+  async function handleQuizComplete(result: {
+    correctCount: number
+    total: number
+    answers: import('@/components/lesson/QuestionRunner').QuestionAnswerRecord[]
+  }) {
     if (!lesson || !activeLearner) return
     setQuizResult(result)
     const { pointsEarned: earned, newBadges: badges } = await recordQuizResult({
@@ -213,7 +266,12 @@ export function LessonPage() {
 
   async function handlePracticeSetComplete() {
     if (activeLearner && lesson) {
-      await awardFlatPoints(activeLearner.id, POINTS_PER_PRACTICE_SET_COMPLETED, 'practice_completed', lesson.id)
+      await awardFlatPoints(
+        activeLearner.id,
+        POINTS_PER_PRACTICE_SET_COMPLETED,
+        'practice_completed',
+        lesson.id,
+      )
       setPointsEarned(POINTS_PER_PRACTICE_SET_COMPLETED)
       const { currentStreak } = await fetchStreak(activeLearner.id)
       setNewBadges(await checkAndAwardBadges(activeLearner.id, { currentStreak }))
@@ -268,7 +326,11 @@ export function LessonPage() {
   return (
     <div className="mx-auto flex max-w-lg flex-col px-4 pt-4">
       <div className="flex items-center gap-2">
-        <button onClick={goBack} aria-label={t('common.back')} className="rounded-full p-2 hover:bg-slate-200">
+        <button
+          onClick={goBack}
+          aria-label={t('common.back')}
+          className="rounded-full p-2 hover:bg-slate-200"
+        >
           <ChevronLeft />
         </button>
         <div className="flex-1">
@@ -281,8 +343,12 @@ export function LessonPage() {
         </div>
       </div>
 
-      <h1 className="mt-4 text-lg font-extrabold text-slate-900">{t(`lesson.step.${step}`)}</h1>
-      {isV2 && <p className="mt-1 text-xs text-slate-400">{t('lesson.aiGeneratedNotice')}</p>}
+      <h1 className="font-display mt-4 text-xl font-extrabold tracking-tight text-slate-900">
+        {t(`lesson.step.${step}`)}
+      </h1>
+      {isV2 && (
+        <p className="mt-1 text-xs text-slate-400">{t('lesson.aiGeneratedNotice')}</p>
+      )}
 
       <div className="mt-4 flex-1">
         {isV2 && step === 'simple_explanation' && (
@@ -298,16 +364,39 @@ export function LessonPage() {
                 label={t('lesson.showExample')}
                 onClick={() => setStepIndex(steps.indexOf('example'))}
               />
-              <TutorChip icon={Sparkles} label={t('lesson.explainDifferently')} onClick={handleRequestAlternateExplanation} />
-              <TutorChip icon={Network} label={t('lesson.mindMap')} onClick={handleGenerateMindMap} />
+              <TutorChip
+                icon={Sparkles}
+                label={t('lesson.explainDifferently')}
+                onClick={handleRequestAlternateExplanation}
+              />
+              <TutorChip
+                icon={Network}
+                label={t('lesson.mindMap')}
+                onClick={handleGenerateMindMap}
+              />
               {topicVideo && (
-                <TutorChip icon={PlayCircle} label={t('lesson.watchVideo')} onClick={() => setShowVideo((v) => !v)} />
+                <TutorChip
+                  icon={PlayCircle}
+                  label={t('lesson.watchVideo')}
+                  onClick={() => setShowVideo((v) => !v)}
+                />
               )}
             </div>
-            <AiExplanationPanel loading={aiLoading} error={aiError} explanation={aiExplanation} />
-            <MindMapPanel loading={mindMapLoading} error={mindMapError} mindmap={mindMap} />
+            <AiExplanationPanel
+              loading={aiLoading}
+              error={aiError}
+              explanation={aiExplanation}
+            />
+            <MindMapPanel
+              loading={mindMapLoading}
+              error={mindMapError}
+              mindmap={mindMap}
+            />
             {showVideo && topicVideo && (
-              <TopicVideoPanel youtubeVideoId={topicVideo.youtube_video_id} title={topicVideo.title} />
+              <TopicVideoPanel
+                youtubeVideoId={topicVideo.youtube_video_id}
+                title={topicVideo.title}
+              />
             )}
           </Card>
         )}
@@ -325,12 +414,21 @@ export function LessonPage() {
           </Card>
         )}
 
-        {isV2 && step === 'example' && (workedExample ? <WorkedExampleCard example={workedExample} /> : <LoadingCard />)}
+        {isV2 &&
+          step === 'example' &&
+          (workedExample ? (
+            <WorkedExampleCard example={workedExample} />
+          ) : (
+            <LoadingCard />
+          ))}
 
         {isV2 &&
           step === 'practice_questions' &&
           (v2PracticeQuestions.length > 0 ? (
-            <PracticeSelfCheck questions={v2PracticeQuestions} onComplete={() => void handlePracticeSetComplete()} />
+            <PracticeSelfCheck
+              questions={v2PracticeQuestions}
+              onComplete={() => void handlePracticeSetComplete()}
+            />
           ) : (
             <LoadingCard />
           ))}
@@ -342,32 +440,65 @@ export function LessonPage() {
             step === 'try_it_yourself' ||
             step === 'what_did_you_learn') && (
             <Card>
-              {currentContent?.heading && <p className="font-bold text-slate-800">{currentContent.heading}</p>}
+              {currentContent?.heading && (
+                <p className="font-bold text-slate-800">{currentContent.heading}</p>
+              )}
               <p className="mt-2 whitespace-pre-line text-slate-700">
                 {currentContent?.body_markdown ?? '—'}
               </p>
               {step === 'simple_explanation' && (
                 <div className="mt-4 flex flex-wrap gap-2">
-                  <TutorChip icon={RotateCcw} label={t('lesson.explainAgain')} onClick={() => setSimplified(false)} />
-                  <TutorChip icon={Wand2} label={t('lesson.makeEasier')} onClick={() => setSimplified(true)} />
+                  <TutorChip
+                    icon={RotateCcw}
+                    label={t('lesson.explainAgain')}
+                    onClick={() => setSimplified(false)}
+                  />
+                  <TutorChip
+                    icon={Wand2}
+                    label={t('lesson.makeEasier')}
+                    onClick={() => setSimplified(true)}
+                  />
                   <TutorChip
                     icon={Lightbulb}
                     label={t('lesson.showExample')}
                     onClick={() => setStepIndex(steps.indexOf('example'))}
                   />
-                  <TutorChip icon={Sparkles} label={t('lesson.explainDifferently')} onClick={handleRequestAlternateExplanation} />
-                  <TutorChip icon={Network} label={t('lesson.mindMap')} onClick={handleGenerateMindMap} />
+                  <TutorChip
+                    icon={Sparkles}
+                    label={t('lesson.explainDifferently')}
+                    onClick={handleRequestAlternateExplanation}
+                  />
+                  <TutorChip
+                    icon={Network}
+                    label={t('lesson.mindMap')}
+                    onClick={handleGenerateMindMap}
+                  />
                   {topicVideo && (
-                    <TutorChip icon={PlayCircle} label={t('lesson.watchVideo')} onClick={() => setShowVideo((v) => !v)} />
+                    <TutorChip
+                      icon={PlayCircle}
+                      label={t('lesson.watchVideo')}
+                      onClick={() => setShowVideo((v) => !v)}
+                    />
                   )}
                 </div>
               )}
               {step === 'simple_explanation' && (
                 <>
-                  <AiExplanationPanel loading={aiLoading} error={aiError} explanation={aiExplanation} />
-                  <MindMapPanel loading={mindMapLoading} error={mindMapError} mindmap={mindMap} />
+                  <AiExplanationPanel
+                    loading={aiLoading}
+                    error={aiError}
+                    explanation={aiExplanation}
+                  />
+                  <MindMapPanel
+                    loading={mindMapLoading}
+                    error={mindMapError}
+                    mindmap={mindMap}
+                  />
                   {showVideo && topicVideo && (
-                    <TopicVideoPanel youtubeVideoId={topicVideo.youtube_video_id} title={topicVideo.title} />
+                    <TopicVideoPanel
+                      youtubeVideoId={topicVideo.youtube_video_id}
+                      title={topicVideo.title}
+                    />
                   )}
                 </>
               )}
@@ -405,14 +536,20 @@ export function LessonPage() {
         {step === 'mastery_result' && (
           <Card className="flex flex-col items-center gap-3 text-center">
             <ProgressRing
-              value={quizResult ? (quizResult.correctCount / Math.max(quizResult.total, 1)) * 100 : 0}
+              value={
+                quizResult
+                  ? (quizResult.correctCount / Math.max(quizResult.total, 1)) * 100
+                  : 0
+              }
               size={96}
               strokeWidth={9}
             />
             <p className="text-slate-600">
               {quizResult
                 ? t('quiz.score', {
-                    score: Math.round((quizResult.correctCount / Math.max(quizResult.total, 1)) * 100),
+                    score: Math.round(
+                      (quizResult.correctCount / Math.max(quizResult.total, 1)) * 100,
+                    ),
                   })
                 : t('common.loading')}
             </p>
@@ -446,7 +583,15 @@ export function LessonPage() {
   )
 }
 
-function TutorChip({ icon: Icon, label, onClick }: { icon: typeof RotateCcw; label: string; onClick: () => void }) {
+function TutorChip({
+  icon: Icon,
+  label,
+  onClick,
+}: {
+  icon: typeof RotateCcw
+  label: string
+  onClick: () => void
+}) {
   return (
     <button
       type="button"
@@ -479,7 +624,11 @@ function AiExplanationPanel({
     )
   }
   if (error) {
-    return <p className="mt-3 text-sm text-slate-500">{t(`lesson.aiExplanationError.${error}`)}</p>
+    return (
+      <p className="mt-3 text-sm text-slate-500">
+        {t(`lesson.aiExplanationError.${error}`)}
+      </p>
+    )
   }
   if (explanation) {
     return <AlternateExplanationCard explanation={explanation} />
@@ -507,7 +656,9 @@ function MindMapPanel({
     )
   }
   if (error) {
-    return <p className="mt-3 text-sm text-slate-500">{t(`lesson.mindMapError.${error}`)}</p>
+    return (
+      <p className="mt-3 text-sm text-slate-500">{t(`lesson.mindMapError.${error}`)}</p>
+    )
   }
   if (mindmap) {
     return <MindMapView mindmap={mindmap} />

@@ -1,7 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Camera, FileText, ShieldCheck, Sparkles, Lightbulb, RotateCw } from 'lucide-react'
+import {
+  Camera,
+  FileText,
+  ShieldCheck,
+  Sparkles,
+  Lightbulb,
+  RotateCw,
+} from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useLearner } from '@/context/LearnerContext'
 import { moderationProvider, logModerationDecision } from '@/lib/moderation'
@@ -30,7 +37,11 @@ export function ScanMyWorkPage() {
   const [retryingDetection, setRetryingDetection] = useState(false)
 
   useEffect(() => {
-    if (activeLearner) fetchSubjectsForGrade(activeLearner.grade_id, activeLearner.preferred_language).then(setSubjects)
+    if (activeLearner)
+      fetchSubjectsForGrade(
+        activeLearner.grade_id,
+        activeLearner.preferred_language,
+      ).then(setSubjects)
   }, [activeLearner])
 
   async function handleFile(file: File) {
@@ -77,7 +88,10 @@ export function ScanMyWorkPage() {
     }
     setDetectionUnavailable(false)
     if (detection.topicId && detection.confidence !== 'low') {
-      const topic = await fetchTopicById(detection.topicId, activeLearner.preferred_language)
+      const topic = await fetchTopicById(
+        detection.topicId,
+        activeLearner.preferred_language,
+      )
       if (topic) {
         setDetectedTopic(topic)
         setSelectedSubject(subjects.find((s) => s.id === detection.subjectId) ?? null)
@@ -97,7 +111,9 @@ export function ScanMyWorkPage() {
 
   return (
     <div className="mx-auto max-w-lg px-4 pt-6 pb-10">
-      <h1 className="text-xl font-extrabold text-slate-900">{t('scan.title')}</h1>
+      <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900">
+        {t('scan.title')}
+      </h1>
       <p className="mt-1 text-slate-500">{t('scan.subtitle')}</p>
 
       {state === 'idle' && (
@@ -196,12 +212,18 @@ export function ScanMyWorkPage() {
         <div className="mt-6 space-y-4">
           <Card>
             {preview && (
-              <img src={preview} alt={t('scan.uploadAlt')} className="mb-3 max-h-48 w-full rounded-2xl object-cover" />
+              <img
+                src={preview}
+                alt={t('scan.uploadAlt')}
+                className="mb-3 max-h-48 w-full rounded-2xl object-cover"
+              />
             )}
             <div className="flex flex-wrap gap-2">
               <Badge tone="success">{t('scan.approved')}</Badge>
               <Badge tone={visualSafetyChecked ? 'success' : 'neutral'}>
-                {visualSafetyChecked ? t('scan.safetyChecked') : t('scan.safetyNotConnected')}
+                {visualSafetyChecked
+                  ? t('scan.safetyChecked')
+                  : t('scan.safetyNotConnected')}
               </Badge>
             </div>
 
@@ -211,7 +233,9 @@ export function ScanMyWorkPage() {
                   <Sparkles size={16} />
                   <p className="font-semibold">{t('scan.weThinkThisIs')}</p>
                 </div>
-                <p className="mt-1 text-lg font-bold text-slate-900">{detectedTopic.name}</p>
+                <p className="mt-1 text-lg font-bold text-slate-900">
+                  {detectedTopic.name}
+                </p>
                 {subjects.find((s) => s.id === detectedTopic.subject_id) && (
                   <p className="text-sm text-slate-500">
                     {subjects.find((s) => s.id === detectedTopic.subject_id)?.name}
@@ -228,7 +252,9 @@ export function ScanMyWorkPage() {
               <>
                 {detectionUnavailable && !showManualPicker && (
                   <div className="mt-3 rounded-xl bg-slate-50 px-4 py-3">
-                    <p className="text-sm text-slate-600">{t('scan.detectionUnavailable')}</p>
+                    <p className="text-sm text-slate-600">
+                      {t('scan.detectionUnavailable')}
+                    </p>
                     <Button
                       variant="secondary"
                       size="md"
@@ -236,12 +262,17 @@ export function ScanMyWorkPage() {
                       disabled={retryingDetection || !approvedFile}
                       onClick={() => void handleRetryDetection()}
                     >
-                      <RotateCw size={14} className={retryingDetection ? 'animate-spin' : undefined} />
+                      <RotateCw
+                        size={14}
+                        className={retryingDetection ? 'animate-spin' : undefined}
+                      />
                       {t('scan.tryDetectionAgain')}
                     </Button>
                   </div>
                 )}
-                <p className="mt-3 font-semibold text-slate-800">{t('scan.detectedSubject')}...</p>
+                <p className="mt-3 font-semibold text-slate-800">
+                  {t('scan.detectedSubject')}...
+                </p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {subjects.map((s) => (
                     <button
@@ -263,10 +294,16 @@ export function ScanMyWorkPage() {
 
           {detectedTopic && !showManualPicker && (
             <>
-              <Link to={`/app/subjects/${detectedTopic.subject_id}/topics/${detectedTopic.id}`}>
+              <Link
+                to={`/app/subjects/${detectedTopic.subject_id}/topics/${detectedTopic.id}`}
+              >
                 <Button className="w-full">{t('scan.startLesson')}</Button>
               </Link>
-              <Button variant="ghost" className="w-full" onClick={() => setShowManualPicker(true)}>
+              <Button
+                variant="ghost"
+                className="w-full"
+                onClick={() => setShowManualPicker(true)}
+              >
                 {t('scan.notQuiteRight')}
               </Button>
             </>

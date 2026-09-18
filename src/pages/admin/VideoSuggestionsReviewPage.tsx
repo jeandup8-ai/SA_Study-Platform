@@ -21,7 +21,15 @@ import {
  */
 
 // Phrases the sourcing notes use when a candidate needs more than a quick look.
-const ATTENTION_PHRASES = ['review with care', 'review with extra care', 'review for content', 'weakest match', 'weak match', 'compromise pick', 'please review']
+const ATTENTION_PHRASES = [
+  'review with care',
+  'review with extra care',
+  'review for content',
+  'weakest match',
+  'weak match',
+  'compromise pick',
+  'please review',
+]
 
 function needsAttention(item: TopicVideoReviewItem): boolean {
   const notes = item.notes?.toLowerCase() ?? ''
@@ -58,12 +66,20 @@ export function VideoSuggestionsReviewPage() {
   }, [])
 
   const subjects = useMemo(
-    () => [...new Set(items.map((i) => i.subject_name).filter((s): s is string => Boolean(s)))].sort(),
+    () =>
+      [
+        ...new Set(
+          items.map((i) => i.subject_name).filter((s): s is string => Boolean(s)),
+        ),
+      ].sort(),
     [items],
   )
 
   const visible = useMemo(
-    () => (subjectFilter === 'all' ? items : items.filter((i) => i.subject_name === subjectFilter)),
+    () =>
+      subjectFilter === 'all'
+        ? items
+        : items.filter((i) => i.subject_name === subjectFilter),
     [items, subjectFilter],
   )
 
@@ -92,73 +108,97 @@ export function VideoSuggestionsReviewPage() {
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)
+        return
       if (!current) return
       if (e.key === 'a' || e.key === 'A') void decide(current, true)
       else if (e.key === 'r' || e.key === 'R') void decide(current, false)
-      else if (e.key === 'j' || e.key === 'ArrowDown') setFocusIndex((i) => Math.min(i + 1, visible.length - 1))
-      else if (e.key === 'k' || e.key === 'ArrowUp') setFocusIndex((i) => Math.max(i - 1, 0))
+      else if (e.key === 'j' || e.key === 'ArrowDown')
+        setFocusIndex((i) => Math.min(i + 1, visible.length - 1))
+      else if (e.key === 'k' || e.key === 'ArrowUp')
+        setFocusIndex((i) => Math.max(i - 1, 0))
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [current, decide, visible.length])
 
-  if (loading) return <p className="text-slate-500">Loading...</p>
+  if (loading) return <p className="text-ink-400">Loading...</p>
 
   return (
     <div>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-xl font-bold text-white">Video suggestions review queue</h1>
-          <p className="mt-1 max-w-2xl text-sm text-slate-400">
-            Candidate YouTube videos, sourced externally — never our own content. Watch before approving: check it is
-            accurate, age-appropriate, and clearly audible. Nothing here reaches a learner until approved.
+          <h1 className="font-display text-2xl font-extrabold tracking-tight text-white">
+            Video suggestions review queue
+          </h1>
+          <p className="mt-1 max-w-2xl text-sm text-ink-300">
+            Candidate YouTube videos, sourced externally — never our own content. Watch
+            before approving: check it is accurate, age-appropriate, and clearly audible.
+            Nothing here reaches a learner until approved.
           </p>
         </div>
-        <div className="rounded-xl border border-slate-800 bg-slate-900 px-4 py-2 text-right">
+        <div className="rounded-xl border border-ink-700 bg-ink-800 px-4 py-2 text-right">
           <p className="text-2xl font-extrabold text-white">{visible.length}</p>
-          <p className="text-xs text-slate-400">awaiting review</p>
-          {reviewedCount > 0 && <p className="mt-1 text-xs text-success-600">{reviewedCount} done this session</p>}
+          <p className="text-xs text-ink-300">awaiting review</p>
+          {reviewedCount > 0 && (
+            <p className="mt-1 text-xs text-success-600">
+              {reviewedCount} done this session
+            </p>
+          )}
         </div>
       </div>
 
-      {items.length === 0 && <p className="mt-6 text-slate-500">Nothing waiting for review right now.</p>}
+      {items.length === 0 && (
+        <p className="mt-6 text-ink-400">Nothing waiting for review right now.</p>
+      )}
 
       {items.length > 0 && (
         <>
           <div className="mt-4 flex flex-wrap items-center gap-2">
-            <FilterChip active={subjectFilter === 'all'} onClick={() => { setSubjectFilter('all'); setFocusIndex(0) }}>
+            <FilterChip
+              active={subjectFilter === 'all'}
+              onClick={() => {
+                setSubjectFilter('all')
+                setFocusIndex(0)
+              }}
+            >
               All ({items.length})
             </FilterChip>
             {subjects.map((s) => (
               <FilterChip
                 key={s}
                 active={subjectFilter === s}
-                onClick={() => { setSubjectFilter(s); setFocusIndex(0) }}
+                onClick={() => {
+                  setSubjectFilter(s)
+                  setFocusIndex(0)
+                }}
               >
                 {s} ({items.filter((i) => i.subject_name === s).length})
               </FilterChip>
             ))}
           </div>
 
-          <p className="mt-3 text-xs text-slate-500">
-            Keyboard: <Kbd>A</Kbd> approve · <Kbd>R</Kbd> reject · <Kbd>J</Kbd>/<Kbd>K</Kbd> move. Deciding auto-advances.
+          <p className="mt-3 text-xs text-ink-400">
+            Keyboard: <Kbd>A</Kbd> approve · <Kbd>R</Kbd> reject · <Kbd>J</Kbd>/
+            <Kbd>K</Kbd> move. Deciding auto-advances.
             {attentionCount > 0 && (
-              <span className="ml-2 text-amber-300">{attentionCount} in this view flagged for closer attention.</span>
+              <span className="ml-2 text-amber-300">
+                {attentionCount} in this view flagged for closer attention.
+              </span>
             )}
           </p>
 
           {current && (
-            <div className="mt-4 rounded-2xl border-2 border-brand-500 bg-slate-900 p-4">
+            <div className="mt-4 rounded-2xl border-2 border-brand-500 bg-ink-800 p-4">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-lg font-bold text-white">{current.title}</p>
-                  <p className="text-sm text-slate-400">
+                  <p className="text-sm text-ink-300">
                     {current.channel_name} · {current.language.toUpperCase()}
                     {current.subject_name ? ` · ${current.subject_name}` : ''}
                     {current.grade_number ? ` · Grade ${current.grade_number}` : ''}
                   </p>
-                  <p className="text-sm text-slate-500">{current.topic_name}</p>
+                  <p className="text-sm text-ink-400">{current.topic_name}</p>
                 </div>
                 <div className="flex shrink-0 gap-2">
                   <button
@@ -195,34 +235,45 @@ export function VideoSuggestionsReviewPage() {
                 />
               </div>
 
-              {current.notes && <p className="mt-3 text-sm text-slate-300">{current.notes}</p>}
+              {current.notes && (
+                <p className="mt-3 text-sm text-ink-200">{current.notes}</p>
+              )}
 
               <a
                 href={`https://www.youtube.com/watch?v=${current.youtube_video_id}`}
                 target="_blank"
                 rel="noreferrer noopener"
-                className="mt-3 inline-block text-xs text-slate-400 underline hover:text-slate-200"
+                className="mt-3 inline-block text-xs text-ink-300 underline hover:text-ink-100"
               >
                 Open on YouTube (for scrubbing / playback speed)
               </a>
             </div>
           )}
 
-          <h2 className="mt-8 text-sm font-bold uppercase tracking-wide text-slate-500">Queue</h2>
+          <h2 className="mt-8 text-sm font-bold uppercase tracking-wide text-ink-400">
+            Queue
+          </h2>
           <div className="mt-2 space-y-1">
             {visible.map((item, i) => (
               <button
                 key={item.id}
                 onClick={() => setFocusIndex(i)}
                 className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm ${
-                  i === focusIndex ? 'bg-slate-800 text-white' : 'text-slate-400 hover:bg-slate-900'
+                  i === focusIndex
+                    ? 'bg-ink-700 text-white'
+                    : 'text-ink-300 hover:bg-ink-800'
                 }`}
               >
-                <span className="w-16 shrink-0 text-xs text-slate-500">
-                  {item.subject_name?.slice(0, 8)} {item.grade_number ? `G${item.grade_number}` : ''}
+                <span className="w-16 shrink-0 text-xs text-ink-400">
+                  {item.subject_name?.slice(0, 8)}{' '}
+                  {item.grade_number ? `G${item.grade_number}` : ''}
                 </span>
-                <span className="shrink-0 rounded bg-slate-800 px-1.5 text-xs uppercase">{item.language}</span>
-                {needsAttention(item) && <span className="shrink-0 text-amber-400">⚠</span>}
+                <span className="shrink-0 rounded bg-ink-700 px-1.5 text-xs uppercase">
+                  {item.language}
+                </span>
+                {needsAttention(item) && (
+                  <span className="shrink-0 text-amber-400">⚠</span>
+                )}
                 <span className="truncate">{item.topic_name}</span>
               </button>
             ))}
@@ -233,12 +284,20 @@ export function VideoSuggestionsReviewPage() {
   )
 }
 
-function FilterChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: React.ReactNode
+}) {
   return (
     <button
       onClick={onClick}
       className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
-        active ? 'bg-brand-600 text-white' : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+        active ? 'bg-brand-600 text-white' : 'bg-ink-700 text-ink-200 hover:bg-ink-600'
       }`}
     >
       {children}
@@ -247,5 +306,9 @@ function FilterChip({ active, onClick, children }: { active: boolean; onClick: (
 }
 
 function Kbd({ children }: { children: React.ReactNode }) {
-  return <kbd className="rounded border border-slate-700 bg-slate-800 px-1.5 font-mono text-xs text-slate-300">{children}</kbd>
+  return (
+    <kbd className="rounded border border-ink-600 bg-ink-700 px-1.5 font-mono text-xs text-ink-200">
+      {children}
+    </kbd>
+  )
 }

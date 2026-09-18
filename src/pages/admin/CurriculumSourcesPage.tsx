@@ -6,13 +6,13 @@ type CurriculumSource = Database['public']['Tables']['curriculum_sources']['Row'
 type SourceStatus = Database['public']['Enums']['source_verification_status']
 
 const STATUS_COLORS: Record<SourceStatus, string> = {
-  PENDING: 'text-slate-400',
+  PENDING: 'text-ink-300',
   IMPORTED: 'text-sky-400',
   PARSED: 'text-amber-400',
   REVIEW_REQUIRED: 'text-warning-500',
   VERIFIED: 'text-success-400',
   PUBLISHED: 'text-success-400',
-  ARCHIVED: 'text-slate-500',
+  ARCHIVED: 'text-ink-400',
 }
 
 export function CurriculumSourcesPage() {
@@ -36,19 +36,22 @@ export function CurriculumSourcesPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-bold text-white">Curriculum sources</h1>
-      <p className="mt-1 text-sm text-slate-400">
-        Official DBE documents this platform knows about. Every entry starts life registered in{' '}
-        <code className="text-slate-300">curriculum/sources/manifest.json</code> and mirrored here.
-        Nothing derived from a source is visible to learners until its extracted records are reviewed
-        individually — see the Review Queue tab.
+      <h1 className="font-display text-2xl font-extrabold tracking-tight text-white">
+        Curriculum sources
+      </h1>
+      <p className="mt-1 text-sm text-ink-300">
+        Official DBE documents this platform knows about. Every entry starts life
+        registered in{' '}
+        <code className="text-ink-200">curriculum/sources/manifest.json</code> and
+        mirrored here. Nothing derived from a source is visible to learners until its
+        extracted records are reviewed individually — see the Review Queue tab.
       </p>
 
-      {loading && <p className="mt-6 text-slate-500">Loading...</p>}
+      {loading && <p className="mt-6 text-ink-400">Loading...</p>}
 
-      <div className="mt-6 overflow-hidden rounded-2xl border border-slate-800">
+      <div className="mt-6 overflow-hidden rounded-2xl border border-ink-700">
         <table className="w-full text-left text-sm">
-          <thead className="bg-slate-900 text-slate-400">
+          <thead className="bg-ink-800 text-ink-300">
             <tr>
               <th className="px-4 py-2 font-medium">Title</th>
               <th className="px-4 py-2 font-medium">Type</th>
@@ -60,20 +63,29 @@ export function CurriculumSourcesPage() {
           </thead>
           <tbody>
             {sources.map((s) => (
-              <tr key={s.id} className="border-t border-slate-800">
-                <td className="px-4 py-2 text-slate-200">{s.title}</td>
-                <td className="px-4 py-2 text-slate-400">{s.document_type}</td>
-                <td className={`px-4 py-2 font-semibold ${STATUS_COLORS[s.status]}`}>{s.status}</td>
-                <td className="max-w-xs truncate px-4 py-2 text-slate-500">
+              <tr key={s.id} className="border-t border-ink-700">
+                <td className="px-4 py-2 text-ink-100">{s.title}</td>
+                <td className="px-4 py-2 text-ink-300">{s.document_type}</td>
+                <td className={`px-4 py-2 font-semibold ${STATUS_COLORS[s.status]}`}>
+                  {s.status}
+                </td>
+                <td className="max-w-xs truncate px-4 py-2 text-ink-400">
                   {s.official_url ? (
-                    <a href={s.official_url} target="_blank" rel="noreferrer" className="hover:underline">
+                    <a
+                      href={s.official_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="hover:underline"
+                    >
                       {s.official_url}
                     </a>
                   ) : (
                     '—'
                   )}
                 </td>
-                <td className="px-4 py-2 text-slate-500">{s.local_file_path ?? 'not uploaded'}</td>
+                <td className="px-4 py-2 text-ink-400">
+                  {s.local_file_path ?? 'not uploaded'}
+                </td>
                 <td className="px-4 py-2">
                   {s.status === 'REVIEW_REQUIRED' && (
                     <button
@@ -88,7 +100,7 @@ export function CurriculumSourcesPage() {
             ))}
             {!loading && sources.length === 0 && (
               <tr>
-                <td className="px-4 py-6 text-center text-slate-500" colSpan={6}>
+                <td className="px-4 py-6 text-center text-ink-400" colSpan={6}>
                   No sources registered yet.
                 </td>
               </tr>

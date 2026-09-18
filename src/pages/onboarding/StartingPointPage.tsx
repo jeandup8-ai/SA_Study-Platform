@@ -3,7 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
-import { fetchSubjectsForGrade, fetchTopicsForSubjectAndGrade } from '@/lib/curriculum/queries'
+import {
+  fetchSubjectsForGrade,
+  fetchTopicsForSubjectAndGrade,
+} from '@/lib/curriculum/queries'
 import { setSubjectBaselines } from '@/lib/parent/subjectBaseline'
 import { setTopicBaselines } from '@/lib/parent/topicBaseline'
 import { Button, Card } from '@/components/ui'
@@ -23,7 +26,9 @@ export function StartingPointPage() {
 
   useEffect(() => {
     if (!activeLearner) return
-    fetchSubjectsForGrade(activeLearner.grade_id, activeLearner.preferred_language).then(setSubjects)
+    fetchSubjectsForGrade(activeLearner.grade_id, activeLearner.preferred_language).then(
+      setSubjects,
+    )
   }, [activeLearner])
 
   async function toggleExpanded(subjectId: string) {
@@ -33,7 +38,11 @@ export function StartingPointPage() {
     }
     setExpandedSubjectId(subjectId)
     if (!activeLearner || topicsBySubject[subjectId]) return
-    const topics = await fetchTopicsForSubjectAndGrade(subjectId, activeLearner.grade_id, activeLearner.preferred_language)
+    const topics = await fetchTopicsForSubjectAndGrade(
+      subjectId,
+      activeLearner.grade_id,
+      activeLearner.preferred_language,
+    )
     setTopicsBySubject((prev) => ({ ...prev, [subjectId]: topics }))
   }
 
@@ -43,7 +52,10 @@ export function StartingPointPage() {
     try {
       const subjectEntries = Object.entries(subjectPercents)
         .filter(([, value]) => value !== '')
-        .map(([subjectId, value]) => ({ subjectId, baselineMastery: clampPercent(value) }))
+        .map(([subjectId, value]) => ({
+          subjectId,
+          baselineMastery: clampPercent(value),
+        }))
       const topicEntries = Object.entries(topicPercents)
         .filter(([, value]) => value !== '')
         .map(([topicId, value]) => ({ topicId, baselineMastery: clampPercent(value) }))
@@ -56,15 +68,20 @@ export function StartingPointPage() {
   }
 
   const hasAnyInput =
-    Object.values(subjectPercents).some((v) => v !== '') || Object.values(topicPercents).some((v) => v !== '')
+    Object.values(subjectPercents).some((v) => v !== '') ||
+    Object.values(topicPercents).some((v) => v !== '')
 
   if (!activeLearner) return null
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-4 py-10">
+    <div className="app-canvas flex min-h-dvh items-center justify-center px-4 py-10">
       <Card className="w-full max-w-lg">
-        <h1 className="text-2xl font-extrabold text-slate-900">{t('onboarding.startingPointTitle')}</h1>
-        <p className="mt-1 text-sm text-slate-500">{t('onboarding.startingPointIntro')}</p>
+        <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900">
+          {t('onboarding.startingPointTitle')}
+        </h1>
+        <p className="mt-1 text-sm text-slate-500">
+          {t('onboarding.startingPointIntro')}
+        </p>
 
         <div className="mt-6 space-y-3">
           {subjects.map((subject) => (
@@ -79,7 +96,10 @@ export function StartingPointPage() {
                     placeholder="—"
                     value={subjectPercents[subject.id] ?? ''}
                     onChange={(e) =>
-                      setSubjectPercents((prev) => ({ ...prev, [subject.id]: e.target.value }))
+                      setSubjectPercents((prev) => ({
+                        ...prev,
+                        [subject.id]: e.target.value,
+                      }))
                     }
                     className="w-16 rounded-lg border-2 border-slate-200 px-2 py-1 text-sm"
                   />
@@ -90,7 +110,11 @@ export function StartingPointPage() {
                     aria-label={t('onboarding.byTopicToggle')}
                     className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600"
                   >
-                    {expandedSubjectId === subject.id ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    {expandedSubjectId === subject.id ? (
+                      <ChevronUp size={16} />
+                    ) : (
+                      <ChevronDown size={16} />
+                    )}
                   </button>
                 </div>
               </div>
@@ -99,7 +123,10 @@ export function StartingPointPage() {
                 <div className="mt-3 space-y-2 border-t border-slate-200 pt-3">
                   <p className="text-xs text-slate-500">{t('onboarding.byTopicHint')}</p>
                   {(topicsBySubject[subject.id] ?? []).map((topic) => (
-                    <div key={topic.id} className="flex items-center justify-between gap-3">
+                    <div
+                      key={topic.id}
+                      className="flex items-center justify-between gap-3"
+                    >
                       <p className="text-sm text-slate-600">{topic.name}</p>
                       <div className="flex items-center gap-2">
                         <input
@@ -109,7 +136,10 @@ export function StartingPointPage() {
                           placeholder={subjectPercents[subject.id] || '—'}
                           value={topicPercents[topic.id] ?? ''}
                           onChange={(e) =>
-                            setTopicPercents((prev) => ({ ...prev, [topic.id]: e.target.value }))
+                            setTopicPercents((prev) => ({
+                              ...prev,
+                              [topic.id]: e.target.value,
+                            }))
                           }
                           className="w-16 rounded-lg border-2 border-slate-200 px-2 py-1 text-sm"
                         />
@@ -127,7 +157,12 @@ export function StartingPointPage() {
         </div>
 
         <div className="mt-6 flex items-center gap-3">
-          <Button size="lg" className="flex-1" disabled={submitting} onClick={() => void onSubmit()}>
+          <Button
+            size="lg"
+            className="flex-1"
+            disabled={submitting}
+            onClick={() => void onSubmit()}
+          >
             {submitting
               ? t('common.loading')
               : hasAnyInput

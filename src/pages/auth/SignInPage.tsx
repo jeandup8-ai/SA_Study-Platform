@@ -28,12 +28,16 @@ export function SignInPage() {
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-slate-50 px-4 py-10">
+    <div className="app-canvas flex min-h-dvh items-center justify-center px-4 py-10">
       <Card className="w-full max-w-md">
-        <h1 className="text-2xl font-extrabold text-slate-900">{t('auth.signIn')}</h1>
+        <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900">
+          {t('auth.signIn')}
+        </h1>
         <form className="mt-6 space-y-4" onSubmit={onSubmit}>
           <label className="block">
-            <span className="mb-1 block text-sm font-semibold text-slate-700">{t('auth.email')}</span>
+            <span className="mb-1 block text-sm font-semibold text-slate-700">
+              {t('auth.email')}
+            </span>
             <input
               required
               type="email"
@@ -44,7 +48,9 @@ export function SignInPage() {
             />
           </label>
           <label className="block">
-            <span className="mb-1 block text-sm font-semibold text-slate-700">{t('auth.password')}</span>
+            <span className="mb-1 block text-sm font-semibold text-slate-700">
+              {t('auth.password')}
+            </span>
             <input
               required
               type="password"
