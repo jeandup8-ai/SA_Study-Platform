@@ -100,45 +100,57 @@ the bank held 8 questions total.**
 
 ### State of the content
 
-| Grade | Subject | Tests | EN | AF | Integrity errors |
-|---|---|---|---|---|---|
-| 4 | Mathematics | 8 | 64 | 64 | 0 |
-| 5 | Mathematics | 10 | 80 | 80 | 0 |
-| 5 | Natural Sciences | 6 | 48 | 48 | 0 |
-| | **Total** | **24** | **192** | **192** | **0** |
+Grades 4-7 are seeded. **72 tests, 1 152 questions (576 EN + 576 AF)**, every
+question carrying its own explanation in both languages.
 
-Every question has an explanation in both languages. One test (Grade 5 Maths
-`place-value`) is **published** as a live sample; the other 23 are
-`REVIEW_REQUIRED` and awaiting a human at `/admin/practice-tests`.
+| Grade | Subject | Tests | EN | AF |
+|---|---|---|---:|---:|
+| 4 | Mathematics | 8 | 64 | 64 |
+| 5 | Mathematics | 10 | 80 | 80 |
+| 5 | Natural Sciences | 6 | 48 | 48 |
+| 6 | Mathematics | 7 | 56 | 56 |
+| 6 | Natural Sciences | 6 | 48 | 48 |
+| 6 | Social Sciences | 6 | 48 | 48 |
+| 6 | English Home Language | 5 | 40 | 40 |
+| 6 | Afrikaans FAL | 5 | 40 | 40 |
+| 7 | Mathematics | 7 | 56 | 56 |
+| 7 | Natural Sciences | 4 | 32 | 32 |
+| 7 | Social Sciences | 8 | 64 | 64 |
+| | **Total** | **72** | **576** | **576** |
 
-### Next step
-Keep authoring with `internal.upsert_practice_test`, then publish from the
-admin console. Remaining by search demand: Grade 6 and 7 Mathematics, Natural
-Sciences for Grades 4, 6 and 7, then English Home Language, then Social
-Sciences. Target 8 questions per test, EN and AF.
+Integrity, all verified at zero: questions without exactly one correct
+option, duplicate option labels, duplicate sort orders, missing
+explanations, `correct_answer` disagreeing with the flagged option, and
+Afrikaans `'n` written as a bare `n`.
 
-**Topics that need diagrams before they can become tests** — do not author
-these as text-only multiple choice: Grade 5 `views-of-simple3-d-objects`,
-`3-2-transformation-geometry-transformations-tessellations`, and
-`locate-position-on-a-grid-or-map`. A grid-reference or 3-D-view question is
-meaningless without the picture.
+**Only one test is published** (Grade 5 Maths `place-value`, kept as a live
+sample). The other 71 are `REVIEW_REQUIRED` and waiting at
+`/admin/practice-tests`.
 
-Payload shape:
+### Authoring rules learned the hard way
 
-```json
-{
-  "grade": 5, "subject": "mathematics", "slug": "place-value",
-  "sort_order": 1, "topic_slug": "place-values",
-  "title_en": "...", "title_af": "...",
-  "summary_en": "...", "summary_af": "...",
-  "questions": [
-    { "lang": "en", "difficulty": "easy", "prompt": "...",
-      "options": ["a", "b", "c", "d"], "correct": 2, "explanation": "..." }
-  ]
-}
-```
-
-`correct` is a 0-based index into `options`. `difficulty` is `easy|medium|hard`.
+1. **Vary where the correct answer sits.** A first pass put 62% of correct
+   answers in position A (712 of 1 152), which a learner can beat without
+   knowing anything. Rebalanced to roughly even. When authoring a new batch,
+   move the `correct` index around deliberately, then check:
+   ```sql
+   select o.sort_order, count(*) from questions q
+     join practice_test_questions ptq on ptq.question_id = q.id
+     join question_options o on o.question_id = q.id and o.is_correct
+    group by 1 order by 1;
+   ```
+   Two exceptions when reshuffling: all-numeric options stay in ascending
+   order, and "none of these" / "it depends" options belong last. Watch for
+   questions carrying *two* terminal options -- pinning both last collides.
+2. **Re-check every option for a second valid answer.** One Grade 6 question
+   asked which number divides by 9 and offered both 234 and 567; both do.
+   Nothing automated catches this -- only exactly-one-`is_correct` is
+   enforced, and that question looked fine by that measure.
+3. **After any bulk text repair, resync `questions.correct_answer`.** The
+   Afrikaans apostrophe fix rewrote option labels and left 45 rows pointing
+   at text that no longer existed.
+4. **Topics that need diagrams** cannot become text-only tests: Grade 5
+   `views-of-simple3-d-objects`, tessellations, and grid references.
 
 ### Two gotchas that cost time
 
