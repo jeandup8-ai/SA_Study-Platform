@@ -352,7 +352,7 @@
     "getStarted": "Get started",
     "noPlansYet": "Pricing plans are being finalised.",
     "bestValue": "Best value",
-    "annualSavings": "Save R{{amount}} a year vs. paying monthly",
+    "annualSavings": "Save {{amount}} a year vs. paying monthly",
     "includedTitle": "What's included on every plan",
     "checklist": {
       "curriculum": "CAPS-aligned lessons and practice for Grades 4–7, built from the official curriculum documents",
@@ -809,7 +809,7 @@
       "perMonth": "/month",
       "perYear": "/year",
       "bestValue": "Best value",
-      "saving": "Save R{{amount}} a year",
+      "saving": "Save {{amount}} a year",
       "cancelAnytime": "Cancel any time",
       "learners_one": "Up to {{count}} learner profile",
       "learners_other": "Up to {{count}} learner profiles",

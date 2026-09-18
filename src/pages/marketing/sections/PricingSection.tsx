@@ -4,6 +4,7 @@ import clsx from 'clsx'
 import { Check } from 'lucide-react'
 import { MarketingButton, Reveal, Section, SectionHeading } from '@/components/marketing'
 import { supabase } from '@/lib/supabase'
+import { formatRand } from '@/lib/billing/formatRand'
 import { TRIAL_DAYS } from '@/lib/billing/trial'
 import { withTimeout } from '@/lib/marketing/withTimeout'
 import type { Database } from '@/types/database'
@@ -116,7 +117,7 @@ export function PricingSection() {
                 </p>
 
                 <p className="mt-3 font-display text-5xl font-extrabold tracking-tight">
-                  {plan.price_cents != null ? `R${(plan.price_cents / 100).toFixed(0)}` : t('common.priceTbc')}
+                  {plan.price_cents != null ? formatRand(plan.price_cents) : t('common.priceTbc')}
                   <span
                     className={clsx(
                       'ml-1 font-sans text-base font-semibold',
@@ -129,7 +130,7 @@ export function PricingSection() {
 
                 {showsSaving ? (
                   <p className="mt-2 text-sm font-bold text-volt-300">
-                    {t('m.pricing.saving', { amount: (annualSavingCents / 100).toFixed(0) })}
+                    {t('m.pricing.saving', { amount: formatRand(annualSavingCents) })}
                   </p>
                 ) : (
                   <p className={clsx('mt-2 text-sm', isAnnual ? 'text-ink-300' : 'text-ink-400')}>

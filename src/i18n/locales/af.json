@@ -352,7 +352,7 @@
     "getStarted": "Begin nou",
     "noPlansYet": "Prysplanne word tans afgehandel.",
     "bestValue": "Beste waarde",
-    "annualSavings": "Bespaar R{{amount}} per jaar teenoor maandeliks betaal",
+    "annualSavings": "Bespaar {{amount}} per jaar teenoor maandeliks betaal",
     "includedTitle": "Wat op elke plan ingesluit is",
     "checklist": {
       "curriculum": "CAPS-belynde lesse en oefening vir Graad 4–7, gebou uit die amptelike kurrikulumdokumente",
@@ -809,7 +809,7 @@
       "perMonth": "/maand",
       "perYear": "/jaar",
       "bestValue": "Beste waarde",
-      "saving": "Bespaar R{{amount}} per jaar",
+      "saving": "Bespaar {{amount}} per jaar",
       "cancelAnytime": "Kanselleer enige tyd",
       "learners_one": "Tot {{count}} leerderprofiel",
       "learners_other": "Tot {{count}} leerderprofiele",

@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { BadgeCheck, ScanLine, Download, LineChart, Trophy, Languages, GraduationCap, ShieldCheck, Target } from 'lucide-react'
 import { MarketingShell } from '@/components/layout/MarketingShell'
 import { Button, Card } from '@/components/ui'
+import { formatRand } from '@/lib/billing/formatRand'
 import { supabase } from '@/lib/supabase'
 import type { Database } from '@/types/database'
 
@@ -63,7 +64,7 @@ export function PricingPage() {
                 )}
                 <p className="font-bold text-slate-900">{plan.name}</p>
                 <p className="mt-2 text-3xl font-extrabold text-brand-700">
-                  {plan.price_cents != null ? `R${(plan.price_cents / 100).toFixed(0)}` : t('common.priceTbc')}
+                  {plan.price_cents != null ? formatRand(plan.price_cents) : t('common.priceTbc')}
                   <span className="text-base font-medium text-slate-500">
                     /{plan.billing_interval === 'monthly' ? 'mo' : 'yr'}
                   </span>
@@ -71,7 +72,7 @@ export function PricingPage() {
                 <p className="mt-1 text-sm text-slate-500">{t('parent.maxLearnersOnPlan', { count: plan.max_learners })}</p>
                 {isAnnual && annualSavingsCents != null && annualSavingsCents > 0 && (
                   <p className="mt-1 text-sm font-semibold text-brand-600">
-                    {t('pricing.annualSavings', { amount: (annualSavingsCents / 100).toFixed(0) })}
+                    {t('pricing.annualSavings', { amount: formatRand(annualSavingsCents) })}
                   </p>
                 )}
                 <Link to="/sign-up" className="mt-4 block">
