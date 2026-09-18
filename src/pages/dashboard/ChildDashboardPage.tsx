@@ -1,152 +1,235 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { BookOpen, ScanLine, GraduationCap, TrendingUp, MessageCircleHeart, Settings, Award } from 'lucide-react'
+import {
+  BookOpen,
+  ScanLine,
+  GraduationCap,
+  TrendingUp,
+  MessageCircleHeart,
+  Settings,
+  Award,
+  Sparkles,
+  ArrowRight,
+} from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
-import { fetchContinueLearning, fetchSubjectMasterySummary, type ContinueLearningItem, type SubjectMasterySummary } from '@/lib/curriculum/dashboard'
+import {
+  fetchContinueLearning,
+  fetchSubjectMasterySummary,
+  type ContinueLearningItem,
+  type SubjectMasterySummary,
+} from '@/lib/curriculum/dashboard'
 import { recommendNextTopic, type RecommendedTopic } from '@/lib/recommendation/nextTopic'
 import { fetchStreak, type StreakInfo } from '@/lib/streak/streak'
 import { fetchDailyGoalProgress, type DailyGoalProgress } from '@/lib/gamification/dailyGoal'
-import { Card, PressableCard, LearnerAvatarIcon, ProgressRing, Badge } from '@/components/ui'
+import {
+  Card,
+  LearnerAvatarIcon,
+  ProgressRing,
+  Badge,
+  PageHeader,
+  SectionLabel,
+  Stagger,
+  SkeletonList,
+  Skeleton,
+  EmptyState,
+  ErrorState,
+  linkCardClass,
+} from '@/components/ui'
 import { StreakBadge } from '@/components/dashboard/StreakBadge'
 import { PointsBadge } from '@/components/dashboard/PointsBadge'
 import { DailyGoalBadge } from '@/components/dashboard/DailyGoalBadge'
+import { useAsync } from '@/hooks/useAsync'
 import { supabase } from '@/lib/supabase'
+
+interface DashboardData {
+  continueItem: ContinueLearningItem | null
+  subjects: SubjectMasterySummary[]
+  gradeNumber: number | null
+  recommended: RecommendedTopic | null
+  streak: StreakInfo | null
+  dailyGoal: DailyGoalProgress | null
+}
 
 export function ChildDashboardPage() {
   const { t } = useTranslation()
   const { activeLearner, learners, setActiveLearnerId } = useLearner()
-  const [continueItem, setContinueItem] = useState<ContinueLearningItem | null>(null)
-  const [subjects, setSubjects] = useState<SubjectMasterySummary[]>([])
-  const [gradeNumber, setGradeNumber] = useState<number | null>(null)
-  const [recommended, setRecommended] = useState<RecommendedTopic | null>(null)
-  const [streak, setStreak] = useState<StreakInfo | null>(null)
-  const [dailyGoal, setDailyGoal] = useState<DailyGoalProgress | null>(null)
+  const learnerId = activeLearner?.id ?? null
 
-  useEffect(() => {
-    if (!activeLearner) return
-    fetchContinueLearning(activeLearner.id, activeLearner.preferred_language).then(setContinueItem)
-    fetchSubjectMasterySummary(activeLearner.id, activeLearner.grade_id, activeLearner.preferred_language).then(setSubjects)
-    recommendNextTopic(activeLearner.id, activeLearner.grade_id, activeLearner.preferred_language).then(setRecommended)
-    fetchStreak(activeLearner.id).then(setStreak)
-    fetchDailyGoalProgress(activeLearner.id, activeLearner.daily_practice_target).then(setDailyGoal)
-    supabase
-      .from('grades')
-      .select('grade_number')
-      .eq('id', activeLearner.grade_id)
-      .maybeSingle()
-      .then(({ data }) => setGradeNumber(data?.grade_number ?? null))
-  }, [activeLearner])
+  // One request set, one state. Previously these were five independent
+  // `.then(setX)` calls with no catch, so a failure on any of them left that
+  // part of the screen permanently blank with no way to retry.
+  const { status, data, reload } = useAsync<DashboardData>(
+    async () => {
+      const learner = activeLearner!
+      const [continueItem, subjects, recommended, streak, dailyGoal, gradeRow] = await Promise.all([
+        fetchContinueLearning(learner.id, learner.preferred_language),
+        fetchSubjectMasterySummary(learner.id, learner.grade_id, learner.preferred_language),
+        recommendNextTopic(learner.id, learner.grade_id, learner.preferred_language),
+        fetchStreak(learner.id),
+        fetchDailyGoalProgress(learner.id, learner.daily_practice_target),
+        supabase.from('grades').select('grade_number').eq('id', learner.grade_id).maybeSingle(),
+      ])
+      return {
+        continueItem,
+        subjects,
+        recommended,
+        streak,
+        dailyGoal,
+        gradeNumber: gradeRow.data?.grade_number ?? null,
+      }
+    },
+    [learnerId],
+    { enabled: Boolean(activeLearner) },
+  )
 
   if (!activeLearner) return null
 
+  const loading = status === 'loading' || status === 'idle'
+
   return (
     <div className="mx-auto max-w-lg px-4 pt-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <LearnerAvatarIcon avatar={activeLearner.avatar} />
-          <div>
-            <h1 className="text-xl font-extrabold text-slate-900">
-              {t('dashboard.greeting', { name: activeLearner.display_name })}
-            </h1>
-            {gradeNumber && (
-              <p className="text-sm font-medium text-slate-500">
-                {t('dashboard.gradeLabel', { grade: gradeNumber })}
-              </p>
+      <PageHeader
+        title={t('dashboard.greeting', { name: activeLearner.display_name })}
+        subtitle={
+          data?.gradeNumber ? t('dashboard.gradeLabel', { grade: data.gradeNumber }) : undefined
+        }
+        actions={
+          <>
+            {learners.length > 1 && (
+              <select
+                className="rounded-xl border-2 border-slate-200 bg-white px-2 py-1.5 text-sm"
+                value={activeLearner.id}
+                onChange={(e) => setActiveLearnerId(e.target.value)}
+                aria-label={t('dashboard.switchLearner')}
+              >
+                {learners.map((l) => (
+                  <option key={l.id} value={l.id}>
+                    {l.display_name}
+                  </option>
+                ))}
+              </select>
             )}
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          {learners.length > 1 && (
-            <select
-              className="rounded-xl border-2 border-slate-200 bg-white px-2 py-1.5 text-sm"
-              value={activeLearner.id}
-              onChange={(e) => setActiveLearnerId(e.target.value)}
-              aria-label={t('dashboard.switchLearner')}
+            <Link
+              to="/parent"
+              aria-label={t('dashboard.parentZone')}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-slate-200 bg-white text-slate-400 transition-colors hover:text-slate-600"
             >
-              {learners.map((l) => (
-                <option key={l.id} value={l.id}>
-                  {l.display_name}
-                </option>
-              ))}
-            </select>
-          )}
-          <Link
-            to="/parent"
-            aria-label={t('dashboard.parentZone')}
-            className="flex h-9 w-9 items-center justify-center rounded-xl border-2 border-slate-200 bg-white text-slate-400"
-          >
-            <Settings size={16} />
-          </Link>
-        </div>
-      </div>
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-        <p className="text-slate-500">{t('dashboard.prompt')}</p>
+              <Settings size={16} />
+            </Link>
+          </>
+        }
+      />
+
+      <div className="mt-4 flex items-center gap-3">
+        <LearnerAvatarIcon avatar={activeLearner.avatar} />
         <div className="flex flex-wrap items-center gap-2">
           <PointsBadge totalPoints={activeLearner.total_points} />
-          <StreakBadge streak={streak} />
-          <DailyGoalBadge progress={dailyGoal} />
+          <StreakBadge streak={data?.streak ?? null} />
+          <DailyGoalBadge progress={data?.dailyGoal ?? null} />
         </div>
       </div>
 
-      {continueItem ? (
-        <Link to={`/app/lessons/${continueItem.lessonId}`} className="mt-6 block">
-          <div className="rounded-3xl bg-brand-600 p-5 text-white shadow-md">
-            <p className="text-xs font-bold uppercase tracking-wide text-brand-100">
-              {t('dashboard.continueLearning')}
-            </p>
-            <p className="mt-1 text-lg font-bold">{continueItem.topicName}</p>
-            <p className="text-sm text-brand-100">
-              {continueItem.subjectName} · {continueItem.topicName}
-            </p>
-          </div>
-        </Link>
+      {status === 'error' ? (
+        <ErrorState className="mt-6" onRetry={reload} />
       ) : (
-        <Card className="mt-6 bg-brand-50">
-          <p className="text-sm font-medium text-brand-800">{t('dashboard.noProgressYet')}</p>
-        </Card>
-      )}
-
-      <h2 className="mt-8 text-sm font-bold uppercase tracking-wide text-slate-400">
-        {t('dashboard.mySubjects')}
-      </h2>
-      <div className="mt-3 grid grid-cols-2 gap-3">
-        {subjects.map((s) => (
-          <Link key={s.subjectId} to={`/app/subjects/${s.subjectId}`}>
-            <Card className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 p-3">
-              <ProgressRing value={s.averageMastery} size={40} strokeWidth={4} />
-              <span className="text-xs font-bold break-words text-slate-800">{s.subjectName}</span>
-            </Card>
-          </Link>
-        ))}
-      </div>
-
-      {recommended && (
         <>
-          <h2 className="mt-8 text-sm font-bold uppercase tracking-wide text-slate-400">
-            {t('dashboard.recommended')}
-          </h2>
-          <Link to={`/app/subjects/${recommended.subjectId}/topics/${recommended.topicId}`} className="mt-3 block">
-            <PressableCard className="flex items-center justify-between">
-              <div>
-                <p className="font-bold text-slate-900">{recommended.topicName}</p>
-                <p className="text-sm text-slate-500">
-                  {recommended.subjectName} · {t(`dashboard.recommendReason.${recommended.reason}`)}
+          <div className="mt-6">
+            {loading ? (
+              <Skeleton className="h-28 w-full rounded-3xl" />
+            ) : data?.continueItem ? (
+              <Link
+                to={`/app/lessons/${data.continueItem.lessonId}`}
+                className="card-lift block overflow-hidden rounded-3xl bg-ink-900 p-5 text-white shadow-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-volt-300"
+              >
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-volt-300">
+                  {t('dashboard.continueLearning')}
                 </p>
-              </div>
-              <Badge tone="sun">{t('dashboard.recommended')}</Badge>
-            </PressableCard>
-          </Link>
+                <p className="font-display mt-1 text-xl font-extrabold">
+                  {data.continueItem.topicName}
+                </p>
+                <p className="mt-0.5 flex items-center gap-1.5 text-sm text-ink-200">
+                  {data.continueItem.subjectName}
+                  <ArrowRight size={14} aria-hidden />
+                </p>
+              </Link>
+            ) : (
+              <Card tone="volt">
+                <p className="text-sm font-medium text-volt-700">{t('dashboard.noProgressYet')}</p>
+              </Card>
+            )}
+          </div>
+
+          <SectionLabel className="mt-8">{t('dashboard.mySubjects')}</SectionLabel>
+          {loading ? (
+            <SkeletonList className="mt-3" count={2} label={t('common.loading')} />
+          ) : data && data.subjects.length > 0 ? (
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              {data.subjects.map((s, i) => (
+                <Stagger key={s.subjectId} index={i}>
+                  <Link
+                    to={`/app/subjects/${s.subjectId}`}
+                    className={linkCardClass({
+                      className: 'grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 p-3',
+                    })}
+                  >
+                    <ProgressRing value={s.averageMastery} size={40} strokeWidth={4} />
+                    <span className="text-xs font-bold break-words text-slate-800">
+                      {s.subjectName}
+                    </span>
+                  </Link>
+                </Stagger>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              className="mt-3"
+              icon={<BookOpen size={22} />}
+              title={t('dashboard.emptySubjectsTitle')}
+              body={t('dashboard.emptySubjectsBody')}
+            />
+          )}
+
+          {data?.recommended && (
+            <>
+              <SectionLabel className="mt-8">{t('dashboard.recommended')}</SectionLabel>
+              <Link
+                to={`/app/subjects/${data.recommended.subjectId}/topics/${data.recommended.topicId}`}
+                className={linkCardClass({
+                  className: 'mt-3 flex items-center justify-between gap-3',
+                })}
+              >
+                <div className="min-w-0">
+                  <p className="font-display font-bold text-slate-900 break-words">
+                    {data.recommended.topicName}
+                  </p>
+                  <p className="text-sm text-slate-500 break-words">
+                    {data.recommended.subjectName} ·{' '}
+                    {t(`dashboard.recommendReason.${data.recommended.reason}`)}
+                  </p>
+                </div>
+                <Badge tone="sun">
+                  <Sparkles size={12} className="mr-1" aria-hidden />
+                  {t('dashboard.recommended')}
+                </Badge>
+              </Link>
+            </>
+          )}
         </>
       )}
 
       <div className="mt-8 grid grid-cols-2 gap-3 pb-6">
-        <QuickLink to="/app/subjects" icon={BookOpen} label={t('dashboard.mySubjects')} />
-        <QuickLink to="/app/scan" icon={ScanLine} label={t('dashboard.scanWork')} />
-        <QuickLink to="/app/exam" icon={GraduationCap} label={t('dashboard.examPrep')} />
-        <QuickLink to="/app/progress" icon={TrendingUp} label={t('dashboard.myProgress')} />
-        <QuickLink to="/app/subjects" icon={MessageCircleHeart} label={t('dashboard.askTutor')} full />
-        <QuickLink to="/app/achievements" icon={Award} label={t('dashboard.achievements')} full />
+        <QuickLink to="/app/subjects" icon={BookOpen} label={t('dashboard.mySubjects')} index={0} />
+        <QuickLink to="/app/scan" icon={ScanLine} label={t('dashboard.scanWork')} index={1} />
+        <QuickLink to="/app/exam" icon={GraduationCap} label={t('dashboard.examPrep')} index={2} />
+        <QuickLink to="/app/progress" icon={TrendingUp} label={t('dashboard.myProgress')} index={3} />
+        <QuickLink
+          to="/app/subjects"
+          icon={MessageCircleHeart}
+          label={t('dashboard.askTutor')}
+          index={4}
+          full
+        />
+        <QuickLink to="/app/achievements" icon={Award} label={t('dashboard.achievements')} index={5} full />
       </div>
     </div>
   )
@@ -156,21 +239,31 @@ function QuickLink({
   to,
   icon: Icon,
   label,
+  index,
   full,
 }: {
   to: string
   icon: typeof BookOpen
   label: string
+  index: number
   full?: boolean
 }) {
   return (
-    <Link to={to} className={full ? 'col-span-2' : undefined}>
-      <PressableCard className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 p-3">
-        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+    <Stagger index={index} className={full ? 'col-span-2' : undefined}>
+      <Link
+        to={to}
+        className={linkCardClass({
+          className: 'grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 p-3',
+        })}
+      >
+        <span
+          aria-hidden
+          className="flex h-9 w-9 items-center justify-center rounded-xl bg-volt-50 text-volt-600"
+        >
           <Icon size={18} />
         </span>
         <span className="text-sm font-semibold break-words text-slate-800">{label}</span>
-      </PressableCard>
-    </Link>
+      </Link>
+    </Stagger>
   )
 }

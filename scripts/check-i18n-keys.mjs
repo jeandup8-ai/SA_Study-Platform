@@ -92,10 +92,15 @@ function flatten(node, prefix = '') {
     flatten(value, prefix ? `${prefix}.${key}` : key),
   )
 }
-const enKeys = new Set(flatten(locales.en.m ?? {}))
-const afKeys = new Set(flatten(locales.af.m ?? {}))
-for (const key of enKeys) if (!afKeys.has(key)) problems.push(`[af] not translated: m.${key}`)
-for (const key of afKeys) if (!enKeys.has(key)) problems.push(`[en] extra key: m.${key}`)
+// Parity is checked across the WHOLE locale file, not just the marketing
+// namespace. The app is bilingual end to end, and an English-only string
+// reaching an Afrikaans learner is the same defect wherever it lives --
+// i18next silently falls back to the key or to English, so nothing fails
+// loudly at runtime to tell us about it.
+const enKeys = new Set(flatten(locales.en))
+const afKeys = new Set(flatten(locales.af))
+for (const key of enKeys) if (!afKeys.has(key)) problems.push(`[af] not translated: ${key}`)
+for (const key of afKeys) if (!enKeys.has(key)) problems.push(`[en] extra key: ${key}`)
 
 if (problems.length > 0) {
   console.error(`i18n check failed (${problems.length}):`)

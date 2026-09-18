@@ -12,7 +12,11 @@
     "comingSoon": "Coming soon",
     "demoContent": "Sample lesson for demonstration",
     "priceTbc": "TBC",
-    "somethingWentWrong": "Something went wrong."
+    "somethingWentWrong": "Something went wrong.",
+    "loadingSubjects": "Loading your subjects",
+    "loadingLessons": "Loading lessons",
+    "loadingTopics": "Loading topics",
+    "loadingProgress": "Loading progress"
   },
   "nav": {
     "dashboard": "Home",
@@ -126,7 +130,9 @@
     },
     "switchLearner": "Switch profile",
     "noProgressYet": "No lessons started yet — pick a subject to begin!",
-    "parentZone": "Parent zone"
+    "parentZone": "Parent zone",
+    "emptySubjectsTitle": "No subjects yet",
+    "emptySubjectsBody": "Subjects appear here once your grade is set up."
   },
   "subjects": {
     "title": "My Subjects",
@@ -147,7 +153,13 @@
     "downloadSummary": "Download a printable topic summary",
     "keyTermsHeading": "Key Terms",
     "summaryHeading": "Summary",
-    "workedExampleHeading": "Worked Example"
+    "workedExampleHeading": "Worked Example",
+    "emptyTitle": "Nothing to study yet",
+    "emptyBody": "Your subjects will show up here as soon as they are ready.",
+    "emptyLessonsTitle": "No lessons in this topic yet",
+    "emptyLessonsBody": "We are still writing this one. Try another topic in the meantime.",
+    "emptyTopicsTitle": "No topics yet",
+    "emptyTopicsBody": "Topics for this subject are on the way."
   },
   "lesson": {
     "step.what_are_we_learning": "What are we learning?",

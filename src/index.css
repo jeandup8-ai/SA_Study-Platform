@@ -349,3 +349,153 @@
     animation: none;
   }
 }
+
+/* ==================================================================
+   APPLICATION DESIGN LAYER
+
+   The marketing site above is dark (ink) because it is a sales surface.
+   The application is light because it is used for long stretches by
+   9-13 year olds, often on a cheap phone in bright daylight -- an
+   accessibility decision, not a stylistic one.
+
+   What the two share is the *system*: the same display face, the same
+   accent families (volt / gold / lilac), the same motion vocabulary and
+   the same reduced-motion guarantee. `brand-*` (teal) stays the
+   application's primary because it is wired through every existing
+   component; volt and gold are additive accents so the app reads as the
+   same product as the site without restyling working screens by accident.
+   ================================================================== */
+
+/* Page canvas. Two very soft colour washes over slate-50 so a screen is
+   never a flat grey rectangle. Fixed attachment keeps the wash still
+   while content scrolls, which stops it reading as a moving gradient. */
+.app-canvas {
+  background-color: var(--color-slate-50);
+  background-image:
+    radial-gradient(
+      70% 48% at 6% 0%,
+      color-mix(in oklab, var(--color-volt-300) 34%, transparent) 0%,
+      transparent 62%
+    ),
+    radial-gradient(
+      62% 42% at 100% 2%,
+      color-mix(in oklab, var(--color-lilac-300) 30%, transparent) 0%,
+      transparent 64%
+    );
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* Darker variant for the admin console, which is an ink surface. */
+.app-canvas-ink {
+  background-color: var(--color-ink-950);
+  background-image:
+    radial-gradient(
+      65% 40% at 10% 0%,
+      color-mix(in oklab, var(--color-volt-500) 16%, transparent) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      55% 35% at 95% 2%,
+      color-mix(in oklab, var(--color-lilac-500) 14%, transparent) 0%,
+      transparent 62%
+    );
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* Frosted bar for the fixed learner nav and sticky headers. The solid
+   fallback comes first so browsers without backdrop-filter still get an
+   opaque bar rather than unreadable text over scrolling content. */
+.glass-bar {
+  background-color: color-mix(in oklab, white 92%, transparent);
+}
+
+@supports (backdrop-filter: blur(12px)) {
+  .glass-bar {
+    background-color: color-mix(in oklab, white 72%, transparent);
+    backdrop-filter: blur(14px) saturate(1.4);
+  }
+}
+
+.glass-bar-ink {
+  background-color: color-mix(in oklab, var(--color-ink-900) 94%, transparent);
+}
+
+@supports (backdrop-filter: blur(12px)) {
+  .glass-bar-ink {
+    background-color: color-mix(in oklab, var(--color-ink-900) 76%, transparent);
+    backdrop-filter: blur(14px) saturate(1.3);
+  }
+}
+
+/* Interactive elevation. Applied to cards that are links or buttons --
+   never to static cards, so "lifts" continues to mean "you can press
+   this". */
+.card-lift {
+  transition:
+    transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.card-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px -12px color-mix(in oklab, var(--color-ink-700) 40%, transparent);
+}
+
+.card-lift:active {
+  transform: translateY(0) scale(0.99);
+}
+
+/* Skeleton shimmer for loading states. */
+@keyframes shimmer {
+  from {
+    background-position: -180% 0;
+  }
+  to {
+    background-position: 180% 0;
+  }
+}
+
+.skeleton {
+  background-color: var(--color-slate-200);
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklab, white 70%, transparent) 50%,
+    transparent 100%
+  );
+  background-size: 180% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+/* Staggered entrance for lists. The delay is set per item as --stagger so
+   one class covers a list of any length. Content is visible without it --
+   `reveal-in` animates from opacity 0 only once the item is in view, and
+   the reduced-motion block below removes both. */
+.stagger-in {
+  animation: reveal-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: var(--stagger, 0ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-lift,
+  .card-lift:hover,
+  .card-lift:active {
+    transform: none;
+    transition: none;
+  }
+
+  .skeleton {
+    animation: none;
+  }
+
+  .stagger-in {
+    animation: none;
+  }
+
+  .app-canvas,
+  .app-canvas-ink {
+    background-attachment: scroll;
+  }
+}

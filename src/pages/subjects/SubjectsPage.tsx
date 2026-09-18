@@ -1,38 +1,67 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { BookOpen } from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
 import { fetchSubjectMasterySummary, type SubjectMasterySummary } from '@/lib/curriculum/dashboard'
-import { Card, ProgressRing } from '@/components/ui'
+import {
+  ProgressRing,
+  PageHeader,
+  Stagger,
+  SkeletonList,
+  EmptyState,
+  ErrorState,
+  linkCardClass,
+} from '@/components/ui'
+import { useAsync } from '@/hooks/useAsync'
 
 export function SubjectsPage() {
   const { t } = useTranslation()
   const { activeLearner } = useLearner()
-  const [subjects, setSubjects] = useState<SubjectMasterySummary[]>([])
+  const learnerId = activeLearner?.id ?? null
 
-  useEffect(() => {
-    if (!activeLearner) return
-    fetchSubjectMasterySummary(activeLearner.id, activeLearner.grade_id).then(setSubjects)
-  }, [activeLearner])
+  const { status, data, reload } = useAsync<SubjectMasterySummary[]>(
+    () => fetchSubjectMasterySummary(activeLearner!.id, activeLearner!.grade_id),
+    [learnerId],
+    { enabled: Boolean(activeLearner) },
+  )
 
   return (
     <div className="mx-auto max-w-lg px-4 pt-6 pb-10">
-      <h1 className="text-xl font-extrabold text-slate-900">{t('subjects.title')}</h1>
-      <div className="mt-4 space-y-3">
-        {subjects.map((s) => (
-          <Link key={s.subjectId} to={`/app/subjects/${s.subjectId}`}>
-            <Card className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-              <div>
-                <p className="font-bold text-slate-900 break-words">{s.subjectName}</p>
-                <p className="text-sm text-slate-500">
-                  {Math.round(s.averageMastery)}% {t('subjects.mastery').toLowerCase()}
-                </p>
-              </div>
-              <ProgressRing value={s.averageMastery} size={52} strokeWidth={6} />
-            </Card>
-          </Link>
-        ))}
-      </div>
+      <PageHeader eyebrow={t('nav.subjects')} title={t('subjects.title')} />
+
+      {status === 'error' ? (
+        <ErrorState className="mt-4" onRetry={reload} />
+      ) : status === 'success' && data && data.length === 0 ? (
+        <EmptyState
+          className="mt-4"
+          icon={<BookOpen size={22} />}
+          title={t('subjects.emptyTitle')}
+          body={t('subjects.emptyBody')}
+        />
+      ) : status === 'success' && data ? (
+        <div className="mt-4 space-y-3">
+          {data.map((s, i) => (
+            <Stagger key={s.subjectId} index={i}>
+              <Link
+                to={`/app/subjects/${s.subjectId}`}
+                className={linkCardClass({
+                  className: 'grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3',
+                })}
+              >
+                <div className="min-w-0">
+                  <p className="font-display font-bold text-slate-900 break-words">{s.subjectName}</p>
+                  <p className="text-sm text-slate-500">
+                    {Math.round(s.averageMastery)}% {t('subjects.mastery').toLowerCase()}
+                  </p>
+                </div>
+                <ProgressRing value={s.averageMastery} size={52} strokeWidth={6} />
+              </Link>
+            </Stagger>
+          ))}
+        </div>
+      ) : (
+        <SkeletonList className="mt-4" count={4} label={t('common.loadingSubjects')} />
+      )}
     </div>
   )
 }

@@ -1,29 +1,37 @@
 import type { HTMLAttributes } from 'react'
 import clsx from 'clsx'
+import { cardToneClasses, type CardTone } from './cardTones'
 
-export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  tone?: CardTone
+}
+
+export function Card({ className, tone = 'plain', ...props }: CardProps) {
   return (
     <div
-      className={clsx(
-        'rounded-3xl border border-slate-200 bg-white p-5 shadow-sm',
-        className,
-      )}
+      className={clsx('rounded-3xl border p-5 shadow-sm', cardToneClasses[tone], className)}
       {...props}
     />
   )
 }
 
+/**
+ * A card that is itself the control. `card-lift` is applied here and only
+ * here, so "this surface lifts when you point at it" reliably means "this
+ * surface is pressable".
+ */
 export function PressableCard({
   className,
+  tone = 'plain',
   ...props
-}: HTMLAttributes<HTMLButtonElement> & { onClick?: () => void }) {
+}: HTMLAttributes<HTMLButtonElement> & { onClick?: () => void; tone?: CardTone }) {
   return (
     <button
       type="button"
       className={clsx(
-        'w-full rounded-3xl border border-slate-200 bg-white p-5 text-left shadow-sm',
-        'transition active:scale-[0.98] active:bg-slate-50',
-        'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand-300',
+        'card-lift w-full rounded-3xl border p-5 text-left shadow-sm',
+        'focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-volt-300',
+        cardToneClasses[tone],
         className,
       )}
       {...props}

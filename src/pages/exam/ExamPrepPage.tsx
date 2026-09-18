@@ -5,7 +5,7 @@ import { useLearner } from '@/context/LearnerContext'
 import { fetchSubjectsForGrade } from '@/lib/curriculum/queries'
 import { computeExamReadiness, type ExamReadiness } from '@/lib/exam/readiness'
 import { computeIebApplicationScore } from '@/lib/exam/iebReadiness'
-import { Card, Badge, Button, ProgressRing } from '@/components/ui'
+import { Card, Badge, Button, ProgressRing, PageHeader, Skeleton } from '@/components/ui'
 import type { Subject } from '@/types/curriculum'
 
 export function ExamPrepPage() {
@@ -36,31 +36,45 @@ export function ExamPrepPage() {
 
   return (
     <div className="mx-auto max-w-lg px-4 pt-6 pb-10">
-      <h1 className="text-xl font-extrabold text-slate-900">{t('exam.title')}</h1>
+      <PageHeader eyebrow={t('nav.exam')} title={t('exam.title')} />
 
       <p className="mt-4 text-sm font-semibold text-slate-500">{t('exam.selectSubject')}</p>
       <div className="mt-2 flex flex-wrap gap-2">
-        {subjects.map((s) => (
-          <button
-            key={s.id}
-            onClick={() => setSelectedSubject(s)}
-            className={`min-h-10 rounded-full border-2 px-4 text-sm font-semibold ${
-              selectedSubject?.id === s.id
-                ? 'border-brand-600 bg-brand-50 text-brand-700'
-                : 'border-slate-200 text-slate-600'
-            }`}
-          >
-            {s.name}
-          </button>
-        ))}
+        {subjects.length === 0
+          ? Array.from({ length: 4 }, (_, i) => (
+              <Skeleton key={i} className="h-10 w-28 rounded-full" />
+            ))
+          : subjects.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => setSelectedSubject(s)}
+                // aria-pressed so the choice is announced, rather than being
+                // carried by the fill colour alone.
+                aria-pressed={selectedSubject?.id === s.id}
+                className={`min-h-10 rounded-full border-2 px-4 text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-volt-300 ${
+                  selectedSubject?.id === s.id
+                    ? 'border-volt-500 bg-volt-50 text-volt-700'
+                    : 'border-slate-200 text-slate-600 hover:border-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                {s.name}
+              </button>
+            ))}
       </div>
+
+      {selectedSubject && !readiness && (
+        <div className="mt-6 space-y-3" role="status" aria-busy="true" aria-label={t('common.loading')}>
+          <Skeleton className="h-28 w-full rounded-3xl" />
+          <Skeleton className="h-20 w-full rounded-3xl" />
+        </div>
+      )}
 
       {selectedSubject && readiness && (
         <div className="mt-6 space-y-4">
           <Card className="flex items-center gap-4">
             <ProgressRing value={readiness.readinessScore} size={80} strokeWidth={8} />
             <div>
-              <p className="font-bold text-slate-800">
+              <p className="font-display font-bold text-slate-800">
                 {t('exam.readinessTitle', { subject: selectedSubject.name })}
               </p>
               <p className="text-xs text-slate-400">{t('exam.readinessSubtitle')}</p>
@@ -68,10 +82,10 @@ export function ExamPrepPage() {
           </Card>
 
           {iebScore !== null && (
-            <Card className="flex items-center gap-4 bg-coral-100/40">
+            <Card tone="gold" className="flex items-center gap-4">
               <ProgressRing value={iebScore} size={64} strokeWidth={7} />
               <div>
-                <p className="font-bold text-slate-800">{t('exam.iebApplicationTitle')}</p>
+                <p className="font-display font-bold text-slate-800">{t('exam.iebApplicationTitle')}</p>
                 <p className="text-xs text-slate-500">{t('exam.iebApplicationSubtitle')}</p>
               </div>
             </Card>
@@ -111,7 +125,7 @@ function TopicGroup({
   if (items.length === 0) return null
   return (
     <div>
-      <p className="text-xs font-bold uppercase tracking-wide text-slate-400">{label}</p>
+      <p className="text-xs font-bold uppercase tracking-[0.14em] text-slate-400">{label}</p>
       <div className="mt-1.5 flex flex-wrap gap-2">
         {items.map((item) => (
           <Badge key={item.topicId} tone={tone}>

@@ -1,76 +1,112 @@
-import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { CheckCircle2, Circle, PlayCircle } from 'lucide-react'
+import { CheckCircle2, Circle, PlayCircle, BookOpen } from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
 import { fetchLessonsForTopic } from '@/lib/curriculum/queries'
 import { localizedName } from '@/lib/i18n/localizedName'
 import { supabase } from '@/lib/supabase'
-import { Card } from '@/components/ui'
+import {
+  PageHeader,
+  Stagger,
+  SkeletonList,
+  EmptyState,
+  ErrorState,
+  linkCardClass,
+} from '@/components/ui'
+import { useAsync } from '@/hooks/useAsync'
 import type { Lesson, LearnerProgress } from '@/types/curriculum'
+
+interface LessonListData {
+  lessons: Lesson[]
+  progressByLesson: Map<string, LearnerProgress>
+  topicName: string
+}
 
 export function LessonListPage() {
   const { t } = useTranslation()
   const { topicId } = useParams<{ subjectId: string; topicId: string }>()
   const { activeLearner } = useLearner()
-  const [lessons, setLessons] = useState<Lesson[]>([])
-  const [progressByLesson, setProgressByLesson] = useState<Map<string, LearnerProgress>>(new Map())
-  const [topicName, setTopicName] = useState('')
+  const learnerId = activeLearner?.id ?? null
 
-  useEffect(() => {
-    if (!activeLearner || !topicId) return
-    fetchLessonsForTopic(topicId, activeLearner.preferred_language).then(async (ls) => {
-      setLessons(ls)
+  const { status, data, reload } = useAsync<LessonListData>(
+    async () => {
+      const learner = activeLearner!
+      const [lessons, topicRow] = await Promise.all([
+        fetchLessonsForTopic(topicId!, learner.preferred_language),
+        supabase.from('topics').select('name, name_af').eq('id', topicId!).maybeSingle(),
+      ])
       const { data: progress } = await supabase
         .from('learner_progress')
         .select('*')
-        .eq('learner_id', activeLearner.id)
-        .in('lesson_id', ls.map((l) => l.id))
-      setProgressByLesson(new Map((progress ?? []).map((p) => [p.lesson_id, p])))
-    })
-    supabase
-      .from('topics')
-      .select('name, name_af')
-      .eq('id', topicId)
-      .maybeSingle()
-      .then(({ data }) => setTopicName(data ? localizedName(data, activeLearner.preferred_language) : ''))
-  }, [activeLearner, topicId])
+        .eq('learner_id', learner.id)
+        .in(
+          'lesson_id',
+          lessons.map((l) => l.id),
+        )
+      return {
+        lessons,
+        progressByLesson: new Map((progress ?? []).map((p) => [p.lesson_id, p])),
+        topicName: topicRow.data ? localizedName(topicRow.data, learner.preferred_language) : '',
+      }
+    },
+    [learnerId, topicId],
+    { enabled: Boolean(activeLearner && topicId) },
+  )
+
+  const topicName = data?.topicName ?? ''
 
   return (
     <div className="mx-auto max-w-lg px-4 pt-6 pb-10">
-      <h1 className="text-xl font-extrabold text-slate-900">{topicName}</h1>
-      <div className="mt-4 space-y-3">
-        {lessons.map((lesson) => {
-          const status = progressByLesson.get(lesson.id)?.status ?? 'not_started'
-          // lessons.title is an English-only column with no Afrikaans sibling.
-          // Almost every topic has exactly one lesson, so the topic name
-          // (already localized above) is a safe, correctly-localized stand-in;
-          // only fall back to the raw English title in the rare case where a
-          // topic has more than one lesson and they need to read differently.
-          const label = lessons.length > 1 ? lesson.title : topicName || lesson.title
-          return (
-            <Link key={lesson.id} to={`/app/lessons/${lesson.id}`}>
-              <Card className="flex items-center gap-3">
-                <StatusIcon status={status} />
-                <div className="flex-1">
-                  <p className="font-bold text-slate-900">{label}</p>
-                  <p className="text-sm text-slate-500">{lesson.estimated_minutes} min</p>
-                </div>
-              </Card>
-            </Link>
-          )
-        })}
-        {lessons.length === 0 && (
-          <p className="text-sm text-slate-400">{t('subjects.noLessonsYet')}</p>
-        )}
-      </div>
-      <p className="mt-4 text-xs text-slate-400">{t('common.demoContent')}</p>
+      <PageHeader eyebrow={t('subjects.title')} title={topicName} />
+
+      {status === 'error' ? (
+        <ErrorState className="mt-4" onRetry={reload} />
+      ) : status === 'success' && data && data.lessons.length === 0 ? (
+        <EmptyState
+          className="mt-4"
+          icon={<BookOpen size={22} />}
+          title={t('subjects.emptyLessonsTitle')}
+          body={t('subjects.emptyLessonsBody')}
+        />
+      ) : status === 'success' && data ? (
+        <>
+          <div className="mt-4 space-y-3">
+            {data.lessons.map((lesson, i) => {
+              const lessonStatus = data.progressByLesson.get(lesson.id)?.status ?? 'not_started'
+              // lessons.title is an English-only column with no Afrikaans
+              // sibling. Almost every topic has exactly one lesson, so the
+              // topic name (already localized above) is a safe, correctly
+              // localized stand-in; only fall back to the raw English title
+              // where a topic has more than one lesson and they need to read
+              // differently.
+              const label = data.lessons.length > 1 ? lesson.title : topicName || lesson.title
+              return (
+                <Stagger key={lesson.id} index={i}>
+                  <Link
+                    to={`/app/lessons/${lesson.id}`}
+                    className={linkCardClass({ className: 'flex items-center gap-3' })}
+                  >
+                    <StatusIcon status={lessonStatus} />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-display font-bold text-slate-900 break-words">{label}</p>
+                      <p className="text-sm text-slate-500">{lesson.estimated_minutes} min</p>
+                    </div>
+                  </Link>
+                </Stagger>
+              )
+            })}
+          </div>
+          <p className="mt-4 text-xs text-slate-400">{t('common.demoContent')}</p>
+        </>
+      ) : (
+        <SkeletonList className="mt-4" count={3} label={t('common.loadingLessons')} />
+      )}
     </div>
   )
 }
 
 function StatusIcon({ status }: { status: string }) {
-  if (status === 'completed') return <CheckCircle2 className="text-success-500" size={26} />
-  if (status === 'in_progress') return <PlayCircle className="text-brand-500" size={26} />
-  return <Circle className="text-slate-300" size={26} />
+  if (status === 'completed') return <CheckCircle2 className="shrink-0 text-success-500" size={26} />
+  if (status === 'in_progress') return <PlayCircle className="shrink-0 text-volt-500" size={26} />
+  return <Circle className="shrink-0 text-slate-300" size={26} />
 }

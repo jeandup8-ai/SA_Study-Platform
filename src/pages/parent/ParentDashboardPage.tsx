@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Pencil, ChevronDown, ChevronUp } from 'lucide-react'
+import { Pencil, ChevronDown, ChevronUp, BookOpenCheck, ListChecks, Clock, UserPlus, ShieldCheck } from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
 import { fetchSubjectMasterySummary, type SubjectMasterySummary } from '@/lib/curriculum/dashboard'
 import { fetchTopicsWithProgress, type TopicWithProgress } from '@/lib/curriculum/topics'
@@ -9,7 +9,17 @@ import { fetchWeeklyStats, fetchAttentionNeeded, type WeeklyStats, type TopicAtt
 import { setSubjectBaseline } from '@/lib/parent/subjectBaseline'
 import { setTopicBaseline } from '@/lib/parent/topicBaseline'
 import { fetchDailyGoalProgress, updateDailyTarget, type DailyGoalProgress } from '@/lib/gamification/dailyGoal'
-import { Card, ProgressRing, Badge, LearnerAvatarIcon, Button } from '@/components/ui'
+import {
+  Card,
+  ProgressRing,
+  Badge,
+  LearnerAvatarIcon,
+  Button,
+  PageHeader,
+  SectionLabel,
+  StatTile,
+  EmptyState,
+} from '@/components/ui'
 import { Trophy } from 'lucide-react'
 
 export function ParentDashboardPage() {
@@ -109,12 +119,15 @@ export function ParentDashboardPage() {
 
   if (learners.length === 0) {
     return (
-      <div className="text-center">
-        <p className="text-slate-600">{t('parent.noLearnersYet')}</p>
-        <Link to="/onboarding/learner" className="mt-4 inline-block">
-          <Button>{t('parent.addLearner')}</Button>
-        </Link>
-      </div>
+      <EmptyState
+        icon={<UserPlus size={22} />}
+        title={t('parent.noLearnersYet')}
+        action={
+          <Link to="/onboarding/learner">
+            <Button size="md">{t('parent.addLearner')}</Button>
+          </Link>
+        }
+      />
     )
   }
 
@@ -125,33 +138,39 @@ export function ParentDashboardPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <LearnerAvatarIcon avatar={activeLearner.avatar} />
-          <h1 className="text-2xl font-extrabold text-slate-900">
+      <PageHeader
+        eyebrow={t('nav.parent')}
+        title={
+          <span className="flex items-center gap-3">
+            <LearnerAvatarIcon avatar={activeLearner.avatar} />
             {t('parent.dashboardTitle', { name: activeLearner.display_name })}
-          </h1>
-        </div>
-        {learners.length > 1 && (
-          <select
-            className="rounded-xl border-2 border-slate-200 bg-white px-2 py-1.5 text-sm"
-            value={activeLearner.id}
-            onChange={(e) => setActiveLearnerId(e.target.value)}
-          >
-            {learners.map((l) => (
-              <option key={l.id} value={l.id}>
-                {l.display_name}
-              </option>
-            ))}
-          </select>
-        )}
-      </div>
+          </span>
+        }
+        actions={
+          learners.length > 1 ? (
+            <select
+              className="rounded-xl border-2 border-slate-200 bg-white px-2 py-1.5 text-sm"
+              value={activeLearner.id}
+              onChange={(e) => setActiveLearnerId(e.target.value)}
+              aria-label={t('dashboard.switchLearner')}
+            >
+              {learners.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.display_name}
+                </option>
+              ))}
+            </select>
+          ) : undefined
+        }
+      />
 
       {learners.length > 1 && (
         <Card className="mt-6">
           <div className="flex items-center gap-2">
-            <Trophy size={16} className="text-sun-500" />
-            <p className="text-sm font-bold text-slate-800">{t('parent.familyLeaderboard')}</p>
+            <Trophy size={16} className="text-gold-500" />
+            <p className="font-display text-sm font-bold text-slate-800">
+              {t('parent.familyLeaderboard')}
+            </p>
           </div>
           <div className="mt-3 space-y-2">
             {[...learners]
@@ -170,11 +189,26 @@ export function ParentDashboardPage() {
         </Card>
       )}
 
-      <h2 className="mt-6 text-sm font-bold uppercase tracking-wide text-slate-400">{t('parent.thisWeek')}</h2>
+      <SectionLabel className="mt-6">{t('parent.thisWeek')}</SectionLabel>
       <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatTile label={t('parent.lessonsCompleted')} value={String(stats?.lessonsCompleted ?? 0)} />
-        <StatTile label={t('parent.questionsAnswered')} value={String(stats?.questionsAnswered ?? 0)} />
-        <StatTile label={t('parent.studyTime')} value={formatMinutes(stats?.studySeconds ?? 0)} />
+        <StatTile
+          icon={<BookOpenCheck size={16} />}
+          tone="brand"
+          label={t('parent.lessonsCompleted')}
+          value={stats?.lessonsCompleted ?? 0}
+        />
+        <StatTile
+          icon={<ListChecks size={16} />}
+          tone="volt"
+          label={t('parent.questionsAnswered')}
+          value={stats?.questionsAnswered ?? 0}
+        />
+        <StatTile
+          icon={<Clock size={16} />}
+          tone="lilac"
+          label={t('parent.studyTime')}
+          value={formatMinutes(stats?.studySeconds ?? 0)}
+        />
         <Card className="flex flex-col items-center justify-center gap-1">
           <ProgressRing value={overallMastery} size={40} strokeWidth={5} />
           <p className="text-xs font-medium text-slate-500">{t('parent.overallMastery')}</p>
@@ -184,7 +218,7 @@ export function ParentDashboardPage() {
       <Card className="mt-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-bold text-slate-800">{t('parent.dailyGoalTitle')}</p>
+            <p className="font-display text-sm font-bold text-slate-800">{t('parent.dailyGoalTitle')}</p>
             <p className="mt-0.5 text-sm text-slate-500">
               {dailyGoal
                 ? t('dashboard.dailyGoalProgress', { done: dailyGoal.activitiesToday, target: dailyGoal.target })
@@ -354,9 +388,7 @@ export function ParentDashboardPage() {
         ))}
       </div>
 
-      <h2 className="mt-8 text-sm font-bold uppercase tracking-wide text-slate-400">
-        {t('parent.attentionNeeded')}
-      </h2>
+      <SectionLabel className="mt-8">{t('parent.attentionNeeded')}</SectionLabel>
       <div className="mt-3 flex flex-wrap gap-2">
         {attention.length === 0 && <p className="text-sm text-slate-400">{t('parent.noAttentionNeeded')}</p>}
         {attention.map((a) => (
@@ -367,24 +399,18 @@ export function ParentDashboardPage() {
       </div>
 
       {attention.length > 0 && (
-        <Card className="mt-4 bg-brand-50">
-          <p className="text-sm font-semibold text-brand-800">
+        <Card tone="volt" className="mt-4">
+          <p className="text-sm font-semibold text-volt-700">
             {t('parent.recommended')}: {t('parent.recommendedSessions', { count: 3, minutes: 20 })}
           </p>
         </Card>
       )}
 
-      <p className="mt-8 text-xs text-slate-400">{t('parent.privacyNote')}</p>
+      <p className="mt-8 flex items-center gap-1.5 text-xs text-slate-400">
+        <ShieldCheck size={13} aria-hidden />
+        {t('parent.privacyNote')}
+      </p>
     </div>
-  )
-}
-
-function StatTile({ label, value }: { label: string; value: string }) {
-  return (
-    <Card>
-      <p className="text-2xl font-extrabold text-slate-900">{value}</p>
-      <p className="text-xs font-medium text-slate-500">{label}</p>
-    </Card>
   )
 }
 

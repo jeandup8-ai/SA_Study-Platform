@@ -12,7 +12,11 @@
     "comingSoon": "Kom binnekort",
     "demoContent": "Voorbeeldles vir demonstrasie",
     "priceTbc": "Nog te bevestig",
-    "somethingWentWrong": "Iets het verkeerd geloop."
+    "somethingWentWrong": "Iets het verkeerd geloop.",
+    "loadingSubjects": "Laai jou vakke",
+    "loadingLessons": "Laai lesse",
+    "loadingTopics": "Laai onderwerpe",
+    "loadingProgress": "Laai vordering"
   },
   "nav": {
     "dashboard": "Tuis",
@@ -126,7 +130,9 @@
     },
     "switchLearner": "Wissel profiel",
     "noProgressYet": "Nog geen lesse begin nie — kies 'n vak om te begin!",
-    "parentZone": "Vir ouers"
+    "parentZone": "Vir ouers",
+    "emptySubjectsTitle": "Nog geen vakke nie",
+    "emptySubjectsBody": "Vakke verskyn hier sodra jou graad opgestel is."
   },
   "subjects": {
     "title": "My Vakke",
@@ -147,7 +153,13 @@
     "downloadSummary": "Laai 'n drukbare onderwerp-opsomming af",
     "keyTermsHeading": "Sleutelterme",
     "summaryHeading": "Opsomming",
-    "workedExampleHeading": "Uitgewerkte Voorbeeld"
+    "workedExampleHeading": "Uitgewerkte Voorbeeld",
+    "emptyTitle": "Nog niks om te leer nie",
+    "emptyBody": "Jou vakke sal hier wys sodra hulle gereed is.",
+    "emptyLessonsTitle": "Nog geen lesse in hierdie onderwerp nie",
+    "emptyLessonsBody": "Ons skryf nog hieraan. Probeer solank 'n ander onderwerp.",
+    "emptyTopicsTitle": "Nog geen onderwerpe nie",
+    "emptyTopicsBody": "Onderwerpe vir hierdie vak is op pad."
   },
   "lesson": {
     "step.what_are_we_learning": "Wat leer ons?",
