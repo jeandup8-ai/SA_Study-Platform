@@ -1,7 +1,8 @@
 // Supabase Edge Function: generate-topic-illustration
 //
 // Admin-triggered: generates one illustrative image per topic using an image
-// AI provider (OpenAI's DALL-E 3), stores it in the public `topic-illustrations`
+// AI provider (OpenAI, gpt-image-1 with a dall-e-3 fallback), stores it in the
+// public `topic-illustrations`
 // bucket, and logs it as a `media` row with approval_status='pending' -- the
 // existing media_read RLS policy already ensures no learner ever sees it
 // until an admin approves it (see migration 0005, media table).
@@ -76,34 +77,75 @@ Deno.serve(async (req: Request) => {
 
   const prompt = `A simple, friendly, flat-vector illustration for a South African Grade ${gradeNumber} classroom, depicting the theme of "${topic.name}" (${subjectName}). Warm, inclusive, colourful, cheerful mood suitable for a child aged 9-13. Clean flat-vector illustration style with soft rounded shapes, no realistic human faces, no logos or brand names, no violent or scary imagery. STRICT REQUIREMENT: absolutely no text, letters, numbers, words, or writing of any kind anywhere in the image -- a purely visual scene only.`
 
-  let imageBase64: string
-  try {
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'dall-e-3',
-        prompt,
-        n: 1,
-        size: '1024x1024',
-        quality: 'standard',
-        response_format: 'b64_json',
-      }),
-    })
-    if (!response.ok) {
-      const detail = await response.text()
-      console.error(`OpenAI image generation failed: ${response.status} ${detail}`)
-      return jsonResponse({ error: 'image_generation_failed' }, 502)
+  // OpenAI removed `response_format` from the images endpoint; sending it now
+  // fails the whole request with 400 "Unknown parameter". Two consequences
+  // handled here:
+  //   - the parameter is gone, and
+  //   - without it the response may come back as either inline base64
+  //     (`b64_json`, what gpt-image-1 returns) or a short-lived download URL
+  //     (`url`, what dall-e-3 returns), so both shapes are accepted.
+  //
+  // Models are tried in order. gpt-image-1 is current; dall-e-3 is the
+  // fallback for accounts that do not have access to it. Each carries its own
+  // quality vocabulary, which is not interchangeable between them.
+  const MODELS: { model: string; quality: string }[] = [
+    { model: 'gpt-image-1', quality: 'medium' },
+    { model: 'dall-e-3', quality: 'standard' },
+  ]
+
+  let imageBytes: Uint8Array | null = null
+  let usedModel = ''
+  let lastError = ''
+
+  for (const { model, quality } of MODELS) {
+    try {
+      const response = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model, prompt, n: 1, size: '1024x1024', quality }),
+      })
+
+      if (!response.ok) {
+        lastError = `${model}: ${response.status} ${await response.text()}`
+        console.error(`OpenAI image generation failed: ${lastError}`)
+        continue
+      }
+
+      const result = await response.json()
+      const b64 = result?.data?.[0]?.b64_json
+      const url = result?.data?.[0]?.url
+
+      if (b64) {
+        imageBytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))
+      } else if (url) {
+        // The URL expires quickly, so it is downloaded now rather than stored.
+        const download = await fetch(url)
+        if (!download.ok) {
+          lastError = `${model}: could not download generated image (${download.status})`
+          console.error(lastError)
+          continue
+        }
+        imageBytes = new Uint8Array(await download.arrayBuffer())
+      } else {
+        lastError = `${model}: response contained neither b64_json nor url`
+        console.error(lastError)
+        continue
+      }
+
+      usedModel = model
+      break
+    } catch (err) {
+      lastError = `${model}: ${err instanceof Error ? err.message : String(err)}`
+      console.error(`OpenAI image generation threw: ${lastError}`)
     }
-    const result = await response.json()
-    imageBase64 = result?.data?.[0]?.b64_json
-    if (!imageBase64) return jsonResponse({ error: 'image_generation_failed' }, 502)
-  } catch (err) {
-    console.error(`OpenAI image generation threw: ${err instanceof Error ? err.message : String(err)}`)
-    return jsonResponse({ error: 'image_generation_failed' }, 502)
   }
 
-  const imageBytes = Uint8Array.from(atob(imageBase64), (c) => c.charCodeAt(0))
+  if (!imageBytes) {
+    // Pass the provider's own message back so the admin UI can show what
+    // actually went wrong instead of a bare "failed".
+    return jsonResponse({ error: 'image_generation_failed', detail: lastError.slice(0, 400) }, 502)
+  }
+
   const path = `${topicId}/${Date.now()}.png`
 
   const { error: uploadError } = await supabase.storage
@@ -126,7 +168,7 @@ Deno.serve(async (req: Request) => {
       provider: 'openai',
       url: publicUrl,
       approval_status: 'pending',
-      source: 'ai_generated:dall-e-3',
+      source: `ai_generated:${usedModel}`,
       language: 'en',
     })
     .select()

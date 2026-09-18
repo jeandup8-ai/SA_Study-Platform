@@ -120,9 +120,15 @@ export interface GenerateIllustrationResult {
 export async function generateTopicIllustration(topicId: string): Promise<GenerateIllustrationResult> {
   const { data, error } = await supabase.functions.invoke('generate-topic-illustration', { body: { topicId } })
   if (error) {
-    const context = (error as { context?: { json?: () => Promise<{ error?: string }> } }).context
+    const context = (error as {
+      context?: { json?: () => Promise<{ error?: string; detail?: string }> }
+    }).context
     const respBody = await context?.json?.().catch(() => null)
-    return { ok: false, error: respBody?.error ?? 'unknown' }
+    // `detail` carries the image provider's own message. Without it every
+    // failure looked identical ("image_generation_failed"), which is what
+    // hid a plain 400 from a removed API parameter for as long as it did.
+    const code = respBody?.error ?? 'unknown'
+    return { ok: false, error: respBody?.detail ? `${code}: ${respBody.detail}` : code }
   }
   if (!data?.media) return { ok: false, error: 'unknown' }
   return { ok: true }

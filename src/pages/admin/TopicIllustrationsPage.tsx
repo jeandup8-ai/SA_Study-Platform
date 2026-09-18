@@ -26,7 +26,10 @@ export function TopicIllustrationsPage() {
   const [topics, setTopics] = useState<TopicIllustrationStatus[]>([])
   const [loading, setLoading] = useState(true)
   const [generatingId, setGeneratingId] = useState<string | null>(null)
-  const [generateError, setGenerateError] = useState<string | null>(null)
+  // Keyed by topic so the message lands next to the button that failed. The
+  // previous single error string rendered near the top of a list of ~200
+  // topics, so a failure on a row further down looked like nothing happening.
+  const [errorByTopic, setErrorByTopic] = useState<Record<string, string>>({})
 
   const [bulkRunning, setBulkRunning] = useState(false)
   const [bulkProgress, setBulkProgress] = useState<{ done: number; total: number } | null>(null)
@@ -47,9 +50,15 @@ export function TopicIllustrationsPage() {
 
   async function handleGenerate(topicId: string) {
     setGeneratingId(topicId)
-    setGenerateError(null)
+    setErrorByTopic((prev) => {
+      const next = { ...prev }
+      delete next[topicId]
+      return next
+    })
     const result = await generateTopicIllustration(topicId)
-    if (!result.ok) setGenerateError(`Topic ${topicId}: ${result.error}`)
+    if (!result.ok) {
+      setErrorByTopic((prev) => ({ ...prev, [topicId]: result.error ?? 'unknown' }))
+    }
     setGeneratingId(null)
     await load()
   }
@@ -82,6 +91,7 @@ export function TopicIllustrationsPage() {
     setBulkSummary(null)
     setBulkProgress({ done: 0, total: missingTopics.length })
 
+    setErrorByTopic({})
     const { succeeded, failed } = await generateAllMissingIllustrations(
       missingTopics.map((t) => t.id),
       {
@@ -89,6 +99,9 @@ export function TopicIllustrationsPage() {
         onProgress: (done, total) => setBulkProgress({ done, total }),
       },
     )
+    // Attach each failure to its own row rather than only reporting a count,
+    // so a run that fails for one reason is diagnosable without the logs.
+    setErrorByTopic(Object.fromEntries(failed.map((f) => [f.topicId, f.error])))
 
     setBulkSummary({ succeeded, failed: failed.length })
     setBulkRunning(false)
@@ -151,7 +164,7 @@ export function TopicIllustrationsPage() {
               {bulkSummary && (
                 <p className="mt-3 text-sm text-slate-300">
                   Done: {bulkSummary.succeeded} generated
-                  {bulkSummary.failed > 0 ? `, ${bulkSummary.failed} failed (see "All topics" list below for status)` : ''}.
+                  {bulkSummary.failed > 0 ? `, ${bulkSummary.failed} failed — reason shown on each topic below` : ''}.
                 </p>
               )}
             </div>
@@ -185,15 +198,14 @@ export function TopicIllustrationsPage() {
             ))}
           </div>
 
-          {generateError && <p className="mt-6 text-sm font-medium text-danger-500">{generateError}</p>}
-
           <h2 className="mt-8 text-lg font-bold text-white">All topics ({topics.length})</h2>
           <div className="mt-3 space-y-2">
             {topics.map((topic) => (
               <div
                 key={topic.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-800 bg-slate-900 px-4 py-3"
+                className="rounded-xl border border-slate-800 bg-slate-900 px-4 py-3"
               >
+               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
                   <p className="font-semibold text-white">{topic.name}</p>
                   <p className="text-xs text-slate-400">
@@ -211,6 +223,12 @@ export function TopicIllustrationsPage() {
                       ? 'Generate'
                       : 'Regenerate'}
                 </button>
+               </div>
+                {errorByTopic[topic.id] && (
+                  <p className="mt-2 break-words rounded-lg bg-danger-50 px-3 py-2 text-xs font-medium text-danger-600">
+                    {errorByTopic[topic.id]}
+                  </p>
+                )}
               </div>
             ))}
           </div>
