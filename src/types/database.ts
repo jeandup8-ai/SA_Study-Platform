@@ -1592,6 +1592,7 @@ export type Database = {
           created_at: string
           duration_seconds: number | null
           embed_url: string | null
+          generation_prompt: string | null
           grade_id: string | null
           id: string
           language: Database["public"]["Enums"]["language_code"]
@@ -1610,6 +1611,7 @@ export type Database = {
           created_at?: string
           duration_seconds?: number | null
           embed_url?: string | null
+          generation_prompt?: string | null
           grade_id?: string | null
           id?: string
           language?: Database["public"]["Enums"]["language_code"]
@@ -1628,6 +1630,7 @@ export type Database = {
           created_at?: string
           duration_seconds?: number | null
           embed_url?: string | null
+          generation_prompt?: string | null
           grade_id?: string | null
           id?: string
           language?: Database["public"]["Enums"]["language_code"]

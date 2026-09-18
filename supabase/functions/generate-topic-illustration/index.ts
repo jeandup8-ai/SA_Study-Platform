@@ -21,6 +21,7 @@
 //     reachable by a learner's session.
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { buildIllustrationPrompt } from './prompt.ts'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -45,6 +46,9 @@ Deno.serve(async (req: Request) => {
   const body = await req.json().catch(() => null)
   const topicId = body?.topicId
   if (typeof topicId !== 'string') return jsonResponse({ error: 'missing_topic_id' }, 400)
+  // Advisory only: buildIllustrationPrompt appends the hard constraints after
+  // it, so a hint cannot switch off "no text" or "no realistic faces".
+  const sceneHint = typeof body?.sceneHint === 'string' ? body.sceneHint : undefined
 
   const openaiKey = Deno.env.get('OPENAI_API_KEY')
   if (!openaiKey) return jsonResponse({ error: 'feature_not_configured' }, 503)
@@ -75,7 +79,16 @@ Deno.serve(async (req: Request) => {
   const gradeNumber = grade?.grade_number ?? 5
   const subjectName = subject?.name ?? ''
 
-  const prompt = `A simple, friendly, flat-vector illustration for a South African Grade ${gradeNumber} classroom, depicting the theme of "${topic.name}" (${subjectName}). Warm, inclusive, colourful, cheerful mood suitable for a child aged 9-13. Clean flat-vector illustration style with soft rounded shapes, no realistic human faces, no logos or brand names, no violent or scary imagery. STRICT REQUIREMENT: absolutely no text, letters, numbers, words, or writing of any kind anywhere in the image -- a purely visual scene only.`
+  // Topic-specific rather than one generic template: the prompt builder maps
+  // subject family and topic wording onto a concrete scene, so "The water
+  // cycle" and "Trade" no longer produce interchangeable generic classroom
+  // pictures. See prompt.ts.
+  const prompt = buildIllustrationPrompt({
+    topicName: topic.name,
+    subjectName,
+    gradeNumber,
+    sceneHint,
+  })
 
   // OpenAI removed `response_format` from the images endpoint; sending it now
   // fails the whole request with 400 "Unknown parameter". Two consequences
@@ -170,6 +183,9 @@ Deno.serve(async (req: Request) => {
       approval_status: 'pending',
       source: `ai_generated:${usedModel}`,
       language: 'en',
+      // The prompt is stored with the image so a reviewer who rejects one can
+      // see what produced it, and so a later prompt change is traceable.
+      generation_prompt: prompt,
     })
     .select()
     .single()
