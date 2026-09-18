@@ -118,6 +118,15 @@ question carrying its own explanation in both languages.
 | 7 | Social Sciences | 8 | 64 | 64 |
 | | **Total** | **72** | **576** | **576** |
 
+Since updated: Grade 4 Natural Sciences completed (6 tests), taking the bank
+to **78 tests / 1 248 questions**. Integrity across the whole bank verified:
+no question with the wrong number of correct options, no `correct_answer`
+that does not match its `is_correct` option, answer positions spread
+302/368/359/219 across A-D.
+
+**Still missing:** Social Sciences and English Home Language for Grades 4-5,
+Afrikaans FAL for Grades 4-5.
+
 Integrity, all verified at zero: questions without exactly one correct
 option, duplicate option labels, duplicate sort orders, missing
 explanations, `correct_answer` disagreeing with the flagged option, and
@@ -176,6 +185,69 @@ sample). The other 71 are `REVIEW_REQUIRED` and waiting at
   Supabase dashboard.
 - After a deploy, a stale PWA service worker can hide new admin tabs; a full tab
   close and reopen clears it.
+
+## Application design system (new)
+
+The marketing rebuild left the app behind. It now shares the *system* with the
+site, not the skin: same display face (`--font-display`, Outfit), same
+volt / gold / lilac accents, same motion vocabulary, same reduced-motion
+guarantee. The site stays dark (it sells); the app stays light (children use
+it for long stretches on cheap phones in daylight). `brand-*` teal is still
+the application's primary — changing it would restyle every existing screen
+by accident.
+
+- `src/index.css` — `.app-canvas` / `.app-canvas-ink` page washes,
+  `.glass-bar` / `.glass-bar-ink` sticky bars, `.card-lift`, `.skeleton`,
+  `.stagger-in`. All disabled under `prefers-reduced-motion`.
+- `src/components/ui/` — `Skeleton`/`SkeletonList`, `EmptyState`,
+  `ErrorState`, `PageHeader`/`SectionLabel`, `StatTile`, `Stagger`,
+  tonal `Card` surfaces, `linkCardClass`, a `volt` Button variant.
+- `src/hooks/useAsync.ts` — loading / success / error as one state with a
+  retry. Before this, screens did `.then(setState)` with no catch: a failed
+  request left the page blank forever, and "still loading" looked exactly
+  like "genuinely empty".
+
+### Conventions
+- `card-lift` is applied only by `PressableCard` and `linkCardClass`, so
+  "this lifts when you point at it" reliably means "this is pressable".
+- Never wrap `PressableCard` in a `Link` — that nests a button inside an
+  anchor. Use `linkCardClass()` on the `Link` instead.
+- Card surfaces are a `tone` prop, never a `bg-*` passed via `className`:
+  this project uses `clsx`, not tailwind-merge, so the two would collide.
+- `check-i18n-keys.mjs` now enforces parity across **all** 651 keys per
+  locale, not just `m.*`.
+
+## Illustration Studio
+
+`/admin/illustrations`. Status counts double as filters; grade/subject/search
+filters; thumbnail grid; batch generation scoped to whatever the filters show,
+with a bounded worker pool (`generateIllustrationsBatch`, default 3, max 6).
+
+`supabase/functions/generate-topic-illustration/prompt.ts` builds a
+topic-specific prompt. Two rules matter and are enforced by
+`scripts/check-illustration-prompts.mjs` in `prebuild`:
+
+1. **Every topic gets a concrete scene**, not just generic subject direction.
+2. **The prompt contains no digits at all** — not "Grade 4", not "aged 9 to
+   13", not "15th century". An image that must contain no numerals should not
+   be requested by a prompt full of them.
+
+Topic names are CAPS-PDF extraction artefacts and are normalised first
+(`normaliseTopicName`): clause numbers, `Topic 2:` prefixes, `(Term 3)`
+suffixes and stray digit runs are stripped, `2D` becomes "two dimensions",
+and `(Term 2: Emotions)` keeps the qualifier — without that, four distinct
+Life Skills topics collapse to one identical name.
+
+**Order in `SUBJECT_DIRECTION` is precedence.** "Social Sciences" contains
+the word "science", so the social entry must be tested first or every history
+topic asks for laboratory apparatus. Asserted by the check.
+
+`media.generation_prompt` (migration 0049) stores the exact prompt with each
+image, so a reviewer rejecting one can see what produced it.
+
+**Not yet run.** All 212 topics still have zero generated illustrations.
+Generation needs an admin session and spends real OpenAI credit (~$0.04 an
+image, ~$8.50 for all 212), so it is the owner's action from the Studio.
 
 ## Open decisions for the owner
 
