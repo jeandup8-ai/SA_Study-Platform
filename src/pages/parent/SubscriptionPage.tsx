@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { Button, Card, Badge } from '@/components/ui'
 import type { Subscription } from '@/types/curriculum'
 import type { Database } from '@/types/database'
+import { TRIAL_DAYS } from '@/lib/billing/trial'
 
 type SubscriptionPlan = Database['public']['Tables']['subscription_plans']['Row']
 
@@ -57,7 +58,7 @@ export function SubscriptionPage() {
     if (!parent) return
     setStartingTrial(planId)
     const trialEnd = new Date()
-    trialEnd.setDate(trialEnd.getDate() + 3)
+    trialEnd.setDate(trialEnd.getDate() + TRIAL_DAYS)
     const { data } = await supabase
       .from('subscriptions')
       .insert({ parent_id: parent.id, plan_id: planId, status: 'trialing', trial_ends_at: trialEnd.toISOString() })

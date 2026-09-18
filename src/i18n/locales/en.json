@@ -393,7 +393,7 @@
     "testNotFound": "We could not find that test.",
     "testMeta": "Grade {{grade}} · {{subject}} · {{count}} questions",
     "questionNumber": "Question {{number}}",
-    "languageFallback": "This test is not available in Afrikaans yet, so we are showing the English version.",
+    "languageFallback": "This test is not available in {{wanted}} yet, so we are showing the {{served}} version.",
     "scoreLine": "{{correct}} out of {{total}} correct",
     "notSavedNotice": "This score is not saved. Create a free account and StudyLegends tracks every topic your child has mastered, and which ones need work.",
     "saveProgressCta": "Save my child's progress",
@@ -415,6 +415,427 @@
       "subjectDescription": "Free Grade {{grade}} {{subject}} practice tests aligned to CAPS. Answer online, get marked instantly, and see why each answer is right.",
       "testTitle": "{{title}} | Grade {{grade}} {{subject}} Test | StudyLegends",
       "testDescription": "{{count}} free CAPS practice questions on {{title}} for Grade {{grade}}. Marked instantly, with an explanation for every answer."
+    },
+    "languageName": {
+      "en": "English",
+      "af": "Afrikaans"
+    }
+  },
+  "m": {
+    "skipToContent": "Skip to content",
+    "nav": {
+      "learn": "Learn",
+      "subjects": "Subjects",
+      "howItWorks": "How it works",
+      "forParents": "For parents",
+      "pricing": "Pricing",
+      "open": "Open menu",
+      "close": "Close menu"
+    },
+    "footer": {
+      "contact": "Contact",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "refunds": "Refund Policy",
+      "cancel": "Cancel Subscription",
+      "madeIn": "Built in South Africa for South African families."
+    },
+    "cta": {
+      "trial": "Start your free trial",
+      "trialShort": "Start free trial",
+      "howItWorks": "See how it works"
+    },
+    "seo": {
+      "title": "StudyLegends | Turn Study Time Into Legend Time",
+      "description": "A smarter way for South African Grade 4–7 learners to understand, practise and master their schoolwork. CAPS-aligned lessons, guided AI help, practice and progress — in English and Afrikaans."
+    },
+    "hero": {
+      "badge": "Grade 4–7 · CAPS-aligned",
+      "titleLine1": "Turn study time",
+      "titleLine2": "into legend time.",
+      "lead": "A smarter way for South African learners to understand, practise and master their schoolwork — with lessons, guided help, practice and progress all in one place.",
+      "assurance": {
+        "caps": "Built on the CAPS curriculum",
+        "bilingual": "English and Afrikaans",
+        "noCard": "3-day free trial"
+      }
+    },
+    "device": {
+      "greeting": "Hi Liam 👋",
+      "grade": "Grade 5 · Let's learn something today",
+      "continue": "Continue learning",
+      "topic": "Common fractions",
+      "masteryLabel": "Mathematics",
+      "masterySub": "Mastery this term",
+      "tutorTitle": "Guided help",
+      "tutorLine": "“Let's break this fraction down together.”",
+      "masteredLabel": "Mastered",
+      "masteredTopic": "Place value to 6 digits"
+    },
+    "subject": {
+      "mathematics": "Mathematics",
+      "naturalSciences": "Natural Sciences",
+      "socialSciences": "Social Sciences",
+      "englishHl": "English Home Language"
+    },
+    "makeSense": {
+      "eyebrow": "The real problem",
+      "title": "Learning should make sense.",
+      "lead": "When a child is stuck, they usually don't need the answer. They need the one step they missed. Hand over the answer and the gap stays; explain the step and it closes.",
+      "stage": {
+        "confused": {
+          "label": "Confused",
+          "body": "The worksheet may as well be in another language. Nothing in it connects to anything they already know."
+        },
+        "explained": {
+          "label": "Explained",
+          "body": "The concept is broken into steps, in words and pictures that fit where they actually are."
+        },
+        "practised": {
+          "label": "Practised",
+          "body": "They try it themselves, and every answer is explained — right or wrong."
+        },
+        "mastered": {
+          "label": "Mastered",
+          "body": "They can do it without help. Progress records it, so you both know it's real."
+        }
+      },
+      "closing": "Understand it. Practise it. Master it."
+    },
+    "flow": {
+      "eyebrow": "How it works",
+      "title": "Four steps, every time.",
+      "lead": "The same loop whether it's homework tonight or revision before exams.",
+      "step": {
+        "snap": {
+          "title": "Snap it",
+          "body": "Take a photo of schoolwork, notes, a worksheet or a document. StudyLegends reads it and works out which topic it belongs to."
+        },
+        "understand": {
+          "title": "Understand it",
+          "body": "The concept is explained at the learner's level — short, plain and visual, in English or Afrikaans."
+        },
+        "practise": {
+          "title": "Practise it",
+          "body": "Interactive questions follow straight away, each one marked on the spot with an explanation of why the answer is what it is."
+        },
+        "master": {
+          "title": "Master it",
+          "body": "Progress tracking shows which topics are solid and which still need another pass, per subject and per topic."
+        }
+      },
+      "scan": {
+        "caption": "Detected from the photo",
+        "detected": "Grade 5 Mathematics · Common fractions"
+      },
+      "master": {
+        "ringLabel": "Common fractions",
+        "ringSub": "Mastered",
+        "note": "Natural Sciences needs another pass — practice is suggested automatically."
+      }
+    },
+    "tutor": {
+      "learnerAsk": "I don't understand this fraction.",
+      "reply1": "Let's break it down together. A fraction is just a whole thing cut into equal parts.",
+      "reply2": "In 3/4, the bottom number says how many equal parts the whole was cut into — 4. The top number says how many of those parts you have — 3.",
+      "reply3": "So 3/4 of a chocolate slab cut into 4 pieces means you have 3 of the 4 pieces.",
+      "learnerTry": "So 2/5 means 2 out of 5 pieces?",
+      "reply4": "Exactly that. Now try one yourself — what is 3/5 of 40?"
+    },
+    "practice": {
+      "prompt": "What is 3/5 of 40?",
+      "optionA": "8",
+      "optionB": "24",
+      "optionC": "35",
+      "optionD": "15",
+      "explanation": "First find one fifth: 40 ÷ 5 = 8. Then take three of them: 3 × 8 = 24.",
+      "prompt2": "Which fraction is equivalent to 1/2?",
+      "p2a": "2/5",
+      "p2b": "4/10",
+      "p2c": "3/6",
+      "p2d": "5/12"
+    },
+    "showcase": {
+      "eyebrow": "The product",
+      "titleLine1": "One platform.",
+      "titleLine2": "Everything they need to learn.",
+      "lead": "Tap through it. Every screen here is part of the app your child gets on day one.",
+      "tablistLabel": "Choose a part of the product to preview",
+      "tab": {
+        "tutor": {
+          "label": "Guided help",
+          "title": "Help that explains, not help that answers",
+          "body": "A learner asks in their own words and gets the concept broken into steps. It is built to walk them to the answer, not to hand it over.",
+          "chip": "Explains · never just answers"
+        },
+        "lessons": {
+          "label": "Lessons",
+          "title": "Short lessons that stay short",
+          "body": "Every topic is a few minutes of plain explanation with a visual example, then straight into practice. No walls of text.",
+          "chip": "CAPS topics · English & Afrikaans"
+        },
+        "practice": {
+          "label": "Practice",
+          "title": "Practice that marks itself",
+          "body": "Questions are marked the moment they are answered, and the explanation appears whether the answer was right or wrong.",
+          "chip": "Explanation on every answer"
+        },
+        "scan": {
+          "label": "Scan work",
+          "title": "Homework help from a photo",
+          "body": "Photograph a worksheet or a page of notes. StudyLegends works out the topic, explains it, and offers practice on the same thing.",
+          "chip": "Photo → topic → explanation → practice"
+        },
+        "exam": {
+          "label": "Exam prep",
+          "title": "Walk in knowing where they stand",
+          "body": "A readiness view per subject, a revision list built from the topics that are actually weak, and mock tests to rehearse under pressure.",
+          "chip": "Readiness · revision · mock tests"
+        },
+        "progress": {
+          "label": "Progress",
+          "title": "Progress you can act on",
+          "body": "Mastery per subject and per topic, lessons completed, questions answered and time spent — for the learner and for you.",
+          "chip": "Per subject · per topic"
+        },
+        "rewards": {
+          "label": "Rewards",
+          "title": "A reason to come back tomorrow",
+          "body": "Points, badges, streaks and a daily goal you can set yourself. Enough to build the habit, never enough to become the point.",
+          "chip": "Habit, not hype"
+        }
+      },
+      "lesson": {
+        "explainLabel": "Explanation",
+        "explainBody": "A fraction shows equal parts of a whole. The bottom number is how many parts the whole was split into.",
+        "exampleLabel": "Visual example",
+        "exampleCaption": "3 of 4 equal parts shaded = 3/4",
+        "nextUp": "Next: practise equivalent fractions →"
+      },
+      "scan": {
+        "reply": "This page is about equivalent fractions. Let's start with what makes two fractions equal, then try three questions."
+      },
+      "exam": {
+        "ringLabel": "Mathematics",
+        "ringSub": "Exam readiness",
+        "reviseLabel": "Revise first",
+        "topic": {
+          "a": "Common fractions",
+          "b": "Decimal fractions",
+          "c": "Number patterns"
+        },
+        "mockTest": "Start a mock test →"
+      },
+      "rewards": {
+        "unlocked": "Badge unlocked",
+        "badge": "Fraction Legend",
+        "badgeWhy": "Mastered every fraction topic in Grade 5",
+        "points": "Points",
+        "badges": "Badges",
+        "note": "Rewards are for effort and consistency, never for beating other children. There is no public leaderboard."
+      }
+    },
+    "subjects": {
+      "eyebrow": "What's covered",
+      "title": "Real subjects. Real curriculum.",
+      "lead": "Built on the CAPS curriculum for Grades 4 to 7. Coverage below is read live from our curriculum, so it shows what is actually in the product today.",
+      "promise": {
+        "mathematics": "Understand. Practise. Master.",
+        "natural-sciences": "Explore. Understand. Master.",
+        "social-sciences": "History. Geography. Context.",
+        "english-home-language": "Read. Write. Communicate.",
+        "afrikaans-first-additional-language": "Lees. Skryf. Praat.",
+        "life-skills": "Grow. Cope. Thrive.",
+        "creative-arts": "Create. Perform. Reflect."
+      },
+      "promiseDefault": "Understand. Practise. Master.",
+      "gradeRange": "Grades {{value}}",
+      "gradeOne": "Grade {{value}}",
+      "gradeList": "Grades {{value}}",
+      "gradesNone": "Coming soon",
+      "topicCount_one": "{{count}} topic",
+      "topicCount_other": "{{count}} topics",
+      "footnote": "Curriculum coverage grows every term. Subjects and grades shown here come straight from the live curriculum.",
+      "unavailable": "Subject coverage couldn't load just now. Every free practice test is still available.",
+      "browseFree": "Browse free practice tests"
+    },
+    "tutorSection": {
+      "eyebrow": "Guided help",
+      "titleLine1": "When they get stuck,",
+      "titleLine2": "they don't have to stay stuck.",
+      "lead": "It's 8pm, the worksheet is due tomorrow and nobody at home remembers how to do it. That is the moment this is built for.",
+      "commitment": "StudyLegends is built to explain, not to answer. It walks a learner through the thinking step by step and then asks them to try it — because a copied answer teaches nothing and shows up in the next test.",
+      "ladder": {
+        "explanation": {
+          "title": "Explanation first",
+          "body": "The concept in plain language, pitched at the grade the learner is actually in."
+        },
+        "visual": {
+          "title": "Then a visual",
+          "body": "Shown as parts, shapes, number lines or diagrams — whatever makes the idea land."
+        },
+        "worked": {
+          "title": "Then a worked example",
+          "body": "One problem solved all the way through, with the reason for each step."
+        },
+        "tryIt": {
+          "title": "Then they try",
+          "body": "The learner does the next one. This is the step a homework-answer tool skips."
+        },
+        "practice": {
+          "title": "Then practice",
+          "body": "More questions on the same topic until it holds, each marked with an explanation."
+        }
+      }
+    },
+    "progress": {
+      "eyebrow": "Outcomes",
+      "title": "See learning happen.",
+      "lead": "Not screen time, not badges earned — which topics are solid, which need another pass, and what was actually practised.",
+      "panelTitle": "Parent dashboard · Liam, Grade 5",
+      "overallLabel": "Overall mastery",
+      "overallSub": "Across all subjects",
+      "bySubject": "Mastery by subject",
+      "stat": {
+        "lessons": "Lessons done",
+        "questions": "Questions answered",
+        "time": "Practice time",
+        "streak": "Day streak"
+      },
+      "attentionLabel": "Needs attention",
+      "attention": {
+        "a": "Natural Sciences · Ecosystems and food webs",
+        "b": "Mathematics · Decimal fractions"
+      },
+      "attentionNote": "Topics fall here when practice scores stay low. StudyLegends suggests them next automatically.",
+      "sampleNote": "Dashboard shown with sample data for an illustrative learner."
+    },
+    "parents": {
+      "eyebrow": "For parents",
+      "titleLine1": "Know where they are.",
+      "titleLine2": "Know where they're going.",
+      "lead": "You don't need to understand Grade 6 fractions to know whether your child does. You need to see what they are working on, what is landing, and what isn't.",
+      "capability": {
+        "dashboard": {
+          "title": "A dashboard, not a report card",
+          "body": "Mastery per subject and per topic, updated as your child works."
+        },
+        "attention": {
+          "title": "What to focus on next",
+          "body": "Topics that need another pass are surfaced, so help goes where it matters."
+        },
+        "digest": {
+          "title": "A weekly email summary",
+          "body": "What was covered and where progress moved, without opening the app."
+        },
+        "startingPoint": {
+          "title": "Set the starting point",
+          "body": "Tell us roughly where your child is at per subject, so lessons begin at the right place."
+        },
+        "learners": {
+          "title": "More than one child",
+          "body": "Each learner gets their own profile, grade, language and progress."
+        },
+        "control": {
+          "title": "You hold the account",
+          "body": "You create the profiles, you manage the subscription, and you can cancel from your dashboard."
+        }
+      }
+    },
+    "safety": {
+      "eyebrow": "Safety",
+      "titleLine1": "Built for learners.",
+      "titleLine2": "Designed with safety in mind.",
+      "lead": "The safest features are the ones that don't exist. Here is what we deliberately left out, and what we check before anything reaches your child.",
+      "principle": {
+        "noMessaging": {
+          "title": "No messaging",
+          "body": "There is no way for a learner to message another learner, or for a stranger to message them. The feature does not exist."
+        },
+        "noProfiles": {
+          "title": "No public profiles",
+          "body": "Nothing about your child is visible to anyone outside your household account."
+        },
+        "parentHeld": {
+          "title": "Parent-held accounts",
+          "body": "A learner profile is created by a parent inside a parent account. Children do not sign themselves up."
+        },
+        "reviewedVideo": {
+          "title": "Every video reviewed",
+          "body": "Suggested videos are watched in full and approved by a person on our team before a learner can see one."
+        },
+        "noAds": {
+          "title": "No ads, no selling data",
+          "body": "There are no adverts in the product and we do not sell personal information."
+        },
+        "plainTerms": {
+          "title": "Terms in plain language",
+          "body": "What we collect and why is written to be read, not to be skimmed past."
+        }
+      },
+      "note": "We do not claim any certification or independent compliance audit. What we do claim is written in full in our",
+      "privacyLink": "Privacy Policy"
+    },
+    "local": {
+      "eyebrow": "Built here",
+      "titleLine1": "Made in South Africa,",
+      "titleLine2": "for South African learners.",
+      "lead": "Not an international product with a rand price bolted on. The curriculum, the languages, the payment rails and the data budget were all decisions made for here.",
+      "pillar": {
+        "caps": {
+          "title": "CAPS is the spine",
+          "body": "Subjects, grades and topics follow the South African curriculum, term by term."
+        },
+        "languages": {
+          "title": "English and Afrikaans",
+          "body": "Both languages in the product today, with the remaining official languages already built into the foundation."
+        },
+        "rand": {
+          "title": "Priced in rands",
+          "body": "Billed in rands through a South African payment provider. No currency conversion, no surprises."
+        },
+        "data": {
+          "title": "Light on data",
+          "body": "Mobile-first and installable, built to work on a phone on mobile data rather than assuming fibre."
+        }
+      }
+    },
+    "pricing": {
+      "eyebrow": "Pricing",
+      "title": "One subscription. The whole family.",
+      "lead": "Start with a {{days}}-day free trial. Cancel any time from your parent dashboard.",
+      "monthlyName": "Monthly",
+      "annualName": "Annual",
+      "perMonth": "/month",
+      "perYear": "/year",
+      "bestValue": "Best value",
+      "saving": "Save R{{amount}} a year",
+      "cancelAnytime": "Cancel any time",
+      "learners_one": "Up to {{count}} learner profile",
+      "learners_other": "Up to {{count}} learner profiles",
+      "includedTitle": "Every plan includes",
+      "included": {
+        "curriculum": "CAPS-aligned lessons for Grades 4–7",
+        "lessons": "Short visual lessons, topic by topic",
+        "tutor": "Guided help that explains instead of answering",
+        "scan": "Homework help from a photo",
+        "practice": "Practice questions with an explanation on every answer",
+        "exam": "Exam readiness, revision lists and mock tests",
+        "progress": "Parent dashboard with mastery per topic",
+        "languages": "English and Afrikaans",
+        "learners": "Multiple learner profiles on one account",
+        "offline": "Installable on a phone, built to be light on data"
+      },
+      "footnote": "Prices shown are the live prices on your account and are billed in South African rand.",
+      "unavailable": "Live pricing couldn't load just now.",
+      "seeFullPricing": "See full pricing"
+    },
+    "final": {
+      "titleLine1": "Ready to become",
+      "titleLine2": "a legend?",
+      "lead": "Give learning a better way to grow.",
+      "cta": "Start your {{days}}-day free trial",
+      "reassurance": "Cancel any time from your parent dashboard."
     }
   }
 }

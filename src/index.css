@@ -39,6 +39,61 @@
   --color-danger-500: #ef4444;
   --color-danger-600: #dc2626;
 
+
+  /* ------------------------------------------------------------------
+     MARKETING PALETTE
+     The public site has its own skin. `brand-*` (teal) above is used by
+     the learner app, parent dashboard and admin, so it is left alone --
+     restyling it would restyle the whole product. These four families are
+     additive and only referenced from src/components/marketing and
+     src/pages/marketing.
+     ------------------------------------------------------------------ */
+
+  /* Ink: deep navy through near-black. The canvas for the whole site. */
+  --color-ink-50: #f4f6fb;
+  --color-ink-100: #e4e9f4;
+  --color-ink-200: #c4cde4;
+  --color-ink-300: #95a3c6;
+  --color-ink-400: #6577a3;
+  --color-ink-500: #435583;
+  --color-ink-600: #2e3e66;
+  --color-ink-700: #1f2c4c;
+  --color-ink-800: #141e36;
+  --color-ink-900: #0c1424;
+  --color-ink-950: #060b16;
+
+  /* Volt: electric blue into cyan. The primary accent -- CTAs, glow, focus. */
+  --color-volt-50: #ecfdff;
+  --color-volt-100: #cff9fe;
+  --color-volt-200: #a3f0fc;
+  --color-volt-300: #5ee2f7;
+  --color-volt-400: #22cdec;
+  --color-volt-500: #06aad0;
+  --color-volt-600: #0787ab;
+  --color-volt-700: #0b6a86;
+
+  /* Gold: warm secondary accent -- mastery, streaks, earned moments. */
+  --color-gold-50: #fffbeb;
+  --color-gold-100: #fef3c7;
+  --color-gold-200: #fde68a;
+  --color-gold-300: #fcd34d;
+  --color-gold-400: #fbbf24;
+  --color-gold-500: #f59e0b;
+  --color-gold-600: #d97706;
+
+  /* Lilac: soft purple, used sparingly to separate a third idea. */
+  --color-lilac-100: #ede9fe;
+  --color-lilac-200: #ddd6fe;
+  --color-lilac-300: #c4b5fd;
+  --color-lilac-400: #a78bfa;
+  --color-lilac-500: #8b5cf6;
+  --color-lilac-600: #7c3aed;
+
+  /* Display face for large headlines only. Body text stays on Atkinson
+     Hyperlegible, which is an accessibility typeface and the right default
+     for Grade 4-7 learners, including dyslexic and low-vision readers. */
+  --font-display: 'Outfit', 'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif;
+
   --font-sans:
     'Atkinson Hyperlegible', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
@@ -120,4 +175,177 @@
 .animate-grow-up {
   animation: grow-up 0.6s ease-out both;
   transform-origin: bottom;
+}
+
+/* ------------------------------------------------------------------
+   MARKETING MOTION
+   Every animation here describes something real about learning -- a
+   worksheet becoming an explanation, practice filling a bar, mastery
+   unlocking. Nothing moves for decoration alone.
+   ------------------------------------------------------------------ */
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -10px, 0);
+  }
+}
+
+@keyframes sheen {
+  from {
+    background-position: 200% center;
+  }
+  to {
+    background-position: -200% center;
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    opacity: 0.55;
+    transform: scale(0.85);
+  }
+  70% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+@keyframes caret {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Scroll reveal. The element is hidden until the Reveal component marks it
+   visible, so nothing is invisible to a crawler or to a reader with motion
+   turned off -- see the reduced-motion block below. */
+.reveal {
+  opacity: 0;
+}
+
+.reveal-in {
+  animation: reveal-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-drift {
+  animation: drift 6s ease-in-out infinite;
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2.6s ease-out infinite;
+}
+
+.animate-caret {
+  animation: caret 1.1s step-end infinite;
+}
+
+.text-sheen {
+  background-size: 200% auto;
+  animation: sheen 6s linear infinite;
+}
+
+/* A soft radial glow behind hero and CTA composition. Pure CSS, no images. */
+.glow-volt {
+  background-image: radial-gradient(
+    60% 60% at 50% 40%,
+    color-mix(in oklab, var(--color-volt-400) 32%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+.glow-lilac {
+  background-image: radial-gradient(
+    55% 55% at 50% 50%,
+    color-mix(in oklab, var(--color-lilac-500) 28%, transparent) 0%,
+    transparent 70%
+  );
+}
+
+/* Faint grid, to read as "technology product" without stock imagery. */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, color-mix(in oklab, white 6%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklab, white 6%, transparent) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* Content must never depend on motion to become visible. */
+  .reveal,
+  .reveal-in {
+    opacity: 1;
+    animation: none;
+    transform: none;
+  }
+
+  .animate-drift,
+  .animate-pulse-ring,
+  .animate-caret,
+  .text-sheen,
+  .animate-fill-slice,
+  .animate-float-y,
+  .animate-grow-up {
+    animation: none;
+  }
+}
+
+/* Mastery ring fill. The end value is passed per-instance as --ring-target so
+   one keyframe serves every ring on the page. */
+@keyframes ring-fill {
+  from {
+    stroke-dashoffset: var(--ring-circumference);
+  }
+  to {
+    stroke-dashoffset: var(--ring-target);
+  }
+}
+
+.animate-ring-fill {
+  animation: ring-fill 1.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Practice bar filling as questions are answered. */
+@keyframes bar-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.animate-bar-fill {
+  animation: bar-fill 1.1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transform-origin: left;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-ring-fill,
+  .animate-bar-fill {
+    animation: none;
+  }
 }

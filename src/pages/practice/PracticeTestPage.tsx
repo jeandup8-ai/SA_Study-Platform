@@ -151,7 +151,10 @@ export function PracticeTestPage() {
             {test.servedLanguage !== language && (
               <p className="mt-4 flex items-start gap-2 rounded-2xl bg-amber-50 p-3 text-sm text-amber-800">
                 <Info size={16} className="mt-0.5 shrink-0" />
-                {t('practice.languageFallback')}
+                {t('practice.languageFallback', {
+                  wanted: t(`practice.languageName.${language}`),
+                  served: t(`practice.languageName.${test.servedLanguage}`),
+                })}
               </p>
             )}
 

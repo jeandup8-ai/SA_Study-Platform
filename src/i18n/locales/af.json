@@ -393,7 +393,7 @@
     "testNotFound": "Ons kon nie daardie toets kry nie.",
     "testMeta": "Graad {{grade}} · {{subject}} · {{count}} vrae",
     "questionNumber": "Vraag {{number}}",
-    "languageFallback": "Hierdie toets is nog nie in Afrikaans beskikbaar nie, so ons wys die Engelse weergawe.",
+    "languageFallback": "Hierdie toets is nog nie in {{wanted}} beskikbaar nie, so ons wys die {{served}} weergawe.",
     "scoreLine": "{{correct}} uit {{total}} korrek",
     "notSavedNotice": "Hierdie punt word nie gestoor nie. Skep 'n gratis rekening en StudyLegends hou by watter onderwerpe jou kind bemeester het, en waar hulle nog hulp nodig het.",
     "saveProgressCta": "Stoor my kind se vordering",
@@ -415,6 +415,427 @@
       "subjectDescription": "Gratis Graad {{grade}} {{subject}}-oefentoetse belyn met CAPS. Antwoord aanlyn, word dadelik gemerk, en sien hoekom elke antwoord reg is.",
       "testTitle": "{{title}} | Graad {{grade}} {{subject}}-toets | StudyLegends",
       "testDescription": "{{count}} gratis CAPS-oefenvrae oor {{title}} vir Graad {{grade}}. Dadelik gemerk, met 'n verduideliking by elke antwoord."
+    },
+    "languageName": {
+      "en": "Engels",
+      "af": "Afrikaans"
+    }
+  },
+  "m": {
+    "skipToContent": "Slaan oor na inhoud",
+    "nav": {
+      "learn": "Leer",
+      "subjects": "Vakke",
+      "howItWorks": "Hoe dit werk",
+      "forParents": "Vir ouers",
+      "pricing": "Pryse",
+      "open": "Maak kieslys oop",
+      "close": "Maak kieslys toe"
+    },
+    "footer": {
+      "contact": "Kontak",
+      "terms": "Diensbepalings",
+      "privacy": "Privaatheidsbeleid",
+      "refunds": "Terugbetalingsbeleid",
+      "cancel": "Kanselleer intekening",
+      "madeIn": "In Suid-Afrika gebou vir Suid-Afrikaanse families."
+    },
+    "cta": {
+      "trial": "Begin jou gratis proeftydperk",
+      "trialShort": "Begin gratis",
+      "howItWorks": "Sien hoe dit werk"
+    },
+    "seo": {
+      "title": "StudyLegends | Maak studietyd legendetyd",
+      "description": "'n Slimmer manier vir Suid-Afrikaanse Graad 4–7 leerders om hul skoolwerk te verstaan, te oefen en te bemeester. CAPS-belynde lesse, begeleide hulp, oefening en vordering — in Engels en Afrikaans."
+    },
+    "hero": {
+      "badge": "Graad 4–7 · CAPS-belyn",
+      "titleLine1": "Maak studietyd",
+      "titleLine2": "legendetyd.",
+      "lead": "'n Slimmer manier vir Suid-Afrikaanse leerders om hul skoolwerk te verstaan, te oefen en te bemeester — met lesse, begeleide hulp, oefening en vordering op een plek.",
+      "assurance": {
+        "caps": "Gebou op die CAPS-kurrikulum",
+        "bilingual": "Engels en Afrikaans",
+        "noCard": "3 dae gratis"
+      }
+    },
+    "device": {
+      "greeting": "Hallo Liam 👋",
+      "grade": "Graad 5 · Kom ons leer iets vandag",
+      "continue": "Gaan voort met leer",
+      "topic": "Gewone breuke",
+      "masteryLabel": "Wiskunde",
+      "masterySub": "Bemeestering hierdie kwartaal",
+      "tutorTitle": "Begeleide hulp",
+      "tutorLine": "“Kom ons breek hierdie breuk saam af.”",
+      "masteredLabel": "Bemeester",
+      "masteredTopic": "Plekwaarde tot 6 syfers"
+    },
+    "subject": {
+      "mathematics": "Wiskunde",
+      "naturalSciences": "Natuurwetenskappe",
+      "socialSciences": "Sosiale Wetenskappe",
+      "englishHl": "Engels Huistaal"
+    },
+    "makeSense": {
+      "eyebrow": "Die werklike probleem",
+      "title": "Leer moet sin maak.",
+      "lead": "Wanneer 'n kind vasgeval is, het hulle gewoonlik nie die antwoord nodig nie. Hulle het die een stap nodig wat hulle gemis het. Gee die antwoord en die gaping bly; verduidelik die stap en dit sluit.",
+      "stage": {
+        "confused": {
+          "label": "Verward",
+          "body": "Die werkkaart kon net sowel in 'n ander taal gewees het. Niks daarin sluit aan by wat hulle al ken nie."
+        },
+        "explained": {
+          "label": "Verduidelik",
+          "body": "Die begrip word in stappe opgebreek, in woorde en prente wat pas waar hulle werklik is."
+        },
+        "practised": {
+          "label": "Geoefen",
+          "body": "Hulle probeer dit self, en elke antwoord word verduidelik — reg of verkeerd."
+        },
+        "mastered": {
+          "label": "Bemeester",
+          "body": "Hulle kan dit sonder hulp doen. Vordering teken dit aan, sodat julle albei weet dit is eg."
+        }
+      },
+      "closing": "Verstaan dit. Oefen dit. Bemeester dit."
+    },
+    "flow": {
+      "eyebrow": "Hoe dit werk",
+      "title": "Vier stappe, elke keer.",
+      "lead": "Dieselfde lus, of dit vanaand se huiswerk of hersiening voor eksamen is.",
+      "step": {
+        "snap": {
+          "title": "Neem 'n foto",
+          "body": "Neem 'n foto van skoolwerk, notas, 'n werkkaart of 'n dokument. StudyLegends lees dit en werk uit by watter onderwerp dit hoort."
+        },
+        "understand": {
+          "title": "Verstaan dit",
+          "body": "Die begrip word op die leerder se vlak verduidelik — kort, eenvoudig en visueel, in Engels of Afrikaans."
+        },
+        "practise": {
+          "title": "Oefen dit",
+          "body": "Interaktiewe vrae volg dadelik, elkeen op die plek gemerk met 'n verduideliking van hoekom die antwoord is wat dit is."
+        },
+        "master": {
+          "title": "Bemeester dit",
+          "body": "Vorderingsopsporing wys watter onderwerpe solied is en watter nog 'n draai nodig het, per vak en per onderwerp."
+        }
+      },
+      "scan": {
+        "caption": "Uit die foto bespeur",
+        "detected": "Graad 5 Wiskunde · Gewone breuke"
+      },
+      "master": {
+        "ringLabel": "Gewone breuke",
+        "ringSub": "Bemeester",
+        "note": "Natuurwetenskappe het nog 'n draai nodig — oefening word outomaties voorgestel."
+      }
+    },
+    "tutor": {
+      "learnerAsk": "Ek verstaan nie hierdie breuk nie.",
+      "reply1": "Kom ons breek dit saam af. 'n Breuk is net 'n hele ding wat in gelyke dele gesny is.",
+      "reply2": "In 3/4 se die onderste getal in hoeveel gelyke dele die geheel gesny is — 4. Die boonste getal se hoeveel van daardie dele jy het — 3.",
+      "reply3": "So 3/4 van 'n sjokoladestaaf wat in 4 stukke gesny is beteken jy het 3 van die 4 stukke.",
+      "learnerTry": "So 2/5 beteken 2 uit 5 stukke?",
+      "reply4": "Presies dit. Probeer nou self een — wat is 3/5 van 40?"
+    },
+    "practice": {
+      "prompt": "Wat is 3/5 van 40?",
+      "optionA": "8",
+      "optionB": "24",
+      "optionC": "35",
+      "optionD": "15",
+      "explanation": "Vind eers een vyfde: 40 ÷ 5 = 8. Neem dan drie daarvan: 3 × 8 = 24.",
+      "prompt2": "Watter breuk is ekwivalent aan 1/2?",
+      "p2a": "2/5",
+      "p2b": "4/10",
+      "p2c": "3/6",
+      "p2d": "5/12"
+    },
+    "showcase": {
+      "eyebrow": "Die produk",
+      "titleLine1": "Een platform.",
+      "titleLine2": "Alles wat hulle nodig het om te leer.",
+      "lead": "Tik daardeur. Elke skerm hier is deel van die app wat jou kind op dag een kry.",
+      "tablistLabel": "Kies 'n deel van die produk om te sien",
+      "tab": {
+        "tutor": {
+          "label": "Begeleide hulp",
+          "title": "Hulp wat verduidelik, nie hulp wat antwoord nie",
+          "body": "'n Leerder vra in hul eie woorde en kry die begrip in stappe opgebreek. Dit is gebou om hulle na die antwoord te lei, nie om dit oor te handig nie.",
+          "chip": "Verduidelik · nooit net antwoorde"
+        },
+        "lessons": {
+          "label": "Lesse",
+          "title": "Kort lesse wat kort bly",
+          "body": "Elke onderwerp is 'n paar minute se eenvoudige verduideliking met 'n visuele voorbeeld, en dan reguit na oefening. Geen mure van teks nie.",
+          "chip": "CAPS-onderwerpe · Engels en Afrikaans"
+        },
+        "practice": {
+          "label": "Oefening",
+          "title": "Oefening wat homself merk",
+          "body": "Vrae word gemerk sodra hulle geantwoord is, en die verduideliking verskyn of die antwoord reg of verkeerd was.",
+          "chip": "Verduideliking by elke antwoord"
+        },
+        "scan": {
+          "label": "Skandeer werk",
+          "title": "Huiswerkhulp uit 'n foto",
+          "body": "Neem 'n foto van 'n werkkaart of 'n bladsy notas. StudyLegends werk die onderwerp uit, verduidelik dit, en bied oefening oor dieselfde ding.",
+          "chip": "Foto → onderwerp → verduideliking → oefening"
+        },
+        "exam": {
+          "label": "Eksamenvoorbereiding",
+          "title": "Stap in en weet waar hulle staan",
+          "body": "'n Gereedheidsaansig per vak, 'n hersieningslys wat uit die onderwerpe gebou is wat werklik swak is, en proeftoetse om onder druk te repeteer.",
+          "chip": "Gereedheid · hersiening · proeftoetse"
+        },
+        "progress": {
+          "label": "Vordering",
+          "title": "Vordering waarop jy kan optree",
+          "body": "Bemeestering per vak en per onderwerp, lesse voltooi, vrae geantwoord en tyd bestee — vir die leerder en vir jou.",
+          "chip": "Per vak · per onderwerp"
+        },
+        "rewards": {
+          "label": "Belonings",
+          "title": "'n Rede om more terug te kom",
+          "body": "Punte, kentekens, reekse en 'n daaglikse doel wat jy self kan stel. Genoeg om die gewoonte te bou, nooit genoeg om die punt te word nie.",
+          "chip": "Gewoonte, nie hype nie"
+        }
+      },
+      "lesson": {
+        "explainLabel": "Verduideliking",
+        "explainBody": "'n Breuk wys gelyke dele van 'n geheel. Die onderste getal is in hoeveel dele die geheel verdeel is.",
+        "exampleLabel": "Visuele voorbeeld",
+        "exampleCaption": "3 van 4 gelyke dele ingekleur = 3/4",
+        "nextUp": "Volgende: oefen ekwivalente breuke →"
+      },
+      "scan": {
+        "reply": "Hierdie bladsy gaan oor ekwivalente breuke. Kom ons begin met wat twee breuke gelyk maak, en probeer dan drie vrae."
+      },
+      "exam": {
+        "ringLabel": "Wiskunde",
+        "ringSub": "Eksamengereedheid",
+        "reviseLabel": "Hersien eers",
+        "topic": {
+          "a": "Gewone breuke",
+          "b": "Desimale breuke",
+          "c": "Getalpatrone"
+        },
+        "mockTest": "Begin 'n proeftoets →"
+      },
+      "rewards": {
+        "unlocked": "Kenteken ontsluit",
+        "badge": "Breuklegende",
+        "badgeWhy": "Elke breuk-onderwerp in Graad 5 bemeester",
+        "points": "Punte",
+        "badges": "Kentekens",
+        "note": "Belonings is vir inspanning en volharding, nooit vir om ander kinders te klop nie. Daar is geen openbare ranglys nie."
+      }
+    },
+    "subjects": {
+      "eyebrow": "Wat gedek word",
+      "title": "Werklike vakke. Werklike kurrikulum.",
+      "lead": "Gebou op die CAPS-kurrikulum vir Graad 4 tot 7. Die dekking hieronder word regstreeks uit ons kurrikulum gelees, dus wys dit wat vandag werklik in die produk is.",
+      "promise": {
+        "mathematics": "Verstaan. Oefen. Bemeester.",
+        "natural-sciences": "Verken. Verstaan. Bemeester.",
+        "social-sciences": "Geskiedenis. Aardrykskunde. Konteks.",
+        "english-home-language": "Lees. Skryf. Kommunikeer.",
+        "afrikaans-first-additional-language": "Lees. Skryf. Praat.",
+        "life-skills": "Groei. Hanteer. Floreer.",
+        "creative-arts": "Skep. Vertoon. Besin."
+      },
+      "promiseDefault": "Verstaan. Oefen. Bemeester.",
+      "gradeRange": "Graad {{value}}",
+      "gradeOne": "Graad {{value}}",
+      "gradeList": "Graad {{value}}",
+      "gradesNone": "Binnekort",
+      "topicCount_one": "{{count}} onderwerp",
+      "topicCount_other": "{{count}} onderwerpe",
+      "footnote": "Kurrikulumdekking groei elke kwartaal. Vakke en grade hier kom regstreeks uit die lewende kurrikulum.",
+      "unavailable": "Vakdekking kon nie nou laai nie. Elke gratis oefentoets is steeds beskikbaar.",
+      "browseFree": "Blaai deur gratis oefentoetse"
+    },
+    "tutorSection": {
+      "eyebrow": "Begeleide hulp",
+      "titleLine1": "Wanneer hulle vasval,",
+      "titleLine2": "hoef hulle nie vas te bly nie.",
+      "lead": "Dit is 20:00, die werkkaart is more in, en niemand by die huis onthou hoe om dit te doen nie. Dit is die oomblik waarvoor hierdie gebou is.",
+      "commitment": "StudyLegends is gebou om te verduidelik, nie om te antwoord nie. Dit lei 'n leerder stap vir stap deur die denke en vra hulle dan om dit te probeer — want 'n afgeskryfde antwoord leer niks en wys in die volgende toets.",
+      "ladder": {
+        "explanation": {
+          "title": "Eers verduideliking",
+          "body": "Die begrip in eenvoudige taal, op die graad waar die leerder werklik is."
+        },
+        "visual": {
+          "title": "Dan 'n visuele voorbeeld",
+          "body": "Gewys as dele, vorms, getallelyne of diagramme — wat ook al die idee laat land."
+        },
+        "worked": {
+          "title": "Dan 'n uitgewerkte voorbeeld",
+          "body": "Een probleem heeltemal deurgewerk, met die rede vir elke stap."
+        },
+        "tryIt": {
+          "title": "Dan probeer hulle",
+          "body": "Die leerder doen die volgende een. Dit is die stap wat 'n huiswerk-antwoordinstrument oorslaan."
+        },
+        "practice": {
+          "title": "Dan oefening",
+          "body": "Meer vrae oor dieselfde onderwerp totdat dit vashou, elkeen gemerk met 'n verduideliking."
+        }
+      }
+    },
+    "progress": {
+      "eyebrow": "Uitkomste",
+      "title": "Sien leer gebeur.",
+      "lead": "Nie skermtyd nie, nie kentekens nie — watter onderwerpe solied is, watter nog 'n draai nodig het, en wat werklik geoefen is.",
+      "panelTitle": "Ouerpaneel · Liam, Graad 5",
+      "overallLabel": "Algehele bemeestering",
+      "overallSub": "Oor alle vakke",
+      "bySubject": "Bemeestering per vak",
+      "stat": {
+        "lessons": "Lesse gedoen",
+        "questions": "Vrae geantwoord",
+        "time": "Oefentyd",
+        "streak": "Dae-reeks"
+      },
+      "attentionLabel": "Benodig aandag",
+      "attention": {
+        "a": "Natuurwetenskappe · Ekosisteme en voedselwebbe",
+        "b": "Wiskunde · Desimale breuke"
+      },
+      "attentionNote": "Onderwerpe val hier wanneer oefenpunte laag bly. StudyLegends stel hulle outomaties volgende voor.",
+      "sampleNote": "Paneel gewys met voorbeelddata vir 'n illustratiewe leerder."
+    },
+    "parents": {
+      "eyebrow": "Vir ouers",
+      "titleLine1": "Weet waar hulle is.",
+      "titleLine2": "Weet waarheen hulle op pad is.",
+      "lead": "Jy hoef nie Graad 6 breuke te verstaan om te weet of jou kind dit doen nie. Jy moet sien waaraan hulle werk, wat land, en wat nie.",
+      "capability": {
+        "dashboard": {
+          "title": "'n Paneel, nie 'n rapport nie",
+          "body": "Bemeestering per vak en per onderwerp, bygewerk soos jou kind werk."
+        },
+        "attention": {
+          "title": "Waarop om volgende te fokus",
+          "body": "Onderwerpe wat nog 'n draai nodig het word uitgelig, sodat hulp gaan waar dit saak maak."
+        },
+        "digest": {
+          "title": "'n Weeklikse e-posopsomming",
+          "body": "Wat gedek is en waar vordering beweeg het, sonder om die app oop te maak."
+        },
+        "startingPoint": {
+          "title": "Stel die beginpunt",
+          "body": "Se vir ons ongeveer waar jou kind per vak is, sodat lesse op die regte plek begin."
+        },
+        "learners": {
+          "title": "Meer as een kind",
+          "body": "Elke leerder kry hul eie profiel, graad, taal en vordering."
+        },
+        "control": {
+          "title": "Jy hou die rekening",
+          "body": "Jy skep die profiele, jy bestuur die intekening, en jy kan vanaf jou paneel kanselleer."
+        }
+      }
+    },
+    "safety": {
+      "eyebrow": "Veiligheid",
+      "titleLine1": "Gebou vir leerders.",
+      "titleLine2": "Ontwerp met veiligheid in gedagte.",
+      "lead": "Die veiligste kenmerke is die wat nie bestaan nie. Hier is wat ons doelbewus uitgelaat het, en wat ons nagaan voordat enigiets by jou kind kom.",
+      "principle": {
+        "noMessaging": {
+          "title": "Geen boodskappe",
+          "body": "Daar is geen manier vir 'n leerder om 'n ander leerder te boodskap nie, of vir 'n vreemdeling om hulle te boodskap nie. Die kenmerk bestaan nie."
+        },
+        "noProfiles": {
+          "title": "Geen openbare profiele",
+          "body": "Niks oor jou kind is sigbaar vir enigiemand buite julle huishouding se rekening nie."
+        },
+        "parentHeld": {
+          "title": "Ouer-gehoue rekeninge",
+          "body": "'n Leerderprofiel word deur 'n ouer binne 'n ouerrekening geskep. Kinders teken nie self aan nie."
+        },
+        "reviewedVideo": {
+          "title": "Elke video nagegaan",
+          "body": "Voorgestelde video's word volledig bekyk en deur 'n persoon in ons span goedgekeur voordat 'n leerder een kan sien."
+        },
+        "noAds": {
+          "title": "Geen advertensies, geen dataverkope",
+          "body": "Daar is geen advertensies in die produk nie en ons verkoop nie persoonlike inligting nie."
+        },
+        "plainTerms": {
+          "title": "Bepalings in eenvoudige taal",
+          "body": "Wat ons insamel en hoekom is geskryf om gelees te word, nie om oorgeslaan te word nie."
+        }
+      },
+      "note": "Ons maak geen aanspraak op enige sertifisering of onafhanklike nakomingsoudit nie. Wat ons wel beweer staan volledig in ons",
+      "privacyLink": "Privaatheidsbeleid"
+    },
+    "local": {
+      "eyebrow": "Hier gebou",
+      "titleLine1": "In Suid-Afrika gemaak,",
+      "titleLine2": "vir Suid-Afrikaanse leerders.",
+      "lead": "Nie 'n internasionale produk met 'n randprys daaraan gelas nie. Die kurrikulum, die tale, die betaalkanale en die databegroting was alles besluite vir hier.",
+      "pillar": {
+        "caps": {
+          "title": "CAPS is die spil",
+          "body": "Vakke, grade en onderwerpe volg die Suid-Afrikaanse kurrikulum, kwartaal vir kwartaal."
+        },
+        "languages": {
+          "title": "Engels en Afrikaans",
+          "body": "Albei tale vandag in die produk, met die oorblywende amptelike tale reeds in die fondament gebou."
+        },
+        "rand": {
+          "title": "In rand geprys",
+          "body": "Gefaktureer in rand deur 'n Suid-Afrikaanse betalingsverskaffer. Geen valutaomskakeling, geen verrassings nie."
+        },
+        "data": {
+          "title": "Lig op data",
+          "body": "Mobiel-eerste en installeerbaar, gebou om op 'n foon op mobiele data te werk eerder as om vesel te aanvaar."
+        }
+      }
+    },
+    "pricing": {
+      "eyebrow": "Pryse",
+      "title": "Een intekening. Die hele gesin.",
+      "lead": "Begin met 'n gratis proeftydperk van {{days}} dae. Kanselleer enige tyd vanaf jou ouerpaneel.",
+      "monthlyName": "Maandeliks",
+      "annualName": "Jaarliks",
+      "perMonth": "/maand",
+      "perYear": "/jaar",
+      "bestValue": "Beste waarde",
+      "saving": "Bespaar R{{amount}} per jaar",
+      "cancelAnytime": "Kanselleer enige tyd",
+      "learners_one": "Tot {{count}} leerderprofiel",
+      "learners_other": "Tot {{count}} leerderprofiele",
+      "includedTitle": "Elke plan sluit in",
+      "included": {
+        "curriculum": "CAPS-belynde lesse vir Graad 4–7",
+        "lessons": "Kort visuele lesse, onderwerp vir onderwerp",
+        "tutor": "Begeleide hulp wat verduidelik in plaas van antwoord",
+        "scan": "Huiswerkhulp uit 'n foto",
+        "practice": "Oefenvrae met 'n verduideliking by elke antwoord",
+        "exam": "Eksamengereedheid, hersieningslyste en proeftoetse",
+        "progress": "Ouerpaneel met bemeestering per onderwerp",
+        "languages": "Engels en Afrikaans",
+        "learners": "Veelvuldige leerderprofiele op een rekening",
+        "offline": "Installeerbaar op 'n foon, gebou om lig op data te wees"
+      },
+      "footnote": "Pryse hier is die lewende pryse op jou rekening en word in Suid-Afrikaanse rand gefaktureer.",
+      "unavailable": "Lewende pryse kon nie nou laai nie.",
+      "seeFullPricing": "Sien volledige pryse"
+    },
+    "final": {
+      "titleLine1": "Gereed om 'n",
+      "titleLine2": "legende te word?",
+      "lead": "Gee leer 'n beter manier om te groei.",
+      "cta": "Begin jou {{days}} dae gratis proeftydperk",
+      "reassurance": "Kanselleer enige tyd vanaf jou ouerpaneel."
     }
   }
 }
