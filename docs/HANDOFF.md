@@ -100,14 +100,21 @@ the bank held 8 questions total.**
 
 ### State of the content
 
-Grades 4-7 are seeded. **72 tests, 1 152 questions (576 EN + 576 AF)**, every
-question carrying its own explanation in both languages.
+Grades 4-7 are seeded. **114 tests, 1 824 questions (912 EN + 912 AF)**,
+every question carrying its own explanation in both languages.
 
 | Grade | Subject | Tests | EN | AF |
 |---|---|---|---:|---:|
 | 4 | Mathematics | 8 | 64 | 64 |
+| 4 | Natural Sciences | 6 | 48 | 48 |
+| 4 | Social Sciences | 8 | 64 | 64 |
+| 4 | English Home Language | 5 | 40 | 40 |
+| 4 | Afrikaans FAL | 5 | 40 | 40 |
 | 5 | Mathematics | 10 | 80 | 80 |
 | 5 | Natural Sciences | 6 | 48 | 48 |
+| 5 | Social Sciences | 8 | 64 | 64 |
+| 5 | English Home Language | 5 | 40 | 40 |
+| 5 | Afrikaans FAL | 5 | 40 | 40 |
 | 6 | Mathematics | 7 | 56 | 56 |
 | 6 | Natural Sciences | 6 | 48 | 48 |
 | 6 | Social Sciences | 6 | 48 | 48 |
@@ -116,16 +123,27 @@ question carrying its own explanation in both languages.
 | 7 | Mathematics | 7 | 56 | 56 |
 | 7 | Natural Sciences | 4 | 32 | 32 |
 | 7 | Social Sciences | 8 | 64 | 64 |
-| | **Total** | **72** | **576** | **576** |
+| | **Total** | **114** | **912** | **912** |
 
-Since updated: Grade 4 Natural Sciences completed (6 tests), taking the bank
-to **78 tests / 1 248 questions**. Integrity across the whole bank verified:
-no question with the wrong number of correct options, no `correct_answer`
-that does not match its `is_correct` option, answer positions spread
-302/368/359/219 across A-D.
+Every grade now has at least four subjects, and Grades 4-6 have all five.
+Grade 7 still has no English HL or Afrikaans FAL tests -- those are the only
+remaining gap in the bank.
 
-**Still missing:** Social Sciences and English Home Language for Grades 4-5,
-Afrikaans FAL for Grades 4-5.
+Answer positions across the whole bank: 446 / 502 / 499 / 377 for A / B / C
+/ D. No position is a giveaway, which is what the rebalancing pass was for.
+
+**Language-subject convention.** In an Afrikaans FAL test the English-language
+version asks its question in English but keeps the *options* in Afrikaans,
+because the Afrikaans word is the thing being tested. English HL does the
+mirror image: the Afrikaans version asks in Afrikaans and keeps the English
+options. Follow this or the test stops testing anything.
+
+**EN/AF answer positions may legitimately differ.** 59 tests have the correct
+answer in a different position in their English and Afrikaans halves. This is
+not a defect -- it is a side effect of the answer-position rebalancing pass,
+which shuffled each language independently. Each question's `correct_answer`
+still matches its own `is_correct` option (verified at zero mismatches), so
+both language versions are internally correct.
 
 Integrity, all verified at zero: questions without exactly one correct
 option, duplicate option labels, duplicate sort orders, missing
@@ -160,6 +178,15 @@ sample). The other 71 are `REVIEW_REQUIRED` and waiting at
    at text that no longer existed.
 4. **Topics that need diagrams** cannot become text-only tests: Grade 5
    `views-of-simple3-d-objects`, tessellations, and grid references.
+5. **A distractor must be a real candidate.** A Grade 4 punctuation question
+   asked which word in "we visited cape town in july." needed a capital and
+   offered "the" -- a word that is not in the sentence. Worse, the obvious
+   repair ("town") would have made *two* answers correct, because Cape Town
+   is two capitalised words. Both problems only surface on a read-back;
+   nothing in the schema can see them.
+6. **Read the finished test back as a learner would.** Every automated check
+   passed on the test above. Rules 2 and 5 are the two failure modes that
+   only a human reading the options in order will ever catch.
 
 ### Two gotchas that cost time
 
