@@ -100,8 +100,9 @@ the bank held 8 questions total.**
 
 ### State of the content
 
-Grades 4-7 are seeded. **114 tests, 1 824 questions (912 EN + 912 AF)**,
-every question carrying its own explanation in both languages.
+Grades 4-7 are seeded and **complete**: every grade now has all five
+subjects. **126 tests, 2 016 questions (1 008 EN + 1 008 AF)**, every question
+carrying its own explanation in both languages.
 
 | Grade | Subject | Tests | EN | AF |
 |---|---|---|---:|---:|
@@ -123,14 +124,22 @@ every question carrying its own explanation in both languages.
 | 7 | Mathematics | 7 | 56 | 56 |
 | 7 | Natural Sciences | 4 | 32 | 32 |
 | 7 | Social Sciences | 8 | 64 | 64 |
-| | **Total** | **114** | **912** | **912** |
+| 7 | English Home Language | 6 | 48 | 48 |
+| 7 | Afrikaans FAL | 6 | 48 | 48 |
+| | **Total** | **126** | **1 008** | **1 008** |
 
-Every grade now has at least four subjects, and Grades 4-6 have all five.
-Grade 7 still has no English HL or Afrikaans FAL tests -- those are the only
-remaining gap in the bank.
-
-Answer positions across the whole bank: 446 / 502 / 499 / 377 for A / B / C
+Answer positions across the whole bank: 494 / 550 / 547 / 425 for A / B / C
 / D. No position is a giveaway, which is what the rebalancing pass was for.
+
+**Grade 7 English HL and Afrikaans FAL topics were created, not extracted.**
+Those two subject/grade pairs had no topics at all, so twelve were authored
+to hang the tests on. This matches how the Grade 4-6 language topics already
+exist (no `source_id`, no `extraction_method`, `validation_status`
+NOT_VALIDATED) -- but unlike those, the new ones are
+`content_workflow_status = 'REVIEW_REQUIRED'`, which puts them in the admin
+curriculum review queue rather than asserting a verification nobody
+performed. Nothing in the learner app filters on that column, so the topics
+work normally in the meantime.
 
 **Language-subject convention.** In an Afrikaans FAL test the English-language
 version asks its question in English but keeps the *options* in Afrikaans,
@@ -187,6 +196,17 @@ sample). The other 71 are `REVIEW_REQUIRED` and waiting at
 6. **Read the finished test back as a learner would.** Every automated check
    passed on the test above. Rules 2 and 5 are the two failure modes that
    only a human reading the options in order will ever catch.
+7. **Two questions in one test must not share a prompt.** The Grade 7
+   `voegwoorde` test had "Which sentence is correct?" twice -- once for
+   `omdat`, once for `want`. Different questions, but nearly identical
+   option sets under an identical prompt, which reads as a mistake. Name what
+   each question is actually testing. A duplicate-prompt-within-a-test query
+   catches this:
+   ```sql
+   select ptq.practice_test_id, q.language, q.prompt
+     from practice_test_questions ptq join questions q on q.id = ptq.question_id
+    group by 1,2,3 having count(*) > 1;
+   ```
 
 ### Two gotchas that cost time
 
