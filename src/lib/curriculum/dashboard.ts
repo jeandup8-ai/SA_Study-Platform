@@ -67,10 +67,19 @@ export interface SubjectMasterySummary {
   isBaseline: boolean
 }
 
+/**
+ * `language` is deliberately required, not defaulted.
+ *
+ * It used to default to 'en', and three of the four call sites simply omitted
+ * it -- so an Afrikaans learner's parent saw "Afrikaans First Additional
+ * Language" and "English Home Language" on a fully Afrikaans dashboard. A
+ * default that silently produces the wrong output is worse than no default:
+ * nothing fails, so nobody finds out.
+ */
 export async function fetchSubjectMasterySummary(
   learnerId: string,
   gradeId: string,
-  language: LanguageCode = 'en',
+  language: LanguageCode,
 ): Promise<SubjectMasterySummary[]> {
   const { data: gradeSubjects } = await supabase
     .from('grade_subjects')
@@ -80,9 +89,15 @@ export async function fetchSubjectMasterySummary(
   const subjectIds = (gradeSubjects ?? []).map((r) => r.subject_id)
   if (subjectIds.length === 0) return []
 
-  const { data: subjects } = await supabase.from('subjects').select('id, name, name_af, color_key').in('id', subjectIds)
+  const { data: subjects } = await supabase
+    .from('subjects')
+    .select('id, name, name_af, color_key')
+    .in('id', subjectIds)
 
-  const { data: topics } = await supabase.from('topics').select('id, subject_id').in('subject_id', subjectIds)
+  const { data: topics } = await supabase
+    .from('topics')
+    .select('id, subject_id')
+    .in('subject_id', subjectIds)
   const topicToSubject = new Map((topics ?? []).map((t) => [t.id, t.subject_id]))
 
   const { data: masteryRows } = await supabase
@@ -94,7 +109,9 @@ export async function fetchSubjectMasterySummary(
     .from('learner_subject_baselines')
     .select('subject_id, baseline_mastery')
     .eq('learner_id', learnerId)
-  const baselineBySubject = new Map((baselineRows ?? []).map((r) => [r.subject_id, Number(r.baseline_mastery)]))
+  const baselineBySubject = new Map(
+    (baselineRows ?? []).map((r) => [r.subject_id, Number(r.baseline_mastery)]),
+  )
 
   const bySubject = new Map<string, number[]>()
   for (const row of masteryRows ?? []) {
@@ -111,9 +128,21 @@ export async function fetchSubjectMasterySummary(
       const scores = bySubject.get(s.id) ?? []
       if (scores.length > 0) {
         const average = scores.reduce((a, b) => a + b, 0) / scores.length
-        return { subjectId: s.id, subjectName: localizedName(s, language), colorKey: s.color_key, averageMastery: average, isBaseline: false }
+        return {
+          subjectId: s.id,
+          subjectName: localizedName(s, language),
+          colorKey: s.color_key,
+          averageMastery: average,
+          isBaseline: false,
+        }
       }
       const baseline = baselineBySubject.get(s.id) ?? 0
-      return { subjectId: s.id, subjectName: localizedName(s, language), colorKey: s.color_key, averageMastery: baseline, isBaseline: baseline > 0 }
+      return {
+        subjectId: s.id,
+        subjectName: localizedName(s, language),
+        colorKey: s.color_key,
+        averageMastery: baseline,
+        isBaseline: baseline > 0,
+      }
     })
 }

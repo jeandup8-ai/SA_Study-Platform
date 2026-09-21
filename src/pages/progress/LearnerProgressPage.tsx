@@ -1,7 +1,10 @@
 import { useTranslation } from 'react-i18next'
 import { Target, CheckCircle2, TrendingUp } from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
-import { fetchSubjectMasterySummary, type SubjectMasterySummary } from '@/lib/curriculum/dashboard'
+import {
+  fetchSubjectMasterySummary,
+  type SubjectMasterySummary,
+} from '@/lib/curriculum/dashboard'
 import { supabase } from '@/lib/supabase'
 import {
   Card,
@@ -30,7 +33,11 @@ export function LearnerProgressPage() {
     async () => {
       const learner = activeLearner!
       const [subjects, countRow] = await Promise.all([
-        fetchSubjectMasterySummary(learner.id, learner.grade_id),
+        fetchSubjectMasterySummary(
+          learner.id,
+          learner.grade_id,
+          learner.preferred_language,
+        ),
         supabase
           .from('learner_progress')
           .select('id', { count: 'exact', head: true })

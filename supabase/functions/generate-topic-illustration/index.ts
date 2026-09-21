@@ -56,19 +56,31 @@ Deno.serve(async (req: Request) => {
   // Scoped to the caller's own JWT throughout -- this function never uses a
   // service-role client. The admin check below is the real gate; RLS on
   // `admins`, `topics`, and `media` provides defense in depth underneath it.
-  const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!, {
-    global: { headers: { Authorization: authHeader } },
-  })
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_ANON_KEY')!,
+    {
+      global: { headers: { Authorization: authHeader } },
+    },
+  )
 
   const {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return jsonResponse({ error: 'unauthorized' }, 401)
 
-  const { data: adminRow } = await supabase.from('admins').select('id').eq('id', user.id).maybeSingle()
+  const { data: adminRow } = await supabase
+    .from('admins')
+    .select('id')
+    .eq('id', user.id)
+    .maybeSingle()
   if (!adminRow) return jsonResponse({ error: 'admin_only' }, 403)
 
-  const { data: topic } = await supabase.from('topics').select('name, subject_id, grade_id').eq('id', topicId).maybeSingle()
+  const { data: topic } = await supabase
+    .from('topics')
+    .select('name, subject_id, grade_id')
+    .eq('id', topicId)
+    .maybeSingle()
   if (!topic) return jsonResponse({ error: 'topic_not_found' }, 404)
 
   const [{ data: subject }, { data: grade }] = await Promise.all([
@@ -109,54 +121,101 @@ Deno.serve(async (req: Request) => {
   let imageBytes: Uint8Array | null = null
   let usedModel = ''
   let lastError = ''
+  let rateLimited = false
+
+  // Image generation is rate limited per minute, and a batch run drives this
+  // function ~200 times in a row. Without this, the first burst succeeds and
+  // the rest of the run comes back as a wall of 429s that look like real
+  // failures. Retries are bounded and honour Retry-After when the provider
+  // sends one.
+  const MAX_ATTEMPTS = 4
+  const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+  function backoffMs(attempt: number, retryAfterHeader: string | null): number {
+    const retryAfter = Number(retryAfterHeader)
+    if (Number.isFinite(retryAfter) && retryAfter > 0)
+      return Math.min(retryAfter * 1000, 30_000)
+    // 2s, 4s, 8s, plus jitter so a batch's parallel workers do not all wake
+    // up at the same instant and immediately re-trip the limit.
+    return Math.min(2 ** attempt * 1000, 16_000) + Math.random() * 500
+  }
 
   for (const { model, quality } of MODELS) {
-    try {
-      const response = await fetch('https://api.openai.com/v1/images/generations', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model, prompt, n: 1, size: '1024x1024', quality }),
-      })
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      try {
+        const response = await fetch('https://api.openai.com/v1/images/generations', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${openaiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ model, prompt, n: 1, size: '1024x1024', quality }),
+        })
 
-      if (!response.ok) {
-        lastError = `${model}: ${response.status} ${await response.text()}`
-        console.error(`OpenAI image generation failed: ${lastError}`)
-        continue
-      }
+        if (!response.ok) {
+          const body = await response.text()
+          lastError = `${model}: ${response.status} ${body}`
+          console.error(`OpenAI image generation failed: ${lastError}`)
 
-      const result = await response.json()
-      const b64 = result?.data?.[0]?.b64_json
-      const url = result?.data?.[0]?.url
+          // 429 is "too fast", 5xx is "try again". Both are worth another go.
+          // Anything else -- a bad request, a model this account cannot use --
+          // will fail identically on a retry, so fall through to the next model.
+          const worthRetrying = response.status === 429 || response.status >= 500
+          if (worthRetrying && attempt < MAX_ATTEMPTS) {
+            if (response.status === 429) rateLimited = true
+            await sleep(backoffMs(attempt, response.headers.get('retry-after')))
+            continue
+          }
+          break
+        }
 
-      if (b64) {
-        imageBytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))
-      } else if (url) {
-        // The URL expires quickly, so it is downloaded now rather than stored.
-        const download = await fetch(url)
-        if (!download.ok) {
-          lastError = `${model}: could not download generated image (${download.status})`
+        const result = await response.json()
+        const b64 = result?.data?.[0]?.b64_json
+        const url = result?.data?.[0]?.url
+
+        if (b64) {
+          imageBytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0))
+        } else if (url) {
+          // The URL expires quickly, so it is downloaded now rather than stored.
+          const download = await fetch(url)
+          if (!download.ok) {
+            lastError = `${model}: could not download generated image (${download.status})`
+            console.error(lastError)
+            continue
+          }
+          imageBytes = new Uint8Array(await download.arrayBuffer())
+        } else {
+          lastError = `${model}: response contained neither b64_json nor url`
           console.error(lastError)
           continue
         }
-        imageBytes = new Uint8Array(await download.arrayBuffer())
-      } else {
-        lastError = `${model}: response contained neither b64_json nor url`
-        console.error(lastError)
-        continue
-      }
 
-      usedModel = model
-      break
-    } catch (err) {
-      lastError = `${model}: ${err instanceof Error ? err.message : String(err)}`
-      console.error(`OpenAI image generation threw: ${lastError}`)
+        usedModel = model
+        break
+      } catch (err) {
+        lastError = `${model}: ${err instanceof Error ? err.message : String(err)}`
+        console.error(`OpenAI image generation threw: ${lastError}`)
+        if (attempt < MAX_ATTEMPTS) {
+          await sleep(backoffMs(attempt, null))
+          continue
+        }
+      }
     }
+    if (imageBytes) break
   }
 
   if (!imageBytes) {
     // Pass the provider's own message back so the admin UI can show what
-    // actually went wrong instead of a bare "failed".
-    return jsonResponse({ error: 'image_generation_failed', detail: lastError.slice(0, 400) }, 502)
+    // actually went wrong instead of a bare "failed", and separate "you are
+    // going too fast" from "this will never work" so a batch run can retry
+    // the first and give up on the second.
+    return jsonResponse(
+      {
+        error: rateLimited ? 'rate_limited' : 'image_generation_failed',
+        detail: lastError.slice(0, 400),
+      },
+      rateLimited ? 429 : 502,
+    )
   }
 
   const path = `${topicId}/${Date.now()}.png`

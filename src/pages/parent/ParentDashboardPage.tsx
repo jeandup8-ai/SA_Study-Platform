@@ -1,14 +1,35 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { Pencil, ChevronDown, ChevronUp, BookOpenCheck, ListChecks, Clock, UserPlus, ShieldCheck } from 'lucide-react'
+import {
+  Pencil,
+  ChevronDown,
+  ChevronUp,
+  BookOpenCheck,
+  ListChecks,
+  Clock,
+  UserPlus,
+  ShieldCheck,
+} from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
-import { fetchSubjectMasterySummary, type SubjectMasterySummary } from '@/lib/curriculum/dashboard'
+import {
+  fetchSubjectMasterySummary,
+  type SubjectMasterySummary,
+} from '@/lib/curriculum/dashboard'
 import { fetchTopicsWithProgress, type TopicWithProgress } from '@/lib/curriculum/topics'
-import { fetchWeeklyStats, fetchAttentionNeeded, type WeeklyStats, type TopicAttention } from '@/lib/parent/dashboard'
+import {
+  fetchWeeklyStats,
+  fetchAttentionNeeded,
+  type WeeklyStats,
+  type TopicAttention,
+} from '@/lib/parent/dashboard'
 import { setSubjectBaseline } from '@/lib/parent/subjectBaseline'
 import { setTopicBaseline } from '@/lib/parent/topicBaseline'
-import { fetchDailyGoalProgress, updateDailyTarget, type DailyGoalProgress } from '@/lib/gamification/dailyGoal'
+import {
+  fetchDailyGoalProgress,
+  updateDailyTarget,
+  type DailyGoalProgress,
+} from '@/lib/gamification/dailyGoal'
 import {
   Card,
   ProgressRing,
@@ -36,22 +57,31 @@ export function ParentDashboardPage() {
   const [editValue, setEditValue] = useState('')
   const [savingBaseline, setSavingBaseline] = useState(false)
   const [expandedSubjectId, setExpandedSubjectId] = useState<string | null>(null)
-  const [topicsBySubject, setTopicsBySubject] = useState<Record<string, TopicWithProgress[]>>({})
+  const [topicsBySubject, setTopicsBySubject] = useState<
+    Record<string, TopicWithProgress[]>
+  >({})
   const [editingTopicId, setEditingTopicId] = useState<string | null>(null)
   const [topicEditValue, setTopicEditValue] = useState('')
   const [savingTopicBaseline, setSavingTopicBaseline] = useState(false)
 
   const loadSubjects = useCallback(() => {
     if (!activeLearner) return
-    fetchSubjectMasterySummary(activeLearner.id, activeLearner.grade_id).then(setSubjects)
+    fetchSubjectMasterySummary(
+      activeLearner.id,
+      activeLearner.grade_id,
+      activeLearner.preferred_language,
+    ).then(setSubjects)
   }, [activeLearner])
 
   const loadTopicsForSubject = useCallback(
     (subjectId: string) => {
       if (!activeLearner) return
-      fetchTopicsWithProgress(subjectId, activeLearner.grade_id, activeLearner.id, activeLearner.preferred_language).then(
-        (topics) => setTopicsBySubject((prev) => ({ ...prev, [subjectId]: topics })),
-      )
+      fetchTopicsWithProgress(
+        subjectId,
+        activeLearner.grade_id,
+        activeLearner.id,
+        activeLearner.preferred_language,
+      ).then((topics) => setTopicsBySubject((prev) => ({ ...prev, [subjectId]: topics })))
     },
     [activeLearner],
   )
@@ -61,7 +91,9 @@ export function ParentDashboardPage() {
     fetchWeeklyStats(activeLearner.id).then(setStats)
     loadSubjects()
     fetchAttentionNeeded(activeLearner.id).then(setAttention)
-    fetchDailyGoalProgress(activeLearner.id, activeLearner.daily_practice_target).then(setDailyGoal)
+    fetchDailyGoalProgress(activeLearner.id, activeLearner.daily_practice_target).then(
+      setDailyGoal,
+    )
   }, [activeLearner, loadSubjects])
 
   async function saveDailyTarget() {
@@ -134,7 +166,9 @@ export function ParentDashboardPage() {
   if (!activeLearner) return null
 
   const overallMastery =
-    subjects.length > 0 ? subjects.reduce((sum, s) => sum + s.averageMastery, 0) / subjects.length : 0
+    subjects.length > 0
+      ? subjects.reduce((sum, s) => sum + s.averageMastery, 0) / subjects.length
+      : 0
 
   return (
     <div>
@@ -177,9 +211,13 @@ export function ParentDashboardPage() {
               .sort((a, b) => b.total_points - a.total_points)
               .map((l, i) => (
                 <div key={l.id} className="flex items-center gap-3">
-                  <span className="w-5 text-center text-sm font-bold text-slate-400">{i + 1}</span>
+                  <span className="w-5 text-center text-sm font-bold text-slate-400">
+                    {i + 1}
+                  </span>
                   <LearnerAvatarIcon avatar={l.avatar} />
-                  <span className="flex-1 text-sm font-semibold text-slate-700">{l.display_name}</span>
+                  <span className="flex-1 text-sm font-semibold text-slate-700">
+                    {l.display_name}
+                  </span>
                   <span className="text-sm font-bold text-brand-700">
                     {t('gamification.totalPoints', { count: l.total_points })}
                   </span>
@@ -211,17 +249,24 @@ export function ParentDashboardPage() {
         />
         <Card className="flex flex-col items-center justify-center gap-1">
           <ProgressRing value={overallMastery} size={40} strokeWidth={5} />
-          <p className="text-xs font-medium text-slate-500">{t('parent.overallMastery')}</p>
+          <p className="text-xs font-medium text-slate-500">
+            {t('parent.overallMastery')}
+          </p>
         </Card>
       </div>
 
       <Card className="mt-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="font-display text-sm font-bold text-slate-800">{t('parent.dailyGoalTitle')}</p>
+            <p className="font-display text-sm font-bold text-slate-800">
+              {t('parent.dailyGoalTitle')}
+            </p>
             <p className="mt-0.5 text-sm text-slate-500">
               {dailyGoal
-                ? t('dashboard.dailyGoalProgress', { done: dailyGoal.activitiesToday, target: dailyGoal.target })
+                ? t('dashboard.dailyGoalProgress', {
+                    done: dailyGoal.activitiesToday,
+                    target: dailyGoal.target,
+                  })
                 : t('common.loading')}
             </p>
           </div>
@@ -240,7 +285,9 @@ export function ParentDashboardPage() {
         </div>
         {editingDailyTarget && (
           <div className="mt-3 flex items-center gap-2 border-t border-slate-100 pt-3">
-            <label className="text-sm font-medium text-slate-600">{t('parent.dailyGoalLabel')}</label>
+            <label className="text-sm font-medium text-slate-600">
+              {t('parent.dailyGoalLabel')}
+            </label>
             <input
               type="number"
               min={1}
@@ -248,10 +295,19 @@ export function ParentDashboardPage() {
               onChange={(e) => setDailyTargetValue(e.target.value)}
               className="w-20 rounded-lg border-2 border-slate-200 px-2 py-1 text-sm"
             />
-            <Button size="md" className="ml-auto" disabled={savingDailyTarget || dailyTargetValue === ''} onClick={() => void saveDailyTarget()}>
+            <Button
+              size="md"
+              className="ml-auto"
+              disabled={savingDailyTarget || dailyTargetValue === ''}
+              onClick={() => void saveDailyTarget()}
+            >
               {t('common.save')}
             </Button>
-            <Button size="md" variant="ghost" onClick={() => setEditingDailyTarget(false)}>
+            <Button
+              size="md"
+              variant="ghost"
+              onClick={() => setEditingDailyTarget(false)}
+            >
               {t('common.cancel')}
             </Button>
           </div>
@@ -264,20 +320,30 @@ export function ParentDashboardPage() {
       <div className="mt-3 space-y-2">
         {subjects.map((s) => (
           <Card key={s.subjectId}>
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="font-semibold text-slate-800">{s.subjectName}</p>
+            {/* Stacked on a phone, side by side from `sm`. The controls on the
+                right are ~236px of fixed width; side by side at 390px that
+                left the subject name about 70px, so "Afrikaans First
+                Additional Language" wrapped onto four lines and the card grew
+                to match. */}
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <p className="font-semibold text-slate-800 break-words">
+                  {s.subjectName}
+                </p>
                 {s.isBaseline && (
                   <div className="mt-1">
                     <Badge tone="neutral">{t('parent.startingPointBadge')}</Badge>
                   </div>
                 )}
               </div>
-              <div className="flex items-center gap-3">
-                <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-100 sm:w-32">
-                  <div className="h-full rounded-full bg-brand-500" style={{ width: `${s.averageMastery}%` }} />
+              <div className="flex shrink-0 items-center gap-3">
+                <div className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-slate-100 sm:w-32 sm:flex-none">
+                  <div
+                    className="h-full rounded-full bg-brand-500"
+                    style={{ width: `${s.averageMastery}%` }}
+                  />
                 </div>
-                <span className="w-10 text-right text-sm font-bold text-slate-600">
+                <span className="w-10 shrink-0 text-right text-sm font-bold text-slate-600">
                   {Math.round(s.averageMastery)}%
                 </span>
                 {editingSubjectId !== s.subjectId && (
@@ -294,7 +360,11 @@ export function ParentDashboardPage() {
                   aria-label={t('parent.byTopicToggle')}
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600"
                 >
-                  {expandedSubjectId === s.subjectId ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  {expandedSubjectId === s.subjectId ? (
+                    <ChevronUp size={16} />
+                  ) : (
+                    <ChevronDown size={16} />
+                  )}
                 </button>
               </div>
             </div>
@@ -303,7 +373,9 @@ export function ParentDashboardPage() {
               <div className="mt-3 border-t border-slate-100 pt-3">
                 <p className="text-xs text-slate-500">{t('parent.startingPointHint')}</p>
                 <div className="mt-2 flex items-center gap-2">
-                  <label className="text-sm font-medium text-slate-600">{t('parent.startingPointLabel')}</label>
+                  <label className="text-sm font-medium text-slate-600">
+                    {t('parent.startingPointLabel')}
+                  </label>
                   <input
                     type="number"
                     min={0}
@@ -321,7 +393,11 @@ export function ParentDashboardPage() {
                   >
                     {t('common.save')}
                   </Button>
-                  <Button size="md" variant="ghost" onClick={() => setEditingSubjectId(null)}>
+                  <Button
+                    size="md"
+                    variant="ghost"
+                    onClick={() => setEditingSubjectId(null)}
+                  >
                     {t('common.cancel')}
                   </Button>
                 </div>
@@ -334,14 +410,20 @@ export function ParentDashboardPage() {
                 {(topicsBySubject[s.subjectId] ?? []).map((topic) => (
                   <div key={topic.id}>
                     <div className="flex items-center justify-between gap-3">
-                      <div>
-                        <p className="text-sm text-slate-700">{topic.name}</p>
+                      <div className="min-w-0">
+                        {/* CAPS topic names run long -- "The special names for
+                            very large numbers: 1 million, 1 milliard..." -- so
+                            this has to be allowed to wrap rather than push the
+                            controls off the card. */}
+                        <p className="text-sm text-slate-700 break-words">{topic.name}</p>
                         {topic.isBaseline && (
                           <Badge tone="neutral">{t('parent.startingPointBadge')}</Badge>
                         )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-bold text-slate-600">{Math.round(topic.masteryScore)}%</span>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <span className="text-sm font-bold text-slate-600">
+                          {Math.round(topic.masteryScore)}%
+                        </span>
                         {editingTopicId !== topic.id && (
                           <button
                             onClick={() => startEditingTopicBaseline(topic)}
@@ -372,7 +454,11 @@ export function ParentDashboardPage() {
                         >
                           {t('common.save')}
                         </Button>
-                        <Button size="md" variant="ghost" onClick={() => setEditingTopicId(null)}>
+                        <Button
+                          size="md"
+                          variant="ghost"
+                          onClick={() => setEditingTopicId(null)}
+                        >
                           {t('common.cancel')}
                         </Button>
                       </div>
@@ -390,7 +476,9 @@ export function ParentDashboardPage() {
 
       <SectionLabel className="mt-8">{t('parent.attentionNeeded')}</SectionLabel>
       <div className="mt-3 flex flex-wrap gap-2">
-        {attention.length === 0 && <p className="text-sm text-slate-400">{t('parent.noAttentionNeeded')}</p>}
+        {attention.length === 0 && (
+          <p className="text-sm text-slate-400">{t('parent.noAttentionNeeded')}</p>
+        )}
         {attention.map((a) => (
           <Badge key={a.topicId} tone="warning">
             {a.topicName} · {Math.round(a.masteryScore)}%
@@ -401,7 +489,8 @@ export function ParentDashboardPage() {
       {attention.length > 0 && (
         <Card tone="volt" className="mt-4">
           <p className="text-sm font-semibold text-volt-700">
-            {t('parent.recommended')}: {t('parent.recommendedSessions', { count: 3, minutes: 20 })}
+            {t('parent.recommended')}:{' '}
+            {t('parent.recommendedSessions', { count: 3, minutes: 20 })}
           </p>
         </Card>
       )}

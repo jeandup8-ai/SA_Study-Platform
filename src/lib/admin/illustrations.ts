@@ -9,12 +9,18 @@ import { supabase } from '@/lib/supabase'
  */
 
 export async function approveIllustration(mediaId: string) {
-  const { error } = await supabase.from('media').update({ approval_status: 'approved' }).eq('id', mediaId)
+  const { error } = await supabase
+    .from('media')
+    .update({ approval_status: 'approved' })
+    .eq('id', mediaId)
   if (error) throw error
 }
 
 export async function rejectIllustration(mediaId: string) {
-  const { error } = await supabase.from('media').update({ approval_status: 'rejected' }).eq('id', mediaId)
+  const { error } = await supabase
+    .from('media')
+    .update({ approval_status: 'rejected' })
+    .eq('id', mediaId)
   if (error) throw error
 }
 
@@ -32,7 +38,9 @@ export interface TopicIllustrationStatus {
 }
 
 /** Every real (non-demo) topic with its current illustration state. */
-export async function fetchTopicIllustrationStatuses(): Promise<TopicIllustrationStatus[]> {
+export async function fetchTopicIllustrationStatuses(): Promise<
+  TopicIllustrationStatus[]
+> {
   const { data: topics, error: topicsError } = await supabase
     .from('topics')
     .select('id, name, subject_id, grade_id')
@@ -62,7 +70,8 @@ export async function fetchTopicIllustrationStatuses(): Promise<TopicIllustratio
   type MediaSummary = NonNullable<typeof mediaRows>[number]
   const currentByTopic = new Map<string, MediaSummary>()
   for (const row of mediaRows ?? []) {
-    if (row.topic_id && !currentByTopic.has(row.topic_id)) currentByTopic.set(row.topic_id, row)
+    if (row.topic_id && !currentByTopic.has(row.topic_id))
+      currentByTopic.set(row.topic_id, row)
   }
 
   return topics.map((t) => {
@@ -83,6 +92,9 @@ export async function fetchTopicIllustrationStatuses(): Promise<TopicIllustratio
 export interface GenerateIllustrationResult {
   ok: boolean
   error?: string
+  /** The provider asked us to slow down. Worth trying this topic again later
+   * in the run rather than recording it as a failure. */
+  rateLimited?: boolean
 }
 
 export async function generateTopicIllustration(
@@ -93,15 +105,21 @@ export async function generateTopicIllustration(
     body: sceneHint ? { topicId, sceneHint } : { topicId },
   })
   if (error) {
-    const context = (error as {
-      context?: { json?: () => Promise<{ error?: string; detail?: string }> }
-    }).context
+    const context = (
+      error as {
+        context?: { json?: () => Promise<{ error?: string; detail?: string }> }
+      }
+    ).context
     const respBody = await context?.json?.().catch(() => null)
     // `detail` carries the image provider's own message. Without it every
     // failure looked identical ("image_generation_failed"), which is what
     // hid a plain 400 from a removed API parameter for as long as it did.
     const code = respBody?.error ?? 'unknown'
-    return { ok: false, error: respBody?.detail ? `${code}: ${respBody.detail}` : code }
+    return {
+      ok: false,
+      rateLimited: code === 'rate_limited',
+      error: respBody?.detail ? `${code}: ${respBody.detail}` : code,
+    }
   }
   if (!data?.media) return { ok: false, error: 'unknown' }
   return { ok: true }
@@ -162,6 +180,16 @@ export async function generateIllustrationsBatch(
   } = options
 
   const workers = Math.max(1, Math.min(Math.trunc(concurrency), MAX_CONCURRENCY))
+  // `topicIds` is appended to when a topic is rate limited, so the queue can
+  // grow; `requeued` bounds that so a permanently throttled account ends the
+  // run instead of looping forever.
+  const queue = [...topicIds]
+  // Reported as the denominator. `queue` grows when a topic is requeued, so
+  // using its length would make the progress bar run backwards mid-run.
+  const total = topicIds.length
+  const requeued = new Map<string, number>()
+  const MAX_REQUEUES = 3
+  const RATE_LIMIT_PAUSE_MS = 20_000
   const failed: { topicId: string; error: string }[] = []
   let succeeded = 0
   let done = 0
@@ -169,19 +197,34 @@ export async function generateIllustrationsBatch(
   let cursor = 0
 
   const report = () =>
-    onProgress?.({ done, total: topicIds.length, inFlight, succeeded, failed: failed.length })
+    onProgress?.({ done, total, inFlight, succeeded, failed: failed.length })
 
   async function runWorker() {
     for (;;) {
       if (shouldContinue && !shouldContinue()) return
       const index = cursor++
-      if (index >= topicIds.length) return
-      const topicId = topicIds[index]
+      if (index >= queue.length) return
+      const topicId = queue[index]
 
       inFlight++
       report()
       const result = await generateTopicIllustration(topicId)
       inFlight--
+
+      // A rate-limited topic is not a failure, it is a "not yet". The edge
+      // function already retried it several times, so by the time it reaches
+      // here the whole account is saturated: pause this worker, put the topic
+      // back on the end of the queue, and carry on. Without this, a long run
+      // against a low per-minute image quota reports most of the batch as
+      // broken when nothing is actually wrong.
+      if (result.rateLimited && (requeued.get(topicId) ?? 0) < MAX_REQUEUES) {
+        requeued.set(topicId, (requeued.get(topicId) ?? 0) + 1)
+        queue.push(topicId)
+        await new Promise((resolve) => setTimeout(resolve, RATE_LIMIT_PAUSE_MS))
+        report()
+        continue
+      }
+
       done++
       if (result.ok) succeeded++
       else failed.push({ topicId, error: result.error ?? 'unknown' })
@@ -193,6 +236,6 @@ export async function generateIllustrationsBatch(
   }
 
   report()
-  await Promise.all(Array.from({ length: Math.min(workers, topicIds.length) }, runWorker))
+  await Promise.all(Array.from({ length: Math.min(workers, queue.length) }, runWorker))
   return { succeeded, failed }
 }

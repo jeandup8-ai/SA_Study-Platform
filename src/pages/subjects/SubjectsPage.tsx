@@ -2,7 +2,10 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { BookOpen } from 'lucide-react'
 import { useLearner } from '@/context/LearnerContext'
-import { fetchSubjectMasterySummary, type SubjectMasterySummary } from '@/lib/curriculum/dashboard'
+import {
+  fetchSubjectMasterySummary,
+  type SubjectMasterySummary,
+} from '@/lib/curriculum/dashboard'
 import {
   ProgressRing,
   PageHeader,
@@ -20,7 +23,12 @@ export function SubjectsPage() {
   const learnerId = activeLearner?.id ?? null
 
   const { status, data, reload } = useAsync<SubjectMasterySummary[]>(
-    () => fetchSubjectMasterySummary(activeLearner!.id, activeLearner!.grade_id),
+    () =>
+      fetchSubjectMasterySummary(
+        activeLearner!.id,
+        activeLearner!.grade_id,
+        activeLearner!.preferred_language,
+      ),
     [learnerId],
     { enabled: Boolean(activeLearner) },
   )
@@ -49,7 +57,9 @@ export function SubjectsPage() {
                 })}
               >
                 <div className="min-w-0">
-                  <p className="font-display font-bold text-slate-900 break-words">{s.subjectName}</p>
+                  <p className="font-display font-bold text-slate-900 break-words">
+                    {s.subjectName}
+                  </p>
                   <p className="text-sm text-slate-500">
                     {Math.round(s.averageMastery)}% {t('subjects.mastery').toLowerCase()}
                   </p>
