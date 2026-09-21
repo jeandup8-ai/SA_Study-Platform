@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { ArrowRight } from 'lucide-react'
 import { MarketingShell } from '@/components/layout/MarketingShell'
 import { PracticeLanguageToggle } from '@/pages/practice/PracticeLanguageToggle'
 import { PracticeBreadcrumbs } from '@/pages/practice/PracticeBreadcrumbs'
@@ -14,7 +15,8 @@ import {
 } from '@/lib/practice/queries'
 import { localizedName } from '@/lib/i18n/localizedName'
 import { useSeo } from '@/hooks/useSeo'
-import { Card } from '@/components/ui'
+import { PageHero, Reveal, Section } from '@/components/marketing'
+import { SkeletonList } from '@/components/ui'
 import type { LanguageCode } from '@/types/curriculum'
 
 /** `/practice/grade-5/mathematics` -- every free test in one subject. */
@@ -62,64 +64,72 @@ export function PracticeSubjectPage() {
   if (!validGrade || !subjectSlug) return <Navigate to="/practice" replace />
 
   return (
-    <MarketingShell>
-      <div className="mx-auto max-w-4xl px-4 py-12">
-        <PracticeBreadcrumbs
-          items={[
-            {
-              label: t('practice.gradeLabel', { grade: gradeNumber }),
-              to: `/practice/grade-${gradeNumber}`,
-            },
-            { label: subjectName },
-          ]}
-        />
+    <MarketingShell surface="dark">
+      <PageHero
+        above={
+          <PracticeBreadcrumbs
+            items={[
+              {
+                label: t('practice.gradeLabel', { grade: gradeNumber }),
+                to: `/practice/grade-${gradeNumber}`,
+              },
+              { label: subjectName },
+            ]}
+          />
+        }
+        eyebrow={t('practice.freeBadge')}
+        title={t('practice.subjectHeading', { grade: gradeNumber, subject: subjectName })}
+        lead={t('practice.subjectIntro')}
+        aside={<PracticeLanguageToggle />}
+      />
 
-        <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="font-display text-3xl font-extrabold tracking-tight text-slate-900">
-              {t('practice.subjectHeading', { grade: gradeNumber, subject: subjectName })}
-            </h1>
-            <p className="mt-2 max-w-xl text-slate-600">{t('practice.subjectIntro')}</p>
-          </div>
-          <PracticeLanguageToggle />
-        </div>
-
-        {loading && <p className="mt-8 text-slate-400">{t('common.loading')}</p>}
-
-        {!loading && tests.length === 0 && (
-          <Card className="mt-8 text-center text-slate-500">
+      <Section tone="light">
+        {loading ? (
+          <SkeletonList count={5} label={t('common.loading')} />
+        ) : tests.length === 0 ? (
+          <p className="rounded-3xl border border-dashed border-ink-200 bg-white px-6 py-12 text-center text-ink-500">
             {t('practice.noTestsForSubject')}
-          </Card>
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {tests.map((test, i) => {
+              const summary = practiceTestSummary(test, language)
+              return (
+                <Reveal key={test.id} delay={Math.min(i, 10) * 40}>
+                  <Link
+                    to={`/practice/grade-${gradeNumber}/${subjectSlug}/${test.slug}`}
+                    className="group flex items-center justify-between gap-4 rounded-3xl border border-ink-200/70 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-volt-300 hover:shadow-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-volt-300"
+                  >
+                    <span className="min-w-0">
+                      <span className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                        <span className="font-display text-lg font-extrabold text-ink-900 break-words">
+                          {practiceTestTitle(test, language)}
+                        </span>
+                        <span className="text-xs font-semibold text-ink-400">
+                          {t('practice.questionCount', { count: test.questionCount })}
+                          {test.languages.length > 1
+                            ? ` · ${t('practice.bothLanguages')}`
+                            : ''}
+                        </span>
+                      </span>
+                      {summary && (
+                        <span className="mt-1.5 block text-sm text-ink-500">
+                          {summary}
+                        </span>
+                      )}
+                    </span>
+                    <ArrowRight
+                      size={20}
+                      aria-hidden
+                      className="shrink-0 text-ink-300 transition group-hover:translate-x-1 group-hover:text-volt-600"
+                    />
+                  </Link>
+                </Reveal>
+              )
+            })}
+          </div>
         )}
-
-        <div className="mt-8 space-y-3">
-          {tests.map((test) => {
-            const summary = practiceTestSummary(test, language)
-            return (
-              <Link
-                key={test.id}
-                to={`/practice/grade-${gradeNumber}/${subjectSlug}/${test.slug}`}
-                className="block"
-              >
-                <Card className="transition-shadow hover:shadow-md">
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
-                    <p className="font-bold text-slate-900">
-                      {practiceTestTitle(test, language)}
-                    </p>
-                    <p className="text-xs font-semibold text-slate-400">
-                      {t('practice.questionCount', { count: test.questionCount })}
-                      {test.languages.length > 1
-                        ? ` · ${t('practice.bothLanguages')}`
-                        : ''}
-                    </p>
-                  </div>
-                  {summary && <p className="mt-1 text-sm text-slate-500">{summary}</p>}
-                </Card>
-              </Link>
-            )
-          })}
-        </div>
-      </div>
+      </Section>
     </MarketingShell>
   )
 }

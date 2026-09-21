@@ -12,3 +12,4 @@ export {
   PracticeCard,
   ScanCard,
 } from './ProductUi'
+export { PageHero } from './PageHero'

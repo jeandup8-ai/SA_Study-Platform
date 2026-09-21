@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { CheckCircle2, Languages, BookOpenCheck } from 'lucide-react'
+import { ArrowRight, CheckCircle2, Languages, BookOpenCheck } from 'lucide-react'
 import { MarketingShell } from '@/components/layout/MarketingShell'
 import { PracticeLanguageToggle } from '@/pages/practice/PracticeLanguageToggle'
 import { fetchPracticeGradeCounts } from '@/lib/practice/queries'
 import { useSeo } from '@/hooks/useSeo'
-import { Card } from '@/components/ui'
+import {
+  MarketingButton,
+  PageHero,
+  Reveal,
+  Section,
+  SectionHeading,
+} from '@/components/marketing'
 
 const GRADES = [4, 5, 6, 7]
 
@@ -42,67 +48,73 @@ export function PracticeHubPage() {
   })
 
   return (
-    <MarketingShell>
-      <div className="mx-auto max-w-4xl px-4 py-12">
-        <div className="flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <p className="text-sm font-bold uppercase tracking-wide text-brand-600">
-              {t('practice.freeBadge')}
-            </p>
-            <h1 className="mt-1 font-display text-3xl font-extrabold tracking-tight text-slate-900">
-              {t('practice.hubTitle')}
-            </h1>
-            <p className="mt-2 max-w-xl text-slate-600">{t('practice.hubIntro')}</p>
-          </div>
-          <PracticeLanguageToggle />
-        </div>
-
-        <ul className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold text-slate-600">
+    <MarketingShell surface="dark">
+      <PageHero
+        eyebrow={t('practice.freeBadge')}
+        title={t('practice.hubTitle')}
+        lead={t('practice.hubIntro')}
+        aside={<PracticeLanguageToggle />}
+      >
+        <ul className="mt-9 flex flex-wrap gap-x-7 gap-y-3 text-sm font-semibold text-ink-200">
           <li className="flex items-center gap-2">
-            <CheckCircle2 size={16} className="text-success-600" />{' '}
+            <CheckCircle2 size={16} className="text-volt-300" aria-hidden />
             {t('practice.promise.free')}
           </li>
           <li className="flex items-center gap-2">
-            <BookOpenCheck size={16} className="text-success-600" />{' '}
+            <BookOpenCheck size={16} className="text-volt-300" aria-hidden />
             {t('practice.promise.explanations')}
           </li>
           <li className="flex items-center gap-2">
-            <Languages size={16} className="text-success-600" />{' '}
+            <Languages size={16} className="text-volt-300" aria-hidden />
             {t('practice.promise.bilingual')}
           </li>
         </ul>
+      </PageHero>
 
-        <div className="mt-10 grid gap-4 sm:grid-cols-2">
-          {GRADES.map((grade) => {
+      <Section tone="light">
+        <div className="grid gap-4 sm:grid-cols-2">
+          {GRADES.map((grade, i) => {
             const count = counts.get(grade) ?? 0
             return (
-              <Link key={grade} to={`/practice/grade-${grade}`}>
-                <Card className="h-full transition-shadow hover:shadow-md">
-                  <p className="text-2xl font-extrabold text-slate-900">
-                    {t('practice.gradeLabel', { grade })}
-                  </p>
-                  <p className="mt-1 text-sm text-slate-500">
-                    {count > 0
-                      ? t('practice.testCount', { count })
-                      : t('practice.comingSoon')}
-                  </p>
-                </Card>
-              </Link>
+              <Reveal key={grade} delay={i * 60}>
+                <Link
+                  to={`/practice/grade-${grade}`}
+                  className="group flex h-full items-center justify-between gap-4 rounded-3xl border border-ink-200/70 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-volt-300 hover:shadow-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-volt-300"
+                >
+                  <span className="min-w-0">
+                    <span className="font-display block text-2xl font-extrabold text-ink-900">
+                      {t('practice.gradeLabel', { grade })}
+                    </span>
+                    <span className="mt-1 block text-sm text-ink-500">
+                      {count > 0
+                        ? t('practice.testCount', { count })
+                        : t('practice.comingSoon')}
+                    </span>
+                  </span>
+                  <ArrowRight
+                    size={20}
+                    aria-hidden
+                    className="shrink-0 text-ink-300 transition group-hover:translate-x-1 group-hover:text-volt-600"
+                  />
+                </Link>
+              </Reveal>
             )
           })}
         </div>
+      </Section>
 
-        <div className="mt-12 rounded-3xl bg-brand-50 p-6">
-          <h2 className="font-bold text-slate-900">{t('practice.upsellTitle')}</h2>
-          <p className="mt-1.5 text-sm text-slate-600">{t('practice.upsellBody')}</p>
-          <Link
-            to="/pricing"
-            className="mt-3 inline-block text-sm font-bold text-brand-700 underline"
-          >
+      <Section tone="dark">
+        <SectionHeading
+          title={t('practice.upsellTitle')}
+          lead={t('practice.upsellBody')}
+        />
+        <Reveal delay={120} className="mt-8">
+          <MarketingButton to="/pricing" variant="volt">
             {t('practice.upsellCta')}
-          </Link>
-        </div>
-      </div>
+            <ArrowRight size={18} aria-hidden />
+          </MarketingButton>
+        </Reveal>
+      </Section>
     </MarketingShell>
   )
 }

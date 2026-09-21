@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { ArrowRight } from 'lucide-react'
 import { MarketingShell } from '@/components/layout/MarketingShell'
 import { PracticeLanguageToggle } from '@/pages/practice/PracticeLanguageToggle'
 import { PracticeBreadcrumbs } from '@/pages/practice/PracticeBreadcrumbs'
@@ -10,7 +11,8 @@ import {
 } from '@/lib/practice/queries'
 import { localizedName } from '@/lib/i18n/localizedName'
 import { useSeo } from '@/hooks/useSeo'
-import { Card } from '@/components/ui'
+import { PageHero, Reveal, Section } from '@/components/marketing'
+import { SkeletonList } from '@/components/ui'
 import type { LanguageCode } from '@/types/curriculum'
 
 /** `/practice/grade-5` -- pick a subject. */
@@ -43,57 +45,62 @@ export function PracticeGradePage() {
   if (!validGrade) return <Navigate to="/practice" replace />
 
   return (
-    <MarketingShell>
-      <div className="mx-auto max-w-4xl px-4 py-12">
-        <PracticeBreadcrumbs
-          items={[{ label: t('practice.gradeLabel', { grade: gradeNumber }) }]}
-        />
+    <MarketingShell surface="dark">
+      <PageHero
+        above={
+          <PracticeBreadcrumbs
+            items={[{ label: t('practice.gradeLabel', { grade: gradeNumber }) }]}
+          />
+        }
+        eyebrow={t('practice.freeBadge')}
+        title={t('practice.gradeHeading', { grade: gradeNumber })}
+        lead={t('practice.gradeIntro')}
+        aside={<PracticeLanguageToggle />}
+      />
 
-        <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
-          <div>
-            <h1 className="font-display text-3xl font-extrabold tracking-tight text-slate-900">
-              {t('practice.gradeHeading', { grade: gradeNumber })}
-            </h1>
-            <p className="mt-2 max-w-xl text-slate-600">{t('practice.gradeIntro')}</p>
-          </div>
-          <PracticeLanguageToggle />
-        </div>
-
-        {loading && <p className="mt-8 text-slate-400">{t('common.loading')}</p>}
-
-        {!loading && subjects.length === 0 && (
-          <Card className="mt-8 text-center text-slate-500">
+      <Section tone="light">
+        {loading ? (
+          <SkeletonList count={4} label={t('common.loading')} />
+        ) : subjects.length === 0 ? (
+          <p className="rounded-3xl border border-dashed border-ink-200 bg-white px-6 py-12 text-center text-ink-500">
             {t('practice.noTestsForGrade')}
-          </Card>
+          </p>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2">
+            {subjects.map((subject, i) => (
+              <Reveal key={subject.subjectId} delay={i * 50}>
+                <Link
+                  to={`/practice/grade-${gradeNumber}/${subject.slug}`}
+                  className="group flex h-full items-center justify-between gap-4 rounded-3xl border border-ink-200/70 bg-white p-6 shadow-sm transition hover:-translate-y-0.5 hover:border-volt-300 hover:shadow-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-volt-300"
+                >
+                  <span className="min-w-0">
+                    <span className="font-display block text-lg font-extrabold text-ink-900 break-words">
+                      {localizedName(
+                        { name: subject.name, name_af: subject.nameAf },
+                        language,
+                      )}
+                    </span>
+                    <span className="mt-1 block text-sm text-ink-500">
+                      {t('practice.testCount', { count: subject.testCount })} ·{' '}
+                      {t('practice.questionCount', { count: subject.questionCount })}
+                    </span>
+                    {subject.languages.length > 1 && (
+                      <span className="mt-2 inline-block rounded-full bg-volt-100 px-2.5 py-0.5 text-xs font-bold uppercase tracking-wide text-volt-700">
+                        {t('practice.bothLanguages')}
+                      </span>
+                    )}
+                  </span>
+                  <ArrowRight
+                    size={20}
+                    aria-hidden
+                    className="shrink-0 text-ink-300 transition group-hover:translate-x-1 group-hover:text-volt-600"
+                  />
+                </Link>
+              </Reveal>
+            ))}
+          </div>
         )}
-
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          {subjects.map((subject) => (
-            <Link
-              key={subject.subjectId}
-              to={`/practice/grade-${gradeNumber}/${subject.slug}`}
-            >
-              <Card className="h-full transition-shadow hover:shadow-md">
-                <p className="text-lg font-bold text-slate-900">
-                  {localizedName(
-                    { name: subject.name, name_af: subject.nameAf },
-                    language,
-                  )}
-                </p>
-                <p className="mt-1 text-sm text-slate-500">
-                  {t('practice.testCount', { count: subject.testCount })} ·{' '}
-                  {t('practice.questionCount', { count: subject.questionCount })}
-                </p>
-                {subject.languages.length > 1 && (
-                  <p className="mt-2 text-xs font-bold uppercase tracking-wide text-brand-600">
-                    {t('practice.bothLanguages')}
-                  </p>
-                )}
-              </Card>
-            </Link>
-          ))}
-        </div>
-      </div>
+      </Section>
     </MarketingShell>
   )
 }
