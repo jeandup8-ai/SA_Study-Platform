@@ -2,7 +2,7 @@ import { LegalPageLayout } from './LegalPageLayout'
 
 export function TermsPage() {
   return (
-    <LegalPageLayout title="Terms of Service" lastUpdated="21 September 2026">
+    <LegalPageLayout title="Terms of Service" reviewed="23 September 2026">
       <p>
         These terms govern use of StudyLegends, a mobile-first learning app for South
         African learners in Grade 4–7, built around the CAPS curriculum.
@@ -31,12 +31,13 @@ export function TermsPage() {
         structured around the South African CAPS curriculum for Grades 4–7.{' '}
         <strong>
           Lesson content is generated with AI assistance from the official CAPS curriculum
-          documents, but has not yet been reviewed by a qualified teacher or curriculum
-          specialist.
+          documents, and its curriculum accuracy has not yet been checked by a qualified
+          teacher or subject specialist.
         </strong>{' '}
-        Each lesson generated this way is clearly marked as AI-assisted and pending review
-        inside the app itself. Do not treat any content in this product as verified,
-        exam-accurate curriculum material until it has been reviewed and marked as such.
+        That is a separate question from the legal review of these terms. Each lesson
+        generated this way is clearly marked as AI-assisted and pending review inside the
+        app itself. Do not treat any content in this product as verified, exam-accurate
+        curriculum material until it has been checked and marked as such.
       </p>
       <p>
         Features described as "explain again" or "make it easier" work by showing a

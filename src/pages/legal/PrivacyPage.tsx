@@ -2,7 +2,7 @@ import { LegalPageLayout } from './LegalPageLayout'
 
 export function PrivacyPage() {
   return (
-    <LegalPageLayout title="Privacy Policy" lastUpdated="21 September 2026">
+    <LegalPageLayout title="Privacy Policy" reviewed="23 September 2026">
       <p>
         This policy explains what personal information StudyLegends collects, why, and
         what actually happens to it in this product today. It is written to describe the

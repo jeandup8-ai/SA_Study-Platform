@@ -2,7 +2,7 @@ import { LegalPageLayout } from './LegalPageLayout'
 
 export function RefundPolicyPage() {
   return (
-    <LegalPageLayout title="Refund Policy" lastUpdated="21 September 2026">
+    <LegalPageLayout title="Refund Policy" reviewed="23 September 2026">
       <p>
         Billing is handled by PayFast, a South African payment provider. This page
         describes our refund policy.

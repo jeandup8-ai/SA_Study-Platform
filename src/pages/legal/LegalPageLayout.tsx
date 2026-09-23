@@ -13,19 +13,34 @@ import { PageHero, Section } from '@/components/marketing'
  */
 export function LegalPageLayout({
   title,
+  reviewed,
   lastUpdated,
   draft = false,
   children,
 }: {
   title: string
-  lastUpdated: string
+  /**
+   * Date the page was signed off by the owner's legal advisers. Pass this on
+   * the pages that are actual legal instruments; it replaces `lastUpdated`
+   * rather than sitting beside it, so a reader sees one date and does not
+   * have to work out which of two matters.
+   */
+  reviewed?: string
+  /** For pages that are not legal instruments, such as /contact. */
+  lastUpdated?: string
   draft?: boolean
   children: ReactNode
 }) {
   return (
     <MarketingShell surface="dark">
       <PageHero
-        eyebrow={`Last updated: ${lastUpdated}`}
+        eyebrow={
+          reviewed
+            ? `Reviewed by our legal advisers · ${reviewed}`
+            : lastUpdated
+              ? `Last updated: ${lastUpdated}`
+              : undefined
+        }
         title={title}
         aside={
           draft ? (
