@@ -2,66 +2,68 @@ import { LegalPageLayout } from './LegalPageLayout'
 
 export function TermsPage() {
   return (
-    <LegalPageLayout title="Terms of Service" lastUpdated="13 September 2026">
+    <LegalPageLayout title="Terms of Service" lastUpdated="21 September 2026">
       <p>
-        These terms govern use of StudyLegends, a mobile-first learning app for South African learners in
-        Grade 4–7, built around the CAPS curriculum. <strong>These terms have not yet been
-        reviewed by a qualified attorney</strong> and are provided as a working draft to be
-        checked before this product is opened to real, paying users. Placeholders below marked in
-        brackets must be filled in with real, verified information before publication — nothing in
-        brackets is a real company detail.
+        These terms govern use of StudyLegends, a mobile-first learning app for South
+        African learners in Grade 4–7, built around the CAPS curriculum.
       </p>
 
       <h2>1. The company</h2>
       <p>
         StudyLegends is a trading name of Legend Supplies (Pty) Ltd, registration number
-        2025/342787/07, of 714 Doornkloof Street, Moreletapark, Pretoria, South Africa ("we,"
-        "us," "StudyLegends").
+        2025/342787/07, of 714 Doornkloof Street, Moreletapark, Pretoria, South Africa
+        ("we," "us," "StudyLegends").
       </p>
 
       <h2>2. Accounts</h2>
       <p>
-        Only a parent or legal guardian ("Parent") may create an account. A Parent may add one or
-        more child learner profiles ("Learner") under their account. Learners do not have their
-        own login credentials and cannot create or manage an account independently. By creating an
-        account you confirm you are the Learner's parent or legal guardian, or otherwise have the
-        legal authority to consent on the Learner's behalf.
+        Only a parent or legal guardian ("Parent") may create an account. A Parent may add
+        one or more child learner profiles ("Learner") under their account. Learners do
+        not have their own login credentials and cannot create or manage an account
+        independently. By creating an account you confirm you are the Learner's parent or
+        legal guardian, or otherwise have the legal authority to consent on the Learner's
+        behalf.
       </p>
 
       <h2>3. The service</h2>
       <p>
-        StudyLegends provides lesson content, practice questions, and progress tracking structured around
-        the South African CAPS curriculum for Grades 4–7. <strong>Lesson content is generated with
-        AI assistance from the official CAPS curriculum documents, but has not yet been reviewed by
-        a qualified teacher or curriculum specialist.</strong> Each lesson generated this way is
-        clearly marked as AI-assisted and pending review inside the app itself. Do not treat any
-        content in this product as verified, exam-accurate curriculum material until it has been
-        reviewed and marked as such.
+        StudyLegends provides lesson content, practice questions, and progress tracking
+        structured around the South African CAPS curriculum for Grades 4–7.{' '}
+        <strong>
+          Lesson content is generated with AI assistance from the official CAPS curriculum
+          documents, but has not yet been reviewed by a qualified teacher or curriculum
+          specialist.
+        </strong>{' '}
+        Each lesson generated this way is clearly marked as AI-assisted and pending review
+        inside the app itself. Do not treat any content in this product as verified,
+        exam-accurate curriculum material until it has been reviewed and marked as such.
       </p>
       <p>
-        Features described as "explain again" or "make it easier" work by showing a second,
-        pre-written version of a lesson. Separately, "explain a different way" uses a third-party AI
-        language model (Anthropic's Claude) to generate one additional explanation, grounded only in
-        that lesson's own curriculum content — it does not answer open-ended questions, cannot be
-        asked about anything outside the current topic, and does not accept free-text input from
-        your child. There is no general-purpose AI chatbot in this product, and your child cannot
-        type messages to an AI at any point in the app.
+        Features described as "explain again" or "make it easier" work by showing a
+        second, pre-written version of a lesson. Separately, "explain a different way"
+        uses a third-party AI language model (Anthropic's Claude) to generate one
+        additional explanation, grounded only in that lesson's own curriculum content — it
+        does not answer open-ended questions, cannot be asked about anything outside the
+        current topic, and does not accept free-text input from your child. There is no
+        general-purpose AI chatbot in this product, and your child cannot type messages to
+        an AI at any point in the app.
       </p>
 
       <h2>4. Subscriptions, trial, and billing</h2>
       <p>
-        StudyLegends is offered on a single Family Plan at R149 per month or R1,199 per year, each
-        starting with a 3-day free trial. You can use the plan during the trial at no charge;
-        after the trial ends, the subscription is intended to renew automatically at the listed
-        price until cancelled, unless you cancel before the trial ends.
+        StudyLegends is offered on a single Family Plan at R149 per month or R1,199 per
+        year, each starting with a 3-day free trial. You can use the plan during the trial
+        at no charge; after the trial ends, the subscription is intended to renew
+        automatically at the listed price until cancelled, unless you cancel before the
+        trial ends.
       </p>
       <p>
         Billing is handled by PayFast, a South African payment provider. Starting a paid
-        subscription takes you to PayFast's own secure checkout page to enter your card details —
-        StudyLegends never sees or stores your card number. PayFast then notifies us automatically
-        once a payment succeeds, fails, or a subscription is cancelled. See our{' '}
-        <a href="/refund-policy">Refund Policy</a>
-        {' '}and <a href="/subscription-cancellation">Cancellation</a> pages for what happens after
+        subscription takes you to PayFast's own secure checkout page to enter your card
+        details — StudyLegends never sees or stores your card number. PayFast then
+        notifies us automatically once a payment succeeds, fails, or a subscription is
+        cancelled. See our <a href="/refund-policy">Refund Policy</a> and{' '}
+        <a href="/subscription-cancellation">Cancellation</a> pages for what happens after
         that point.
       </p>
 
@@ -76,34 +78,35 @@ export function TermsPage() {
 
       <h2>6. Content moderation on uploads</h2>
       <p>
-        Any photo or PDF uploaded through "Scan My Work" is checked on our server before it is
-        shown back in the app. This includes file-type and size checks, a check for embedded GPS
-        location data in photos (rejected automatically if found), and — when configured — a
-        third-party visual-safety scan for unsafe imagery. Uploaded files are not stored after this
-        check runs. See our <a href="/privacy">Privacy Policy</a> for full detail.
+        Any photo or PDF uploaded through "Scan My Work" is checked on our server before
+        it is shown back in the app. This includes file-type and size checks, a check for
+        embedded GPS location data in photos (rejected automatically if found), and — when
+        configured — a third-party visual-safety scan for unsafe imagery. Uploaded files
+        are not stored after this check runs. See our{' '}
+        <a href="/privacy">Privacy Policy</a> for full detail.
       </p>
 
       <h2>7. No guarantee of results</h2>
       <p>
-        StudyLegends is a study aid, not a substitute for a qualified teacher or an official assessment.
-        We do not guarantee any particular exam result, grade, or curriculum outcome from using
-        this product.
+        StudyLegends is a study aid, not a substitute for a qualified teacher or an
+        official assessment. We do not guarantee any particular exam result, grade, or
+        curriculum outcome from using this product.
       </p>
 
       <h2>8. Cancellation</h2>
       <p>
         You may cancel at any time as described on our{' '}
         <a href="/subscription-cancellation">Subscription Cancellation</a> page, using the
-        self-service "Cancel subscription" button on the Manage Subscription screen once you are
-        signed in.
+        self-service "Cancel subscription" button on the Manage Subscription screen once
+        you are signed in.
       </p>
 
       <h2>9. Limitation of liability</h2>
       <p>
-        To the fullest extent permitted by law, StudyLegends is provided "as is" without warranties of
-        any kind, and we are not liable for indirect or consequential loss arising from your use
-        of the product. Nothing in these terms limits liability that cannot lawfully be excluded
-        under South African law.
+        To the fullest extent permitted by law, StudyLegends is provided "as is" without
+        warranties of any kind, and we are not liable for indirect or consequential loss
+        arising from your use of the product. Nothing in these terms limits liability that
+        cannot lawfully be excluded under South African law.
       </p>
 
       <h2>10. Governing law</h2>
@@ -111,8 +114,8 @@ export function TermsPage() {
 
       <h2>11. Changes to these terms</h2>
       <p>
-        We may update these terms from time to time. We will update the "Last updated" date above
-        when we do.
+        We may update these terms from time to time. We will update the "Last updated"
+        date above when we do.
       </p>
 
       <h2>12. Contact</h2>

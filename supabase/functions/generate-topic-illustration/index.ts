@@ -50,9 +50,6 @@ Deno.serve(async (req: Request) => {
   // it, so a hint cannot switch off "no text" or "no realistic faces".
   const sceneHint = typeof body?.sceneHint === 'string' ? body.sceneHint : undefined
 
-  const openaiKey = Deno.env.get('OPENAI_API_KEY')
-  if (!openaiKey) return jsonResponse({ error: 'feature_not_configured' }, 503)
-
   // Scoped to the caller's own JWT throughout -- this function never uses a
   // service-role client. The admin check below is the real gate; RLS on
   // `admins`, `topics`, and `media` provides defense in depth underneath it.
@@ -75,6 +72,13 @@ Deno.serve(async (req: Request) => {
     .eq('id', user.id)
     .maybeSingle()
   if (!adminRow) return jsonResponse({ error: 'admin_only' }, 403)
+
+  // Deliberately after the admin gate. When this sat before it, an
+  // unauthenticated caller holding only the public anon key could tell
+  // whether the project has an image provider configured, just by reading
+  // 503 vs 401. That is a small thing to leak, and free to not leak.
+  const openaiKey = Deno.env.get('OPENAI_API_KEY')
+  if (!openaiKey) return jsonResponse({ error: 'feature_not_configured' }, 503)
 
   const { data: topic } = await supabase
     .from('topics')

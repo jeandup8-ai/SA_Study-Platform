@@ -4,14 +4,17 @@ import { PageHero, Section } from '@/components/marketing'
 
 /**
  * Shared chrome for /terms, /privacy, /refund-policy, /subscription-cancellation,
- * /contact. `draft` marks pages whose legal content has not yet been reviewed by
- * a qualified attorney — every page created for the initial PayFast-preparation
- * pass sets it, since none of them have had that review yet.
+ * /contact.
+ *
+ * `draft` renders a visible "pending legal review" banner. It defaults to
+ * false: the owner signed these off for publication, so nothing carries the
+ * banner today. The mechanism is kept because a page being rewritten should
+ * say so while it is in flight, and that is cheaper than rebuilding it.
  */
 export function LegalPageLayout({
   title,
   lastUpdated,
-  draft = true,
+  draft = false,
   children,
 }: {
   title: string
