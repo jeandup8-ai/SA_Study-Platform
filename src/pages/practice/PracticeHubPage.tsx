@@ -6,13 +6,7 @@ import { MarketingShell } from '@/components/layout/MarketingShell'
 import { PracticeLanguageToggle } from '@/pages/practice/PracticeLanguageToggle'
 import { fetchPracticeGradeCounts } from '@/lib/practice/queries'
 import { useSeo } from '@/hooks/useSeo'
-import {
-  MarketingButton,
-  PageHero,
-  Reveal,
-  Section,
-  SectionHeading,
-} from '@/components/marketing'
+import { PageHero, PracticeUpsell, Reveal, Section } from '@/components/marketing'
 
 const GRADES = [4, 5, 6, 7]
 
@@ -103,18 +97,7 @@ export function PracticeHubPage() {
         </div>
       </Section>
 
-      <Section tone="dark">
-        <SectionHeading
-          title={t('practice.upsellTitle')}
-          lead={t('practice.upsellBody')}
-        />
-        <Reveal delay={120} className="mt-8">
-          <MarketingButton to="/pricing" variant="volt">
-            {t('practice.upsellCta')}
-            <ArrowRight size={18} aria-hidden />
-          </MarketingButton>
-        </Reveal>
-      </Section>
+      <PracticeUpsell />
     </MarketingShell>
   )
 }

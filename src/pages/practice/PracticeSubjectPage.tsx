@@ -15,7 +15,7 @@ import {
 } from '@/lib/practice/queries'
 import { localizedName } from '@/lib/i18n/localizedName'
 import { useSeo } from '@/hooks/useSeo'
-import { PageHero, Reveal, Section } from '@/components/marketing'
+import { PageHero, PracticeUpsell, Reveal, Section } from '@/components/marketing'
 import { SkeletonList } from '@/components/ui'
 import type { LanguageCode } from '@/types/curriculum'
 
@@ -130,6 +130,8 @@ export function PracticeSubjectPage() {
           </div>
         )}
       </Section>
+
+      <PracticeUpsell />
     </MarketingShell>
   )
 }

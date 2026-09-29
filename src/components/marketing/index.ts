@@ -13,3 +13,4 @@ export {
   ScanCard,
 } from './ProductUi'
 export { PageHero } from './PageHero'
+export { PracticeUpsell } from './PracticeUpsell'
