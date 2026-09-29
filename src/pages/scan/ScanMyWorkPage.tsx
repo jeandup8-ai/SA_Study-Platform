@@ -1,20 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import {
-  Camera,
-  FileText,
-  ShieldCheck,
-  Sparkles,
-  Lightbulb,
-  RotateCw,
-} from 'lucide-react'
+import { Sparkles, Lightbulb, RotateCw, ImageOff } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useLearner } from '@/context/LearnerContext'
 import { moderationProvider, logModerationDecision } from '@/lib/moderation'
 import { fetchSubjectsForGrade, fetchTopicById } from '@/lib/curriculum/queries'
 import { detectScanTopic } from '@/lib/scan/detectTopic'
-import { Button, Card, Badge } from '@/components/ui'
+import { Button, Card, Badge, PageHeader } from '@/components/ui'
+import { UploadZone } from '@/components/scan/UploadZone'
 import type { Subject, Topic } from '@/types/curriculum'
 
 type ScanState = 'idle' | 'checking' | 'detecting' | 'rejected' | 'approved'
@@ -111,74 +105,12 @@ export function ScanMyWorkPage() {
 
   return (
     <div className="app-column pt-6 pb-10">
-      <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900">
-        {t('scan.title')}
-      </h1>
-      <p className="mt-1 text-slate-500">{t('scan.subtitle')}</p>
+      <PageHeader title={t('scan.title')} subtitle={t('scan.subtitle')} />
 
       {state === 'idle' && (
-        <div className="mt-6 space-y-3">
-          {/* A <label> wrapping the real <input type="file"> — clicking anywhere in the
-              label natively forwards to the input with zero JS or CSS-stacking games
-              involved. This replaced a "transparent input positioned over a button" trick
-              that turned out not to be reliable enough in practice. The visual "button" is
-              a plain <span> (not a nested <button>), since nesting one interactive control
-              inside another can make browsers handle the forwarded click inconsistently.
-              Image and PDF are separate inputs deliberately: combining a forced camera
-              capture with a non-image accept type on one input is a known Android Chrome
-              trap that can kill and reload the whole tab returning from the camera app.
-
-              `accept` lists both a MIME type AND a file extension for the same reason:
-              on Android, picking a PDF from Google Drive/Files/a third-party file manager
-              often returns a content:// document whose reported MIME type is generic
-              (e.g. application/octet-stream) or blank rather than application/pdf. An
-              accept filter of MIME-type-only can then cause Chrome to drop the selection
-              silently — the picker closes, the input's change event fires with an empty
-              FileList, and the screen just looks like it "did nothing" and went back to
-              the upload options. Pairing the MIME type with the .pdf/.jpg/etc extension
-              is the standard fix: most Android document providers match on either.
-
-              The image input also needs the `image/*` wildcard, not just the enumerated
-              jpeg/png/webp types: a gallery photo can report a MIME the enumerated list
-              doesn't cover (HEIC on many Samsung/Android cameras, or whatever a specific
-              gallery/cloud provider decides to report), which silently filtered it out
-              of the picker before this was added. */}
-          <label className="block">
-            <input
-              type="file"
-              accept="image/*,.jpg,.jpeg,.png,.webp,.heic,.heif"
-              className="sr-only"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) void handleFile(file)
-                e.target.value = ''
-              }}
-            />
-            <span className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-brand-600 px-7 text-lg font-semibold text-white active:bg-brand-800">
-              <Camera size={20} /> {t('scan.uploadCta')}
-            </span>
-          </label>
-          <label className="block">
-            <input
-              type="file"
-              accept="application/pdf,.pdf"
-              className="sr-only"
-              onChange={(e) => {
-                const file = e.target.files?.[0]
-                if (file) void handleFile(file)
-                e.target.value = ''
-              }}
-            />
-            <span className="inline-flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border-2 border-brand-200 bg-white px-7 text-lg font-semibold text-brand-700 active:bg-brand-50">
-              <FileText size={20} /> {t('scan.uploadPdf')}
-            </span>
-          </label>
-
-          <Card className="mt-4 flex items-start gap-3 bg-slate-50">
-            <ShieldCheck className="mt-0.5 shrink-0 text-brand-600" size={20} />
-            <p className="text-xs text-slate-500">{t('scan.safetyNote')}</p>
-          </Card>
-          <label className="flex items-center gap-2 text-xs font-medium text-slate-500">
+        <>
+          <UploadZone onFile={(file) => void handleFile(file)} />
+          <label className="mt-3 flex items-center gap-2 text-xs font-medium text-slate-500">
             <input
               type="checkbox"
               checked={simulateUnsafe}
@@ -186,25 +118,45 @@ export function ScanMyWorkPage() {
             />
             {t('scan.simulateUnsafeToggle')}
           </label>
-        </div>
+        </>
       )}
 
       {(state === 'checking' || state === 'detecting') && (
-        <Card className="mt-6 flex flex-col items-center gap-3 py-10 text-center">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
-          <p className="text-sm font-medium text-slate-500">
+        <Card className="mt-6 flex flex-col items-center gap-3 py-8 text-center">
+          {/* Showing the page being worked on, rather than a bare spinner, is
+              the difference between "something is happening" and "the right
+              thing is happening" -- it confirms the upload landed and that
+              it is the photo the learner meant to send. */}
+          {preview && (
+            <img
+              src={preview}
+              alt={t('scan.uploadAlt')}
+              className="max-h-40 w-full rounded-card object-cover opacity-70"
+            />
+          )}
+          <div
+            className="h-10 w-10 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600 motion-reduce:animate-none"
+            aria-hidden
+          />
+          <p className="text-sm font-medium text-slate-500" role="status">
             {state === 'detecting' ? t('scan.detecting') : t('scan.checking')}
           </p>
         </Card>
       )}
 
       {state === 'rejected' && (
-        <Card className="mt-6 text-center">
-          <p className="text-4xl">🚫</p>
-          <p className="mt-2 font-semibold text-slate-700">{t('scan.rejected')}</p>
-          <Button className="mt-4" onClick={() => setState('idle')}>
-            {t('common.tryAgain')}
-          </Button>
+        <Card className="mt-6 flex flex-col items-center gap-3 py-8 text-center">
+          {/* Deliberately calm. A child sees this screen, and the reason is
+              usually something innocent -- a photo of the wrong thing --
+              rather than anything they did wrong. */}
+          <span
+            className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-500"
+            aria-hidden
+          >
+            <ImageOff size={24} />
+          </span>
+          <p className="font-semibold text-slate-700">{t('scan.rejected')}</p>
+          <Button onClick={() => setState('idle')}>{t('common.tryAgain')}</Button>
         </Card>
       )}
 
