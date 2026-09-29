@@ -21,7 +21,7 @@ export function AchievementsPage() {
   const loading = status === 'loading' || status === 'idle'
 
   return (
-    <div className="mx-auto max-w-lg px-4 pt-6 pb-10">
+    <div className="app-grid-page pt-6 pb-10">
       <PageHeader
         eyebrow={t('nav.dashboard')}
         title={t('gamification.achievementsTitle')}
@@ -34,7 +34,7 @@ export function AchievementsPage() {
       {status === 'error' ? (
         <ErrorState className="mt-4" onRetry={reload} />
       ) : (
-        <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="mt-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
           {BADGE_CATALOG.map((badge, i) => {
             const isEarned = earned.has(badge.code)
             return (

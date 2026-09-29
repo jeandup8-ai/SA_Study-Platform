@@ -87,7 +87,7 @@ export function ChildDashboardPage() {
   const loading = status === 'loading' || status === 'idle'
 
   return (
-    <div className="mx-auto max-w-lg px-4 pt-6">
+    <div className="app-grid-page pt-6">
       <PageHeader
         title={t('dashboard.greeting', { name: activeLearner.display_name })}
         subtitle={

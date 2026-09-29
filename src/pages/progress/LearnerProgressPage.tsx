@@ -59,7 +59,7 @@ export function LearnerProgressPage() {
       : 0
 
   return (
-    <div className="mx-auto max-w-lg px-4 pt-6 pb-10">
+    <div className="app-grid-page pt-6 pb-10">
       <PageHeader eyebrow={t('nav.progress')} title={t('dashboard.myProgress')} />
 
       {status === 'error' ? (

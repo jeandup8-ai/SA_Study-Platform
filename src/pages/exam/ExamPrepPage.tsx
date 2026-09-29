@@ -35,7 +35,7 @@ export function ExamPrepPage() {
   if (!activeLearner) return null
 
   return (
-    <div className="mx-auto max-w-lg px-4 pt-6 pb-10">
+    <div className="app-grid-page pt-6 pb-10">
       <PageHeader eyebrow={t('nav.exam')} title={t('exam.title')} />
 
       <p className="mt-4 text-sm font-semibold text-slate-500">{t('exam.selectSubject')}</p>

@@ -89,6 +89,21 @@
   --color-lilac-500: #8b5cf6;
   --color-lilac-600: #7c3aed;
 
+  /* ------------------------------------------------------------------
+     SHAPE AND ELEVATION
+     Radius and shadow were previously chosen per call site, which is how a
+     product drifts: nothing is wrong at any one point, and after fifty
+     commits nothing matches. Three of each, named for what they are on
+     rather than how big they are.
+     ------------------------------------------------------------------ */
+  --radius-control: 0.75rem; /* inputs, chips, small buttons */
+  --radius-card: 1rem; /* cards, tiles, list rows */
+  --radius-panel: 1.5rem; /* sheets, hero panels, modals */
+
+  --shadow-card: 0 1px 2px -1px color-mix(in oklab, var(--color-ink-700) 12%, transparent);
+  --shadow-raised: 0 12px 28px -12px color-mix(in oklab, var(--color-ink-700) 40%, transparent);
+  --shadow-overlay: 0 24px 48px -16px color-mix(in oklab, var(--color-ink-900) 45%, transparent);
+
   /* Display face for large headlines only. Body text stays on Atkinson
      Hyperlegible, which is an accessibility typeface and the right default
      for Grade 4-7 learners, including dyslexic and low-vision readers. */
@@ -402,6 +417,47 @@
     );
   background-attachment: fixed;
   background-repeat: no-repeat;
+}
+
+/* ------------------------------------------------------------------
+   PAGE CONTAINERS
+
+   The learner app was built mobile-first and capped at max-w-lg (512px)
+   on every screen, which on a laptop renders the whole product as a phone
+   column stranded in the middle of the display. These two containers give
+   it a tablet and desktop layout without pretending one width fits every
+   kind of page.
+
+   `app-column` is for reading and doing: a lesson, the upload flow,
+   onboarding. It grows a little past phone width and then stops, because
+   a line of explanation stretched across a monitor is harder to read, not
+   easier.
+
+   `app-grid-page` is for browsing: dashboards, subject and topic lists,
+   achievements. It keeps the same measure on a phone and then genuinely
+   widens, so the page's own grid can go multi-column instead of stacking
+   one card per row forever.
+   ------------------------------------------------------------------ */
+.app-column,
+.app-grid-page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 32rem;
+  padding-inline: 1rem;
+}
+
+@media (width >= 40rem) {
+  .app-column,
+  .app-grid-page {
+    max-width: 40rem;
+    padding-inline: 1.5rem;
+  }
+}
+
+@media (width >= 64rem) {
+  .app-grid-page {
+    max-width: 72rem;
+  }
 }
 
 /* Frosted bar for the fixed learner nav and sticky headers. The solid

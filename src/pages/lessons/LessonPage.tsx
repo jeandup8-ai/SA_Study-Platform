@@ -39,6 +39,7 @@ import { checkAndAwardBadges, type BadgeCode } from '@/lib/gamification/badges'
 import { fetchStreak } from '@/lib/streak/streak'
 import { PointsEarnedBanner } from '@/components/lesson/PointsEarnedBanner'
 import { TopicVideoPanel } from '@/components/lesson/TopicVideoPanel'
+import { GuidedHelp, type GuidedHelpAction } from '@/components/lesson/GuidedHelp'
 import {
   isV2Lesson,
   getNarration,
@@ -48,7 +49,7 @@ import {
   paragraphize,
 } from '@/lib/curriculum/lessonV2'
 import { supabase } from '@/lib/supabase'
-import { Button, Card, ProgressRing } from '@/components/ui'
+import { Button, Card, ProgressRing, StepProgress } from '@/components/ui'
 import { LessonVisual } from '@/components/lesson/LessonVisual'
 import { StoryboardSlides } from '@/components/lesson/StoryboardSlides'
 import { WorkedExampleCard } from '@/components/lesson/WorkedExampleCard'
@@ -323,8 +324,76 @@ export function LessonPage() {
     setMindMapLoading(false)
   }
 
+  // Assembled once rather than written out twice. The V2 and legacy lesson
+  // paths had separately maintained chip lists that had already drifted --
+  // only the legacy one offered "explain again" and "make it easier",
+  // because only the legacy path stores a simplified variant to show.
+  const videoAction: GuidedHelpAction[] = topicVideo
+    ? [
+        {
+          key: 'video',
+          icon: PlayCircle,
+          label: t('lesson.watchVideo'),
+          onClick: () => setShowVideo((v) => !v),
+        },
+      ]
+    : []
+
+  const helpActions: GuidedHelpAction[] = [
+    {
+      key: 'example',
+      icon: Lightbulb,
+      label: t('lesson.showExample'),
+      onClick: () => setStepIndex(steps.indexOf('example')),
+    },
+    {
+      key: 'different',
+      icon: Sparkles,
+      label: t('lesson.explainDifferently'),
+      onClick: handleRequestAlternateExplanation,
+    },
+    {
+      key: 'mindmap',
+      icon: Network,
+      label: t('lesson.mindMap'),
+      onClick: handleGenerateMindMap,
+    },
+    ...videoAction,
+  ]
+
+  const legacyHelpActions: GuidedHelpAction[] = [
+    {
+      key: 'again',
+      icon: RotateCcw,
+      label: t('lesson.explainAgain'),
+      onClick: () => setSimplified(false),
+    },
+    {
+      key: 'easier',
+      icon: Wand2,
+      label: t('lesson.makeEasier'),
+      onClick: () => setSimplified(true),
+    },
+    ...helpActions,
+  ]
+
+  // Whatever an action produced. Rendered inside the same region that
+  // offered the action, so a result is never orphaned from its request.
+  const helpResults = (
+    <>
+      <AiExplanationPanel loading={aiLoading} error={aiError} explanation={aiExplanation} />
+      <MindMapPanel loading={mindMapLoading} error={mindMapError} mindmap={mindMap} />
+      {showVideo && topicVideo && (
+        <TopicVideoPanel
+          youtubeVideoId={topicVideo.youtube_video_id}
+          title={topicVideo.title}
+        />
+      )}
+    </>
+  )
+
   return (
-    <div className="mx-auto flex max-w-lg flex-col px-4 pt-4">
+    <div className="app-column flex flex-col pt-4">
       <div className="flex items-center gap-2">
         <button
           onClick={goBack}
@@ -333,14 +402,12 @@ export function LessonPage() {
         >
           <ChevronLeft />
         </button>
-        <div className="flex-1">
-          <div className="h-2 overflow-hidden rounded-full bg-slate-200">
-            <div
-              className="h-full rounded-full bg-brand-500 transition-all"
-              style={{ width: `${((stepIndex + 1) / steps.length) * 100}%` }}
-            />
-          </div>
-        </div>
+        <StepProgress
+          className="flex-1"
+          current={stepIndex + 1}
+          total={steps.length}
+          label={t('lesson.stepOf', { current: stepIndex + 1, total: steps.length })}
+        />
       </div>
 
       <h1 className="font-display mt-4 text-xl font-extrabold tracking-tight text-slate-900">
@@ -358,46 +425,7 @@ export function LessonPage() {
                 ? narrationParagraphs.map((paragraph, i) => <p key={i}>{paragraph}</p>)
                 : '—'}
             </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <TutorChip
-                icon={Lightbulb}
-                label={t('lesson.showExample')}
-                onClick={() => setStepIndex(steps.indexOf('example'))}
-              />
-              <TutorChip
-                icon={Sparkles}
-                label={t('lesson.explainDifferently')}
-                onClick={handleRequestAlternateExplanation}
-              />
-              <TutorChip
-                icon={Network}
-                label={t('lesson.mindMap')}
-                onClick={handleGenerateMindMap}
-              />
-              {topicVideo && (
-                <TutorChip
-                  icon={PlayCircle}
-                  label={t('lesson.watchVideo')}
-                  onClick={() => setShowVideo((v) => !v)}
-                />
-              )}
-            </div>
-            <AiExplanationPanel
-              loading={aiLoading}
-              error={aiError}
-              explanation={aiExplanation}
-            />
-            <MindMapPanel
-              loading={mindMapLoading}
-              error={mindMapError}
-              mindmap={mindMap}
-            />
-            {showVideo && topicVideo && (
-              <TopicVideoPanel
-                youtubeVideoId={topicVideo.youtube_video_id}
-                title={topicVideo.title}
-              />
-            )}
+            <GuidedHelp actions={helpActions}>{helpResults}</GuidedHelp>
           </Card>
         )}
 
@@ -447,60 +475,7 @@ export function LessonPage() {
                 {currentContent?.body_markdown ?? '—'}
               </p>
               {step === 'simple_explanation' && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <TutorChip
-                    icon={RotateCcw}
-                    label={t('lesson.explainAgain')}
-                    onClick={() => setSimplified(false)}
-                  />
-                  <TutorChip
-                    icon={Wand2}
-                    label={t('lesson.makeEasier')}
-                    onClick={() => setSimplified(true)}
-                  />
-                  <TutorChip
-                    icon={Lightbulb}
-                    label={t('lesson.showExample')}
-                    onClick={() => setStepIndex(steps.indexOf('example'))}
-                  />
-                  <TutorChip
-                    icon={Sparkles}
-                    label={t('lesson.explainDifferently')}
-                    onClick={handleRequestAlternateExplanation}
-                  />
-                  <TutorChip
-                    icon={Network}
-                    label={t('lesson.mindMap')}
-                    onClick={handleGenerateMindMap}
-                  />
-                  {topicVideo && (
-                    <TutorChip
-                      icon={PlayCircle}
-                      label={t('lesson.watchVideo')}
-                      onClick={() => setShowVideo((v) => !v)}
-                    />
-                  )}
-                </div>
-              )}
-              {step === 'simple_explanation' && (
-                <>
-                  <AiExplanationPanel
-                    loading={aiLoading}
-                    error={aiError}
-                    explanation={aiExplanation}
-                  />
-                  <MindMapPanel
-                    loading={mindMapLoading}
-                    error={mindMapError}
-                    mindmap={mindMap}
-                  />
-                  {showVideo && topicVideo && (
-                    <TopicVideoPanel
-                      youtubeVideoId={topicVideo.youtube_video_id}
-                      title={topicVideo.title}
-                    />
-                  )}
-                </>
+                <GuidedHelp actions={legacyHelpActions}>{helpResults}</GuidedHelp>
               )}
             </Card>
           )}
@@ -580,27 +555,6 @@ export function LessonPage() {
         </Button>
       )}
     </div>
-  )
-}
-
-function TutorChip({
-  icon: Icon,
-  label,
-  onClick,
-}: {
-  icon: typeof RotateCcw
-  label: string
-  onClick: () => void
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="inline-flex items-center gap-1.5 rounded-full bg-brand-50 px-3 py-1.5 text-xs font-semibold text-brand-700"
-    >
-      <Icon size={14} />
-      {label}
-    </button>
   )
 }
 

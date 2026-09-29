@@ -56,7 +56,7 @@ export function LessonListPage() {
   const topicName = data?.topicName ?? ''
 
   return (
-    <div className="mx-auto max-w-lg px-4 pt-6 pb-10">
+    <div className="app-grid-page pt-6 pb-10">
       <PageHeader eyebrow={t('subjects.title')} title={topicName} />
 
       {status === 'error' ? (
@@ -70,7 +70,7 @@ export function LessonListPage() {
         />
       ) : status === 'success' && data ? (
         <>
-          <div className="mt-4 space-y-3">
+          <div className="mt-4 grid gap-3 lg:grid-cols-2">
             {data.lessons.map((lesson, i) => {
               const lessonStatus = data.progressByLesson.get(lesson.id)?.status ?? 'not_started'
               // lessons.title is an English-only column with no Afrikaans

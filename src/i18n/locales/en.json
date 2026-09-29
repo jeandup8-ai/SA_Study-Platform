@@ -186,6 +186,8 @@
     "showAnswer": "Show answer",
     "nextQuestion": "Next question",
     "questionOf": "Question {{current}} of {{total}}",
+    "stepOf": "Step {{current}} of {{total}}",
+    "guidedHelp": "Guided help",
     "aiGeneratedNotice": "This lesson was written with AI assistance from the official curriculum, and hasn't been reviewed by a teacher yet.",
     "explainDifferently": "Explain a different way",
     "aiExplanationLoading": "Thinking of a new way to explain this...",

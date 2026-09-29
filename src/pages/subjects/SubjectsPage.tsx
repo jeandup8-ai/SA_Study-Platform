@@ -34,7 +34,7 @@ export function SubjectsPage() {
   )
 
   return (
-    <div className="mx-auto max-w-lg px-4 pt-6 pb-10">
+    <div className="app-grid-page pt-6 pb-10">
       <PageHeader eyebrow={t('nav.subjects')} title={t('subjects.title')} />
 
       {status === 'error' ? (
@@ -47,7 +47,7 @@ export function SubjectsPage() {
           body={t('subjects.emptyBody')}
         />
       ) : status === 'success' && data ? (
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
           {data.map((s, i) => (
             <Stagger key={s.subjectId} index={i}>
               <Link

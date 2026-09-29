@@ -107,7 +107,7 @@ export function TopicListPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg px-4 pt-6 pb-10">
+    <div className="app-grid-page pt-6 pb-10">
       <PageHeader eyebrow={t('subjects.topics')} title={subjectName || t('subjects.title')} />
 
       {status === 'error' ? (
@@ -120,7 +120,7 @@ export function TopicListPage() {
           body={t('subjects.emptyTopicsBody')}
         />
       ) : status === 'success' && data ? (
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 grid gap-3 lg:grid-cols-2">
           {data.topics.map((topic, i) => (
             <Stagger key={topic.id} index={i}>
               {/* The card is a plain container, not a link. The topic title is

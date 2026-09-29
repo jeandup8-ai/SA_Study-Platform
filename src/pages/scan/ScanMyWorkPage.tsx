@@ -110,7 +110,7 @@ export function ScanMyWorkPage() {
   if (!activeLearner) return null
 
   return (
-    <div className="mx-auto max-w-lg px-4 pt-6 pb-10">
+    <div className="app-column pt-6 pb-10">
       <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900">
         {t('scan.title')}
       </h1>
