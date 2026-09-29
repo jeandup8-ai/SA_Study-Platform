@@ -298,6 +298,8 @@
     "subscribeWithPayfast": "Subscribe with PayFast",
     "startFreeTrial": "Start free trial",
     "noPlansYet": "No plans published yet.",
+    "perMonth": "/month",
+    "perYear": "/year",
     "noLearnersYet": "No child profiles yet.",
     "noAttentionNeeded": "Nothing needs attention right now."
   },

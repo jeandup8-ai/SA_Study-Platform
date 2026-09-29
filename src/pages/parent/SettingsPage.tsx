@@ -7,7 +7,13 @@ import {
   fetchWeeklyDigestEnabled,
   setWeeklyDigestEnabled,
 } from '@/lib/parent/emailPreferences'
-import { Button, Card, LearnerAvatarIcon } from '@/components/ui'
+import {
+  Button,
+  Card,
+  LearnerAvatarIcon,
+  PageHeader,
+  SectionLabel,
+} from '@/components/ui'
 
 export function SettingsPage() {
   const { t } = useTranslation()
@@ -55,15 +61,13 @@ export function SettingsPage() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900">
-        {t('parent.settingsTitle')}
-      </h1>
+      <PageHeader title={t('parent.settingsTitle')} />
 
-      <Card className="mt-6">
+      <SectionLabel className="mt-6">{t('parent.weeklyEmailTitle')}</SectionLabel>
+      <Card className="mt-3">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="font-bold text-slate-900">{t('parent.weeklyEmailTitle')}</p>
-            <p className="mt-1 text-sm text-slate-600">{t('parent.weeklyEmailBody')}</p>
+            <p className="text-sm text-slate-600">{t('parent.weeklyEmailBody')}</p>
           </div>
           <label className="relative inline-flex shrink-0 cursor-pointer items-center">
             <input
@@ -86,9 +90,9 @@ export function SettingsPage() {
 
       <p className="mt-4 text-xs text-slate-400">{t('parent.essentialEmailsNote')}</p>
 
-      <Card className="mt-6">
-        <p className="font-bold text-slate-900">{t('parent.manageLearners')}</p>
-        <div className="mt-3 space-y-2">
+      <SectionLabel className="mt-6">{t('parent.manageLearners')}</SectionLabel>
+      <Card className="mt-3">
+        <div className="space-y-2">
           {learners.map((l) => (
             <div key={l.id} className="rounded-2xl border-2 border-slate-200 p-3">
               {confirmingId === l.id ? (

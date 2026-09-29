@@ -1,6 +1,11 @@
 import type { ComponentType, ReactNode } from 'react'
 import { Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import type { Database } from '@/types/database'
+import type { GuidedHelpState } from '@/hooks/useGuidedHelp'
+import { AlternateExplanationCard } from './AlternateExplanationCard'
+import { MindMapView } from './MindMapView'
+import { TopicVideoPanel } from './TopicVideoPanel'
 
 /**
  * The learner-facing surface of the AI features, given one identity.
@@ -65,4 +70,83 @@ export function GuidedHelp({
       {children}
     </section>
   )
+}
+
+/**
+ * Whatever the Guided help actions produced, rendered inside the region
+ * that offered them so a result is never orphaned from its request.
+ *
+ * Each of the three is independent: an explanation, a mind map and a video
+ * can all be open at once, because a learner who asked for all three
+ * probably wants to see all three.
+ */
+export function GuidedHelpResults({
+  help,
+  video,
+}: {
+  help: GuidedHelpState
+  video: Database['public']['Tables']['topic_videos']['Row'] | null
+}) {
+  const { t } = useTranslation()
+
+  return (
+    <>
+      <PendingOrError
+        loading={help.explanationLoading}
+        loadingLabel={t('lesson.aiExplanationLoading')}
+        error={
+          help.explanationError && t(`lesson.aiExplanationError.${help.explanationError}`)
+        }
+      />
+      {/* Hidden while a fresh request is in flight or has failed. The two
+          panels this replaced were exclusive -- loading, or error, or the
+          result -- and re-asking while an old answer was on screen must not
+          show the learner the previous explanation under a spinner. */}
+      {!help.explanationLoading && !help.explanationError && help.explanation && (
+        <AlternateExplanationCard explanation={help.explanation} />
+      )}
+
+      <PendingOrError
+        loading={help.mindMapLoading}
+        loadingLabel={t('lesson.mindMapLoading')}
+        error={help.mindMapError && t(`lesson.mindMapError.${help.mindMapError}`)}
+      />
+      {!help.mindMapLoading && !help.mindMapError && help.mindMap && (
+        <MindMapView mindmap={help.mindMap} />
+      )}
+
+      {help.videoOpen && video && (
+        <TopicVideoPanel youtubeVideoId={video.youtube_video_id} title={video.title} />
+      )}
+    </>
+  )
+}
+
+/**
+ * The waiting and failed states shared by every Guided help request. Both
+ * panels had their own copy of this, differing only in which translation
+ * key they read.
+ */
+function PendingOrError({
+  loading,
+  loadingLabel,
+  error,
+}: {
+  loading: boolean
+  loadingLabel: string
+  error: string | null | false
+}) {
+  if (loading) {
+    return (
+      <p role="status" className="mt-3 flex items-center gap-2 text-sm text-slate-500">
+        <span
+          className="h-4 w-4 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600 motion-reduce:animate-none"
+          aria-hidden
+        />
+        {loadingLabel}
+      </p>
+    )
+  }
+  if (error) return <p className="mt-3 text-sm text-slate-500">{error}</p>
+  return null
 }

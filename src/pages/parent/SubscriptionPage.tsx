@@ -3,7 +3,8 @@ import { useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
-import { Button, Card, Badge } from '@/components/ui'
+import { formatRand } from '@/lib/billing/formatRand'
+import { Badge, Button, Card, PageHeader, Skeleton } from '@/components/ui'
 import type { Subscription } from '@/types/curriculum'
 import type { Database } from '@/types/database'
 import { TRIAL_DAYS } from '@/lib/billing/trial'
@@ -30,7 +31,7 @@ export function SubscriptionPage() {
   const { parent } = useAuth()
   const [searchParams] = useSearchParams()
   const paymentResult = searchParams.get('payment')
-  const [plans, setPlans] = useState<SubscriptionPlan[]>([])
+  const [plans, setPlans] = useState<SubscriptionPlan[] | null>(null)
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [startingTrial, setStartingTrial] = useState<string | null>(null)
   const [checkingOut, setCheckingOut] = useState<string | null>(null)
@@ -108,18 +109,16 @@ export function SubscriptionPage() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900">
-        {t('parent.manageSubscription')}
-      </h1>
+      <PageHeader title={t('parent.manageSubscription')} />
 
       {paymentResult === 'success' && (
-        <Card className="mt-4 bg-green-50">
-          <p className="text-sm text-green-800">{t('parent.paymentConfirming')}</p>
+        <Card className="mt-4 bg-success-50">
+          <p className="text-sm text-success-600">{t('parent.paymentConfirming')}</p>
         </Card>
       )}
       {paymentResult === 'cancelled' && (
-        <Card className="mt-4 bg-amber-50">
-          <p className="text-sm text-amber-800">{t('parent.checkoutCancelled')}</p>
+        <Card className="mt-4 bg-warning-50">
+          <p className="text-sm text-warning-600">{t('parent.checkoutCancelled')}</p>
         </Card>
       )}
 
@@ -168,48 +167,68 @@ export function SubscriptionPage() {
         </Card>
       )}
 
-      {checkoutError && <p className="mt-4 text-sm text-red-600">{checkoutError}</p>}
+      {checkoutError && (
+        <p className="mt-4 text-sm font-medium text-danger-600">{checkoutError}</p>
+      )}
 
-      <div className="mt-4 grid gap-4 sm:grid-cols-2">
-        {plans.map((plan) => (
-          <Card key={plan.id}>
-            <p className="font-bold text-slate-900">{plan.name}</p>
-            <p className="mt-1 text-2xl font-extrabold text-brand-700">
-              {plan.price_cents != null
-                ? `R${(plan.price_cents / 100).toFixed(0)}`
-                : t('common.priceTbc')}
-              <span className="text-sm font-medium text-slate-500">
-                /{plan.billing_interval === 'monthly' ? 'mo' : 'yr'}
-              </span>
-            </p>
-            <p className="text-sm text-slate-500">
-              {t('parent.maxLearnersOnPlan', { count: plan.max_learners })}
-            </p>
-            <Button
-              className="mt-4 w-full"
-              disabled={checkingOut === plan.id}
-              onClick={() => checkout(plan.id)}
-            >
-              {checkingOut === plan.id
-                ? t('common.loading')
-                : t('parent.subscribeWithPayfast')}
-            </Button>
-            <Button
-              className="mt-2 w-full"
-              variant="secondary"
-              disabled={startingTrial === plan.id}
-              onClick={() => startTrial(plan.id)}
-            >
-              {startingTrial === plan.id
-                ? t('common.loading')
-                : t('parent.startFreeTrial')}
-            </Button>
-          </Card>
-        ))}
-        {plans.length === 0 && (
-          <p className="text-sm text-slate-400">{t('parent.noPlansYet')}</p>
-        )}
-      </div>
+      {/* `plans` is null until the query returns. Rendering the empty case
+          meanwhile told a parent "there are no plans yet" on the one screen
+          where they are trying to pay us. */}
+      {plans === null ? (
+        <div
+          role="status"
+          aria-busy="true"
+          aria-label={t('common.loading')}
+          className="mt-4 grid gap-4 sm:grid-cols-2"
+        >
+          <Skeleton className="h-52 rounded-3xl" />
+          <Skeleton className="h-52 rounded-3xl" />
+          <span className="sr-only">{t('common.loading')}</span>
+        </div>
+      ) : (
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          {plans.map((plan) => (
+            <Card key={plan.id}>
+              <p className="font-bold text-slate-900">{plan.name}</p>
+              <p className="mt-1 text-2xl font-extrabold text-brand-700">
+                {plan.price_cents != null
+                  ? formatRand(plan.price_cents)
+                  : t('common.priceTbc')}
+                <span className="text-sm font-medium text-slate-500">
+                  {plan.billing_interval === 'monthly'
+                    ? t('parent.perMonth')
+                    : t('parent.perYear')}
+                </span>
+              </p>
+              <p className="text-sm text-slate-500">
+                {t('parent.maxLearnersOnPlan', { count: plan.max_learners })}
+              </p>
+              <Button
+                className="mt-4 w-full"
+                disabled={checkingOut === plan.id}
+                onClick={() => checkout(plan.id)}
+              >
+                {checkingOut === plan.id
+                  ? t('common.loading')
+                  : t('parent.subscribeWithPayfast')}
+              </Button>
+              <Button
+                className="mt-2 w-full"
+                variant="secondary"
+                disabled={startingTrial === plan.id}
+                onClick={() => startTrial(plan.id)}
+              >
+                {startingTrial === plan.id
+                  ? t('common.loading')
+                  : t('parent.startFreeTrial')}
+              </Button>
+            </Card>
+          ))}
+          {plans.length === 0 && (
+            <p className="text-sm text-slate-400">{t('parent.noPlansYet')}</p>
+          )}
+        </div>
+      )}
     </div>
   )
 }

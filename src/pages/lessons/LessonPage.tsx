@@ -25,21 +25,18 @@ import {
 } from '@/lib/curriculum/questions'
 import { recordQuizResult } from '@/lib/mastery/engine'
 import {
-  requestAlternateExplanation,
-  type AlternateExplanation,
-} from '@/lib/tutor/explainDifferently'
-import { generateMindMap, type MindMap } from '@/lib/tutor/generateMindmap'
-import { AlternateExplanationCard } from '@/components/lesson/AlternateExplanationCard'
-import { MindMapView } from '@/components/lesson/MindMapView'
-import {
   awardFlatPoints,
   POINTS_PER_PRACTICE_SET_COMPLETED,
 } from '@/lib/gamification/points'
 import { checkAndAwardBadges, type BadgeCode } from '@/lib/gamification/badges'
 import { fetchStreak } from '@/lib/streak/streak'
 import { PointsEarnedBanner } from '@/components/lesson/PointsEarnedBanner'
-import { TopicVideoPanel } from '@/components/lesson/TopicVideoPanel'
-import { GuidedHelp, type GuidedHelpAction } from '@/components/lesson/GuidedHelp'
+import {
+  GuidedHelp,
+  GuidedHelpResults,
+  type GuidedHelpAction,
+} from '@/components/lesson/GuidedHelp'
+import { useGuidedHelp } from '@/hooks/useGuidedHelp'
 import {
   isV2Lesson,
   getNarration,
@@ -114,17 +111,12 @@ export function LessonPage() {
   const [newBadges, setNewBadges] = useState<BadgeCode[]>([])
   const [nextLesson, setNextLesson] = useState<Lesson | null>(null)
   const [sessionStartedAt] = useState(() => new Date())
-  const [aiExplanation, setAiExplanation] = useState<AlternateExplanation | null>(null)
-  const [aiLoading, setAiLoading] = useState(false)
-  const [aiError, setAiError] = useState<string | null>(null)
-  const [mindMap, setMindMap] = useState<MindMap | null>(null)
-  const [mindMapLoading, setMindMapLoading] = useState(false)
-  const [mindMapError, setMindMapError] = useState<string | null>(null)
   const [topicIllustrationUrl, setTopicIllustrationUrl] = useState<string | null>(null)
   const [topicVideo, setTopicVideo] = useState<
     Database['public']['Tables']['topic_videos']['Row'] | null
   >(null)
-  const [showVideo, setShowVideo] = useState(false)
+
+  const help = useGuidedHelp(activeLearner?.id, lesson?.topic_id)
 
   useEffect(() => {
     if (!lessonId || !activeLearner) return
@@ -280,48 +272,16 @@ export function LessonPage() {
     goNext()
   }
 
+  // Both directions clear whatever the step just produced -- a mind map
+  // generated for this step must not still be on screen at the next one.
   function goNext() {
-    setAiExplanation(null)
-    setAiError(null)
-    setMindMap(null)
-    setMindMapError(null)
-    setShowVideo(false)
+    help.reset()
     setStepIndex((i) => Math.min(i + 1, steps.length - 1))
   }
   function goBack() {
-    setAiExplanation(null)
-    setAiError(null)
-    setMindMap(null)
-    setMindMapError(null)
-    setShowVideo(false)
+    help.reset()
     if (stepIndex === 0) navigate(-1)
     else setStepIndex((i) => i - 1)
-  }
-
-  async function handleRequestAlternateExplanation() {
-    if (!activeLearner || !lesson) return
-    setAiLoading(true)
-    setAiError(null)
-    const result = await requestAlternateExplanation(activeLearner.id, lesson.topic_id)
-    if (result.ok) {
-      setAiExplanation(result.explanation)
-    } else {
-      setAiError(result.error)
-    }
-    setAiLoading(false)
-  }
-
-  async function handleGenerateMindMap() {
-    if (!activeLearner || !lesson) return
-    setMindMapLoading(true)
-    setMindMapError(null)
-    const result = await generateMindMap(activeLearner.id, lesson.topic_id)
-    if (result.ok) {
-      setMindMap(result.mindmap)
-    } else {
-      setMindMapError(result.error)
-    }
-    setMindMapLoading(false)
   }
 
   // Assembled once rather than written out twice. The V2 and legacy lesson
@@ -334,7 +294,7 @@ export function LessonPage() {
           key: 'video',
           icon: PlayCircle,
           label: t('lesson.watchVideo'),
-          onClick: () => setShowVideo((v) => !v),
+          onClick: help.toggleVideo,
         },
       ]
     : []
@@ -350,13 +310,13 @@ export function LessonPage() {
       key: 'different',
       icon: Sparkles,
       label: t('lesson.explainDifferently'),
-      onClick: handleRequestAlternateExplanation,
+      onClick: () => void help.requestExplanation(),
     },
     {
       key: 'mindmap',
       icon: Network,
       label: t('lesson.mindMap'),
-      onClick: handleGenerateMindMap,
+      onClick: () => void help.requestMindMap(),
     },
     ...videoAction,
   ]
@@ -376,21 +336,6 @@ export function LessonPage() {
     },
     ...helpActions,
   ]
-
-  // Whatever an action produced. Rendered inside the same region that
-  // offered the action, so a result is never orphaned from its request.
-  const helpResults = (
-    <>
-      <AiExplanationPanel loading={aiLoading} error={aiError} explanation={aiExplanation} />
-      <MindMapPanel loading={mindMapLoading} error={mindMapError} mindmap={mindMap} />
-      {showVideo && topicVideo && (
-        <TopicVideoPanel
-          youtubeVideoId={topicVideo.youtube_video_id}
-          title={topicVideo.title}
-        />
-      )}
-    </>
-  )
 
   return (
     <div className="app-column flex flex-col pt-4">
@@ -425,7 +370,9 @@ export function LessonPage() {
                 ? narrationParagraphs.map((paragraph, i) => <p key={i}>{paragraph}</p>)
                 : '—'}
             </div>
-            <GuidedHelp actions={helpActions}>{helpResults}</GuidedHelp>
+            <GuidedHelp actions={helpActions}>
+              <GuidedHelpResults help={help} video={topicVideo} />
+            </GuidedHelp>
           </Card>
         )}
 
@@ -475,7 +422,9 @@ export function LessonPage() {
                 {currentContent?.body_markdown ?? '—'}
               </p>
               {step === 'simple_explanation' && (
-                <GuidedHelp actions={legacyHelpActions}>{helpResults}</GuidedHelp>
+                <GuidedHelp actions={legacyHelpActions}>
+                  <GuidedHelpResults help={help} video={topicVideo} />
+                </GuidedHelp>
               )}
             </Card>
           )}
@@ -556,68 +505,6 @@ export function LessonPage() {
       )}
     </div>
   )
-}
-
-function AiExplanationPanel({
-  loading,
-  error,
-  explanation,
-}: {
-  loading: boolean
-  error: string | null
-  explanation: AlternateExplanation | null
-}) {
-  const { t } = useTranslation()
-
-  if (loading) {
-    return (
-      <div className="mt-3 flex items-center gap-2 text-sm text-slate-500">
-        <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" />
-        {t('lesson.aiExplanationLoading')}
-      </div>
-    )
-  }
-  if (error) {
-    return (
-      <p className="mt-3 text-sm text-slate-500">
-        {t(`lesson.aiExplanationError.${error}`)}
-      </p>
-    )
-  }
-  if (explanation) {
-    return <AlternateExplanationCard explanation={explanation} />
-  }
-  return null
-}
-
-function MindMapPanel({
-  loading,
-  error,
-  mindmap,
-}: {
-  loading: boolean
-  error: string | null
-  mindmap: MindMap | null
-}) {
-  const { t } = useTranslation()
-
-  if (loading) {
-    return (
-      <div className="mt-3 flex items-center gap-2 text-sm text-slate-500">
-        <div className="h-4 w-4 animate-spin rounded-full border-2 border-brand-200 border-t-brand-600" />
-        {t('lesson.mindMapLoading')}
-      </div>
-    )
-  }
-  if (error) {
-    return (
-      <p className="mt-3 text-sm text-slate-500">{t(`lesson.mindMapError.${error}`)}</p>
-    )
-  }
-  if (mindmap) {
-    return <MindMapView mindmap={mindmap} />
-  }
-  return null
 }
 
 function LoadingCard() {
