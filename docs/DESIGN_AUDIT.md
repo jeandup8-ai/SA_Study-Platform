@@ -125,10 +125,16 @@ Exist only as inline markup, duplicated or absent:
 1. **`/app/lessons/:id`** — the product. 675 lines, no shared chrome, phone-width only, AI affordances unbranded.
 2. **`/app/scan`** — the differentiator. Five states (`idle`/`checking`/`detecting`/`rejected`/`approved`) all hand-styled; no unsupported-file or retry state distinct from rejection.
 3. **`/parent`** — has `PageHeader` and empty/error, but no loading state and no `useAsync`; the calm-and-clear parent register is not yet distinct from the learner register.
-4. **`/practice/*`** (4 pages) — public, SEO-facing, and the only app-adjacent pages with no `.app-canvas` at all.
-5. **`/app/exam`, `/app/exam/:id/mock-test`** — partial and none respectively.
-6. **`/parent/settings`, `/parent/subscription`** — plain forms.
-7. **`/admin/*`** (7 pages) — internal; lowest priority, but it is where the 151 pending illustrations get reviewed, so the Illustration Studio earns a pass.
+4. **`/app/exam`, `/app/exam/:id/mock-test`** — partial and none respectively.
+5. **`/parent/settings`, `/parent/subscription`** — plain forms.
+6. **`/admin/*`** (7 pages) — internal; lowest priority, but it is where the 151 pending illustrations get reviewed, so the Illustration Studio earns a pass.
+
+**Corrected after a closer read: `/practice/*` needs no work.** The
+adoption table above is accurate — those four pages carry none of the
+*application* design layer — but that is right, not wrong. They are public,
+crawlable marketing surfaces and they already use `MarketingShell`,
+`PageHero` and `Section`, which is the other half of the same system. The
+only genuine gap there is conversion (§7), not visual consistency.
 
 ---
 
@@ -234,10 +240,10 @@ half-converted.
    indicator, brand the assistant affordances as `StudyAssistantPanel`.
 4. **Scan my work** — extract `UploadZone`, give each of the five states a
    proper empty/analysing/success/rejected/retry treatment.
-5. **Parent surface** — `useAsync` + skeletons on the dashboard; settings
-   and subscription onto the shared chrome.
-6. **Practice pages** — canvas, `PageHeader`, empty/error, and one
-   consistent trial CTA.
+5. **Parent surface** — skeletons on the dashboard; settings and
+   subscription onto the shared chrome.
+6. **Practice pages** — one consistent trial CTA. (Visual work dropped; see
+   the correction under §4.)
 7. **Level B subject illustrations** — 8 assets, specified in
    `IMAGE_GENERATION_MANIFEST.md` with a shared style lock, rendered on
    subject cards and subject heroes.
@@ -248,3 +254,23 @@ half-converted.
 Steps 1–2 change every learner screen at once and are the highest
 value-per-line in the list. Step 7 is the only step that needs image
 generation, and it needs 8 images, not 224.
+
+---
+
+## Progress
+
+| Step | State |
+|---|---|
+| 1. Tokens | **Done** — radius and shadow scales added (`4927272`) |
+| 2. Responsive containers | **Done** — `app-column` / `app-grid-page` across 10 screens, list pages go two-up at `lg` (`4927272`) |
+| 3. Lesson page | **Partly done** — accessible `StepProgress`, `GuidedHelp` region, V2/legacy action lists merged (`4927272`). The 675-line component itself is not yet split |
+| 4. Scan my work | **Done** — `UploadZone`, analysing shows the page being worked on, rejection is calm (`0975504`) |
+| 5. Parent surface | **Partly done** — the dashboard no longer shows a week of zeroes while loading. Settings and Subscription untouched |
+| 6. Practice CTA | Not started |
+| 7. Level B subject illustrations | Not started — needs `IMAGE_GENERATION_MANIFEST.md` first |
+| 8. Exam prep, mock test, Illustration Studio | Not started |
+| 9. Full render audit | Partial — 390/768/1440 verified for the screens changed so far |
+
+Everything above was verified with the project's own gates on each commit:
+`tsc -b --noEmit`, `oxlint`, `check-i18n-keys`, `check-illustration-prompts`
+and `vite build`.

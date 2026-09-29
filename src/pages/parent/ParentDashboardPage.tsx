@@ -31,15 +31,16 @@ import {
   type DailyGoalProgress,
 } from '@/lib/gamification/dailyGoal'
 import {
-  Card,
-  ProgressRing,
   Badge,
-  LearnerAvatarIcon,
   Button,
-  PageHeader,
-  SectionLabel,
-  StatTile,
+  Card,
   EmptyState,
+  LearnerAvatarIcon,
+  PageHeader,
+  ProgressRing,
+  SectionLabel,
+  Skeleton,
+  StatTile,
 } from '@/components/ui'
 import { Trophy } from 'lucide-react'
 
@@ -228,32 +229,51 @@ export function ParentDashboardPage() {
       )}
 
       <SectionLabel className="mt-6">{t('parent.thisWeek')}</SectionLabel>
-      <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <StatTile
-          icon={<BookOpenCheck size={16} />}
-          tone="brand"
-          label={t('parent.lessonsCompleted')}
-          value={stats?.lessonsCompleted ?? 0}
-        />
-        <StatTile
-          icon={<ListChecks size={16} />}
-          tone="volt"
-          label={t('parent.questionsAnswered')}
-          value={stats?.questionsAnswered ?? 0}
-        />
-        <StatTile
-          icon={<Clock size={16} />}
-          tone="lilac"
-          label={t('parent.studyTime')}
-          value={formatMinutes(stats?.studySeconds ?? 0)}
-        />
-        <Card className="flex flex-col items-center justify-center gap-1">
-          <ProgressRing value={overallMastery} size={40} strokeWidth={5} />
-          <p className="text-xs font-medium text-slate-500">
-            {t('parent.overallMastery')}
-          </p>
-        </Card>
-      </div>
+      {/* `stats` is null until the week's figures come back. Rendering the
+          tiles regardless meant a parent was shown "0 lessons, 0 questions,
+          0 minutes" for as long as the query took, and then watched it snap
+          to the real numbers -- a worrying thing to show someone about their
+          own child, and a claim we had not yet checked. */}
+      {stats === null ? (
+        <div
+          role="status"
+          aria-busy="true"
+          aria-label={t('common.loading')}
+          className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4"
+        >
+          {Array.from({ length: 4 }, (_, i) => (
+            <Skeleton key={i} className="h-[5.5rem] rounded-3xl" />
+          ))}
+          <span className="sr-only">{t('common.loading')}</span>
+        </div>
+      ) : (
+        <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <StatTile
+            icon={<BookOpenCheck size={16} />}
+            tone="brand"
+            label={t('parent.lessonsCompleted')}
+            value={stats?.lessonsCompleted ?? 0}
+          />
+          <StatTile
+            icon={<ListChecks size={16} />}
+            tone="volt"
+            label={t('parent.questionsAnswered')}
+            value={stats?.questionsAnswered ?? 0}
+          />
+          <StatTile
+            icon={<Clock size={16} />}
+            tone="lilac"
+            label={t('parent.studyTime')}
+            value={formatMinutes(stats?.studySeconds ?? 0)}
+          />
+          <Card className="flex flex-col items-center justify-center gap-1">
+            <ProgressRing value={overallMastery} size={40} strokeWidth={5} />
+            <p className="text-xs font-medium text-slate-500">
+              {t('parent.overallMastery')}
+            </p>
+          </Card>
+        </div>
+      )}
 
       <Card className="mt-4">
         <div className="flex items-center justify-between gap-3">
