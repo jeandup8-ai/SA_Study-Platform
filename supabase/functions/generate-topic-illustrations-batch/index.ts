@@ -104,21 +104,29 @@ Deno.serve(async (req: Request) => {
 
   const succeeded: { id: string; name: string; model: string }[] = []
   const failed: { id: string; name: string; error: string; detail: string }[] = []
+  // Set the moment the provider says the account is out of credit. Every
+  // remaining topic in this call would fail identically, and a scheduled
+  // caller would otherwise keep paying the round trip every few minutes --
+  // which is exactly what happened the first time this ran.
+  let outOfCredit = false
 
   const queue = [...batch]
   async function worker() {
     for (;;) {
       const topic = queue.shift()
-      if (!topic) return
+      if (!topic || outOfCredit) return
       const outcome = await generateAndStore(supabase, openaiKey!, topic)
-      if (outcome.ok) succeeded.push({ id: topic.id, name: topic.name, model: outcome.usedModel })
-      else
-        failed.push({
-          id: topic.id,
-          name: topic.name,
-          error: outcome.error,
-          detail: outcome.detail.slice(0, 200),
-        })
+      if (outcome.ok) {
+        succeeded.push({ id: topic.id, name: topic.name, model: outcome.usedModel })
+        continue
+      }
+      if (outcome.error === 'provider_out_of_credit') outOfCredit = true
+      failed.push({
+        id: topic.id,
+        name: topic.name,
+        error: outcome.error,
+        detail: outcome.detail.slice(0, 200),
+      })
     }
   }
 
@@ -126,11 +134,18 @@ Deno.serve(async (req: Request) => {
     Array.from({ length: Math.min(CONCURRENCY, queue.length) }, () => worker()),
   )
 
-  return jsonResponse({
-    attempted: batch.length,
-    succeeded,
-    failed,
-    // What is left after this call, so the caller knows whether to go again.
-    remaining: outstanding.length - succeeded.length,
-  })
+  return jsonResponse(
+    {
+      attempted: batch.length - queue.length,
+      succeeded,
+      failed,
+      // Named in the response so a scheduled caller, and whoever reads the
+      // logs, can tell "nothing generated because the account is empty" from
+      // "nothing generated because something is broken".
+      outOfCredit,
+      // What is left after this call, so the caller knows whether to go again.
+      remaining: outstanding.length - succeeded.length,
+    },
+    outOfCredit ? 402 : 200,
+  )
 })

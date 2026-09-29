@@ -22,7 +22,16 @@ export interface TopicRow {
 export type GenerateOutcome =
   // deno-lint-ignore no-explicit-any
   | { ok: true; media: any; usedModel: string }
-  | { ok: false; error: 'rate_limited' | 'image_generation_failed' | 'storage_upload_failed' | 'media_insert_failed'; detail: string }
+  | {
+      ok: false
+      error:
+        | 'rate_limited'
+        | 'provider_out_of_credit'
+        | 'image_generation_failed'
+        | 'storage_upload_failed'
+        | 'media_insert_failed'
+      detail: string
+    }
 
 // gpt-image-1 is current; dall-e-3 is the fallback for accounts without
 // access to it. Each carries its own quality vocabulary, which is not
@@ -70,6 +79,11 @@ export async function generateAndStore(
   let usedModel = ''
   let lastError = ''
   let rateLimited = false
+  // "Slow down" and "your card is empty" both arrive as 429. Only the first
+  // is worth waiting out. Retrying the second burned four attempts per topic
+  // against a provider that was never going to answer, and the batch job
+  // kept requeueing on it, so a dead account looked exactly like congestion.
+  let outOfCredit = false
 
   for (const { model, quality } of MODELS) {
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
@@ -81,8 +95,22 @@ export async function generateAndStore(
         })
 
         if (!response.ok) {
-          lastError = `${model}: ${response.status} ${await response.text()}`
+          const responseBody = await response.text()
+          lastError = `${model}: ${response.status} ${responseBody}`
           console.error(`OpenAI image generation failed: ${lastError}`)
+
+          // An exhausted balance is reported as 429 with insufficient_quota.
+          // Nothing retries its way out of that, and neither does the next
+          // model, so the whole call gives up here.
+          if (
+            responseBody.includes('insufficient_quota') ||
+            responseBody.includes('credit_balance_exhausted') ||
+            responseBody.includes('billing_hard_limit_reached')
+          ) {
+            outOfCredit = true
+            break
+          }
+
           // 429 is "too fast", 5xx is "try again". Anything else fails the
           // same way on a retry, so fall through to the next model.
           const worthRetrying = response.status === 429 || response.status >= 500
@@ -126,13 +154,17 @@ export async function generateAndStore(
         }
       }
     }
-    if (imageBytes) break
+    if (imageBytes || outOfCredit) break
   }
 
   if (!imageBytes) {
     return {
       ok: false,
-      error: rateLimited ? 'rate_limited' : 'image_generation_failed',
+      error: outOfCredit
+        ? 'provider_out_of_credit'
+        : rateLimited
+          ? 'rate_limited'
+          : 'image_generation_failed',
       detail: lastError.slice(0, 400),
     }
   }

@@ -99,7 +99,15 @@ Deno.serve(async (req: Request) => {
     // going too fast" from "this will never work" so a batch run can retry
     // the first and give up on the second.
     const status =
-      outcome.error === 'rate_limited' ? 429 : outcome.error === 'image_generation_failed' ? 502 : 500
+      outcome.error === 'rate_limited'
+        ? 429
+        : // The provider is configured and reachable; the account simply has
+          // no credit left. That is the admin's to fix, not a retry.
+          outcome.error === 'provider_out_of_credit'
+          ? 402
+          : outcome.error === 'image_generation_failed'
+            ? 502
+            : 500
     return jsonResponse({ error: outcome.error, detail: outcome.detail }, status)
   }
 
