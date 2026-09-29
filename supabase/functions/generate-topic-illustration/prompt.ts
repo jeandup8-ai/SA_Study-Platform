@@ -253,7 +253,7 @@ const TOPIC_SCENE: { match: RegExp; scene: string }[] = [
       'a balance scale, a measuring tape, a jug of water and a sand timer on a bench',
   },
   {
-    match: /reading|story|comprehension|poem|literature/i,
+    match: /reading|story|comprehension|poem|poetr|stanza|rhyme|literature/i,
     scene: 'a cosy reading corner with cushions and open books with blank pages',
   },
   {
@@ -261,7 +261,7 @@ const TOPIC_SCENE: { match: RegExp; scene: string }[] = [
     scene: 'a desk with a notebook of blank pages, pencils and an eraser',
   },
   {
-    match: /speech|conversation|listening|oral/i,
+    match: /speech|conversation|listening|oral|\brede\b/i,
     scene: 'two children talking, with empty rounded speech bubbles between them',
   },
   {
@@ -318,8 +318,13 @@ const TOPIC_SCENE: { match: RegExp; scene: string }[] = [
     scene: 'counters on a desk sorted into paired rows and leftover singles',
   },
   {
+    match: /trappe van vergelyking|degrees of comparison|comparativ|superlativ/i,
+    scene:
+      'three friendly objects of the same kind lined up on a desk, smallest to largest',
+  },
+  {
     match:
-      /synonym|antonym|vocabular|noun|pronoun|adjective|adverb|verb|tense|conjunction|sentence structure/i,
+      /synonym|antonym|vocabular|noun|pronoun|adjective|adverb|verb|tense|conjunction|voegwoord|sentence structure|complex sentences|passive voice|lydende|bedrywende/i,
     scene:
       'a classroom word wall of blank coloured cards pinned in neat rows, with no writing on them',
   },
@@ -329,8 +334,14 @@ const TOPIC_SCENE: { match: RegExp; scene: string }[] = [
       'a child highlighting a passage in an open book of blank pages, with a short list of blank cards beside it',
   },
   {
-    match: /figurative|simile|metaphor|persuasi|fact versus opinion|formal|informal/i,
+    match:
+      /figurative|simile|metaphor|persuasi|fact versus opinion|formal|informal|idiom|uitdrukking/i,
     scene: 'two children in conversation with imaginative shapes drifting between them',
+  },
+  {
+    match: /media text|\bbias\b|newspaper|advert/i,
+    scene:
+      'newspapers, a tablet and a poster spread across a table, every page and screen left blank',
   },
   {
     match: /mental (calculation|math)|ratio|rate/i,
