@@ -340,7 +340,8 @@
     "weak": "Weak",
     "startRevision": "Start revision plan",
     "mockTest": "Take a mock test",
-    "noQuestionsYet": "No questions published for this subject yet."
+    "noQuestionsYet": "No questions published for this subject yet.",
+    "noQuestionsYetBody": "We are still building the question bank for this subject. Try another subject, or come back soon."
   },
   "admin": {
     "title": "Admin",

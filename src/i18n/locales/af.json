@@ -340,7 +340,8 @@
     "weak": "Swak",
     "startRevision": "Begin hersieningsplan",
     "mockTest": "Doen 'n toetseksamen",
-    "noQuestionsYet": "Nog geen vrae vir hierdie vak gepubliseer nie."
+    "noQuestionsYet": "Nog geen vrae vir hierdie vak gepubliseer nie.",
+    "noQuestionsYetBody": "Ons bou nog die vraebank vir hierdie vak. Probeer 'n ander vak, of kom binnekort weer kyk."
   },
   "admin": {
     "title": "Admin",

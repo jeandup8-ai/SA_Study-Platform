@@ -9,13 +9,21 @@ import {
   type QuestionWithOptions,
   type QuestionAnswerRecord,
 } from '@/components/lesson/QuestionRunner'
-import { Button, Card, ProgressRing } from '@/components/ui'
+import {
+  Button,
+  Card,
+  EmptyState,
+  PageHeader,
+  ProgressRing,
+  Skeleton,
+} from '@/components/ui'
+import { FileQuestion } from 'lucide-react'
 
 export function MockTestPage() {
   const { t } = useTranslation()
   const { subjectId } = useParams<{ subjectId: string }>()
   const { activeLearner } = useLearner()
-  const [questions, setQuestions] = useState<QuestionWithOptions[]>([])
+  const [questions, setQuestions] = useState<QuestionWithOptions[] | null>(null)
   const [result, setResult] = useState<{ correctCount: number; total: number } | null>(
     null,
   )
@@ -41,7 +49,7 @@ export function MockTestPage() {
     await recordMockTestResult({
       learnerId: activeLearner.id,
       subjectId,
-      questionsWithTopic: questions.map((q) => ({
+      questionsWithTopic: (questions ?? []).map((q) => ({
         questionId: q.id,
         topicId: q.topic_id,
       })),
@@ -54,18 +62,42 @@ export function MockTestPage() {
 
   return (
     <div className="app-column pt-6 pb-10">
-      <h1 className="font-display text-2xl font-extrabold tracking-tight text-slate-900">
-        {t('exam.mockTest')}
-      </h1>
+      <PageHeader eyebrow={t('nav.exam')} title={t('exam.mockTest')} />
 
-      {!result && questions.length > 0 && (
-        <QuestionRunner questions={questions} onComplete={handleComplete} />
+      {/* `questions` is null until the query returns. Starting it as an
+          empty array meant the "there are no questions yet" card rendered
+          first every time, so a learner opening a mock test was told the
+          subject had nothing in it and then watched the test appear. */}
+      {!result && questions === null && (
+        <div
+          className="mt-6 space-y-3"
+          role="status"
+          aria-busy="true"
+          aria-label={t('common.loading')}
+        >
+          <Skeleton className="h-40 w-full rounded-3xl" />
+          <span className="sr-only">{t('common.loading')}</span>
+        </div>
       )}
 
-      {!result && questions.length === 0 && (
-        <Card className="mt-6 text-center text-sm text-slate-400">
-          {t('exam.noQuestionsYet')}
-        </Card>
+      {!result && questions !== null && questions.length > 0 && (
+        <div className="mt-6">
+          <QuestionRunner questions={questions} onComplete={handleComplete} />
+        </div>
+      )}
+
+      {!result && questions !== null && questions.length === 0 && (
+        <EmptyState
+          className="mt-6"
+          icon={<FileQuestion size={22} />}
+          title={t('exam.noQuestionsYet')}
+          body={t('exam.noQuestionsYetBody')}
+          action={
+            <Link to="/app/exam">
+              <Button variant="secondary">{t('common.back')}</Button>
+            </Link>
+          }
+        />
       )}
 
       {result && (

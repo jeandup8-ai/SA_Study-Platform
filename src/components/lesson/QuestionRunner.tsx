@@ -1,3 +1,4 @@
+import { Check, X } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button, Card, Badge } from '@/components/ui'
@@ -15,7 +16,11 @@ export interface QuestionAnswerRecord {
 
 interface QuestionRunnerProps {
   questions: QuestionWithOptions[]
-  onComplete: (result: { correctCount: number; total: number; answers: QuestionAnswerRecord[] }) => void
+  onComplete: (result: {
+    correctCount: number
+    total: number
+    answers: QuestionAnswerRecord[]
+  }) => void
 }
 
 export function QuestionRunner({ questions, onComplete }: QuestionRunnerProps) {
@@ -35,7 +40,11 @@ export function QuestionRunner({ questions, onComplete }: QuestionRunnerProps) {
     setRevealed(true)
     setAnswers((prev) => [
       ...prev,
-      { questionId: question.id, selectedOptionId: selectedOption.id, isCorrect: selectedOption.is_correct },
+      {
+        questionId: question.id,
+        selectedOptionId: selectedOption.id,
+        isCorrect: selectedOption.is_correct,
+      },
     ])
   }
 
@@ -67,8 +76,13 @@ export function QuestionRunner({ questions, onComplete }: QuestionRunnerProps) {
               key={option.id}
               type="button"
               disabled={revealed}
+              // Which option is chosen was previously carried by the border
+              // and fill colour alone, so a learner using a screen reader
+              // could not tell what they had selected. aria-pressed is the
+              // same pattern the exam subject chips already use.
+              aria-pressed={isSelected}
               onClick={() => setSelectedOptionId(option.id)}
-              className={`min-h-12 w-full rounded-2xl border-2 px-4 text-left font-semibold transition-colors ${
+              className={`flex min-h-12 w-full items-center gap-3 rounded-2xl border-2 px-4 py-2 text-left font-semibold transition-colors ${
                 showCorrect
                   ? 'border-success-500 bg-success-50 text-success-700'
                   : showIncorrect
@@ -78,7 +92,15 @@ export function QuestionRunner({ questions, onComplete }: QuestionRunnerProps) {
                       : 'border-slate-200 text-slate-700'
               }`}
             >
-              {option.label}
+              {/* Right and wrong were green and red and nothing else. A
+                  learner who cannot separate those two sees two tinted
+                  boxes. The mark says which is which without colour. */}
+              {revealed && (showCorrect || showIncorrect) && (
+                <span className="shrink-0" aria-hidden>
+                  {showCorrect ? <Check size={18} /> : <X size={18} />}
+                </span>
+              )}
+              <span className="min-w-0 flex-1">{option.label}</span>
             </button>
           )
         })}
@@ -89,7 +111,9 @@ export function QuestionRunner({ questions, onComplete }: QuestionRunnerProps) {
           <Badge tone={selectedOption?.is_correct ? 'success' : 'danger'}>
             {selectedOption?.is_correct ? t('lesson.correct') : t('lesson.incorrect')}
           </Badge>
-          {question.explanation && <p className="mt-2 text-sm text-slate-600">{question.explanation}</p>}
+          {question.explanation && (
+            <p className="mt-2 text-sm text-slate-600">{question.explanation}</p>
+          )}
         </div>
       )}
 
@@ -100,7 +124,9 @@ export function QuestionRunner({ questions, onComplete }: QuestionRunnerProps) {
           </Button>
         ) : (
           <Button className="w-full" onClick={next}>
-            {index + 1 < questions.length ? t('lesson.anotherQuestion') : t('quiz.submit')}
+            {index + 1 < questions.length
+              ? t('lesson.anotherQuestion')
+              : t('quiz.submit')}
           </Button>
         )}
       </div>
