@@ -61,6 +61,8 @@ export async function fetchContinueLearning(
 
 export interface SubjectMasterySummary {
   subjectId: string
+  /** Stable key for the subject's visual identity. See lib/subjects/subjectArt. */
+  subjectSlug: string | null
   subjectName: string
   colorKey: string | null
   averageMastery: number
@@ -91,7 +93,7 @@ export async function fetchSubjectMasterySummary(
 
   const { data: subjects } = await supabase
     .from('subjects')
-    .select('id, name, name_af, color_key')
+    .select('id, slug, name, name_af, color_key')
     .in('id', subjectIds)
 
   const { data: topics } = await supabase
@@ -130,6 +132,7 @@ export async function fetchSubjectMasterySummary(
         const average = scores.reduce((a, b) => a + b, 0) / scores.length
         return {
           subjectId: s.id,
+          subjectSlug: s.slug,
           subjectName: localizedName(s, language),
           colorKey: s.color_key,
           averageMastery: average,
@@ -139,6 +142,7 @@ export async function fetchSubjectMasterySummary(
       const baseline = baselineBySubject.get(s.id) ?? 0
       return {
         subjectId: s.id,
+        subjectSlug: s.slug,
         subjectName: localizedName(s, language),
         colorKey: s.color_key,
         averageMastery: baseline,

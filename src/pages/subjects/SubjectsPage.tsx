@@ -7,12 +7,13 @@ import {
   type SubjectMasterySummary,
 } from '@/lib/curriculum/dashboard'
 import {
-  ProgressRing,
-  PageHeader,
-  Stagger,
-  SkeletonList,
   EmptyState,
   ErrorState,
+  PageHeader,
+  ProgressRing,
+  SkeletonList,
+  Stagger,
+  SubjectMark,
   linkCardClass,
 } from '@/components/ui'
 import { useAsync } from '@/hooks/useAsync'
@@ -53,9 +54,11 @@ export function SubjectsPage() {
               <Link
                 to={`/app/subjects/${s.subjectId}`}
                 className={linkCardClass({
-                  className: 'grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3',
+                  className:
+                    'grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3',
                 })}
               >
+                <SubjectMark slug={s.subjectSlug} size="md" />
                 <div className="min-w-0">
                   <p className="font-display font-bold text-slate-900 break-words">
                     {s.subjectName}

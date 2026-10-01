@@ -11,6 +11,8 @@ import {
   type MarketingSubject,
 } from '@/lib/marketing/subjects'
 import type { LanguageCode } from '@/types/curriculum'
+import { subjectSkin } from '@/lib/subjects/subjectArt'
+import { SubjectMark } from '@/components/ui'
 
 /**
  * Subject cards, built from the live curriculum.
@@ -20,19 +22,6 @@ import type { LanguageCode } from '@/types/curriculum'
  * each name is the promise for that subject; the grade range and topic count
  * come straight from the database, so neither can overstate what we cover.
  */
-
-/** Visual identity per subject. Keyed by slug; unknown slugs fall back. */
-const SKINS: Record<string, { from: string; to: string; glyph: string }> = {
-  mathematics: { from: 'from-volt-400', to: 'to-volt-600', glyph: '÷' },
-  'natural-sciences': { from: 'from-lilac-400', to: 'to-lilac-600', glyph: '⚗' },
-  'social-sciences': { from: 'from-gold-300', to: 'to-gold-500', glyph: '⊕' },
-  'english-home-language': { from: 'from-volt-300', to: 'to-lilac-500', glyph: 'Aa' },
-  'afrikaans-first-additional-language': { from: 'from-lilac-300', to: 'to-volt-500', glyph: 'Aa' },
-  'life-skills': { from: 'from-gold-200', to: 'to-coral-400', glyph: '♡' },
-  'creative-arts': { from: 'from-coral-300', to: 'to-lilac-500', glyph: '♫' },
-}
-
-const FALLBACK_SKIN = { from: 'from-ink-400', to: 'to-ink-600', glyph: '•' }
 
 export function Subjects() {
   const { t, i18n } = useTranslation()
@@ -75,7 +64,7 @@ export function Subjects() {
             />
           ))}
         {subjects.map((subject, index) => {
-          const skin = SKINS[subject.slug] ?? FALLBACK_SKIN
+          const skin = subjectSkin(subject.slug)
           const range = formatGradeRange(subject.grades)
           return (
             <Reveal key={subject.slug} delay={index * 70}>
@@ -99,16 +88,7 @@ export function Subjects() {
                 />
 
                 <div className="flex items-start justify-between gap-3">
-                  <span
-                    className={clsx(
-                      'flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br font-display text-xl font-extrabold text-ink-950',
-                      skin.from,
-                      skin.to,
-                    )}
-                    aria-hidden
-                  >
-                    {skin.glyph}
-                  </span>
+                  <SubjectMark slug={subject.slug} size="md" />
                   <ArrowUpRight
                     size={18}
                     className="mt-1 text-ink-500 transition-all duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-white"
@@ -116,10 +96,15 @@ export function Subjects() {
                 </div>
 
                 <h3 className="mt-5 font-display text-xl font-extrabold leading-tight tracking-tight text-white">
-                  {localizedName({ name: subject.name, name_af: subject.nameAf }, language)}
+                  {localizedName(
+                    { name: subject.name, name_af: subject.nameAf },
+                    language,
+                  )}
                 </h3>
                 <p className="mt-2 text-sm font-semibold leading-relaxed text-volt-200">
-                  {t(`m.subjects.promise.${subject.slug}`, { defaultValue: t('m.subjects.promiseDefault') })}
+                  {t(`m.subjects.promise.${subject.slug}`, {
+                    defaultValue: t('m.subjects.promiseDefault'),
+                  })}
                 </p>
 
                 <p className="mt-auto pt-6 text-xs font-semibold text-ink-400">
