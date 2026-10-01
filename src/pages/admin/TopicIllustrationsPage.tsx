@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Check,
   X,
@@ -57,10 +57,12 @@ export function TopicIllustrationsPage() {
   const [errorByTopic, setErrorByTopic] = useState<Record<string, string>>({})
   const [concurrency, setConcurrency] = useState(DEFAULT_CONCURRENCY)
   const [batch, setBatch] = useState<BatchProgress | null>(null)
-  const [batchSummary, setBatchSummary] = useState<{ succeeded: number; failed: number } | null>(
-    null,
-  )
+  const [batchSummary, setBatchSummary] = useState<{
+    succeeded: number
+    failed: number
+  } | null>(null)
   const batchContinueRef = useRef(true)
+  const [enlarged, setEnlarged] = useState<TopicIllustrationStatus | null>(null)
 
   const topics = useMemo(() => data ?? [], [data])
 
@@ -85,7 +87,12 @@ export function TopicIllustrationsPage() {
   }, [topics, query, gradeFilter, subjectFilter, statusFilter])
 
   const counts = useMemo(() => {
-    const base: Record<StatusKey, number> = { none: 0, pending: 0, approved: 0, rejected: 0 }
+    const base: Record<StatusKey, number> = {
+      none: 0,
+      pending: 0,
+      approved: 0,
+      rejected: 0,
+    }
     for (const t of topics) base[t.status]++
     return base
   }, [topics])
@@ -105,7 +112,8 @@ export function TopicIllustrationsPage() {
     setGeneratingIds((prev) => new Set(prev).add(topicId))
     clearError(topicId)
     const result = await generateTopicIllustration(topicId)
-    if (!result.ok) setErrorByTopic((prev) => ({ ...prev, [topicId]: result.error ?? 'unknown' }))
+    if (!result.ok)
+      setErrorByTopic((prev) => ({ ...prev, [topicId]: result.error ?? 'unknown' }))
     setGeneratingIds((prev) => {
       const next = new Set(prev)
       next.delete(topicId)
@@ -162,20 +170,24 @@ export function TopicIllustrationsPage() {
     reload()
   }
 
-  const batchTargets = filtered.filter((t) => t.status === 'none' || t.status === 'rejected').length
+  const batchTargets = filtered.filter(
+    (t) => t.status === 'none' || t.status === 'rejected',
+  ).length
 
   return (
     <div>
       <header>
-        <p className="text-xs font-bold uppercase tracking-[0.14em] text-volt-400">Admin</p>
+        <p className="text-xs font-bold uppercase tracking-[0.14em] text-volt-400">
+          Admin
+        </p>
         <h1 className="font-display text-2xl font-extrabold tracking-tight text-white">
           Illustration Studio
         </h1>
         <p className="mt-1 max-w-2xl text-sm text-ink-300">
-          One AI-generated scene per topic. The prompt is built per topic from its subject and name,
-          and hard-forbids text, letters and numbers in the image — models still render those
-          unreliably, and a wrong label read as fact is worse than no picture. Every image waits here
-          for your approval before any learner can see it.
+          One AI-generated scene per topic. The prompt is built per topic from its subject
+          and name, and hard-forbids text, letters and numbers in the image — models still
+          render those unreliably, and a wrong label read as fact is worse than no
+          picture. Every image waits here for your approval before any learner can see it.
         </p>
       </header>
 
@@ -215,7 +227,9 @@ export function TopicIllustrationsPage() {
                     : 'border-ink-700 bg-ink-800/60 hover:border-ink-600'
                 }`}
               >
-                <p className="font-display text-2xl font-extrabold text-white">{counts[key]}</p>
+                <p className="font-display text-2xl font-extrabold text-white">
+                  {counts[key]}
+                </p>
                 <p className="text-xs font-semibold uppercase tracking-wide text-ink-300">
                   {STATUS_LABEL[key]}
                 </p>
@@ -263,13 +277,13 @@ export function TopicIllustrationsPage() {
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="font-display font-bold text-white">
-                  Batch generate — {batchTargets} topic{batchTargets === 1 ? '' : 's'} in the current
-                  filter
+                  Batch generate — {batchTargets} topic{batchTargets === 1 ? '' : 's'} in
+                  the current filter
                 </p>
                 <p className="mt-0.5 text-sm text-ink-300">
-                  Covers topics with no illustration and ones previously rejected. Estimated{' '}
-                  ${(batchTargets * ESTIMATED_COST_PER_IMAGE_USD).toFixed(2)} at $
-                  {ESTIMATED_COST_PER_IMAGE_USD.toFixed(2)} an image.
+                  Covers topics with no illustration and ones previously rejected.
+                  Estimated ${(batchTargets * ESTIMATED_COST_PER_IMAGE_USD).toFixed(2)} at
+                  ${ESTIMATED_COST_PER_IMAGE_USD.toFixed(2)} an image.
                 </p>
               </div>
               {!batchRunning ? (
@@ -281,11 +295,13 @@ export function TopicIllustrationsPage() {
                       onChange={(e) => setConcurrency(Number(e.target.value))}
                       className="min-h-10 rounded-xl border border-ink-700 bg-ink-900 px-2 text-sm text-white focus:border-volt-500 focus:outline-none"
                     >
-                      {Array.from({ length: MAX_CONCURRENCY }, (_, i) => i + 1).map((n) => (
-                        <option key={n} value={n}>
-                          {n}
-                        </option>
-                      ))}
+                      {Array.from({ length: MAX_CONCURRENCY }, (_, i) => i + 1).map(
+                        (n) => (
+                          <option key={n} value={n}>
+                            {n}
+                          </option>
+                        ),
+                      )}
                     </select>
                   </label>
                   <button
@@ -314,7 +330,9 @@ export function TopicIllustrationsPage() {
                 <div className="h-2 overflow-hidden rounded-full bg-ink-900">
                   <div
                     className="h-full rounded-full bg-volt-500 transition-all"
-                    style={{ width: `${batch.total ? (batch.done / batch.total) * 100 : 0}%` }}
+                    style={{
+                      width: `${batch.total ? (batch.done / batch.total) * 100 : 0}%`,
+                    }}
                   />
                 </div>
                 <p className="mt-2 text-sm text-ink-300">
@@ -341,7 +359,9 @@ export function TopicIllustrationsPage() {
           {filtered.length === 0 ? (
             <div className="mt-3 rounded-2xl border border-dashed border-ink-600 px-6 py-12 text-center">
               <ImageOff size={24} className="mx-auto text-ink-500" aria-hidden />
-              <p className="mt-2 font-semibold text-ink-200">No topics match these filters.</p>
+              <p className="mt-2 font-semibold text-ink-200">
+                No topics match these filters.
+              </p>
             </div>
           ) : (
             <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -354,13 +374,133 @@ export function TopicIllustrationsPage() {
                   error={errorByTopic[topic.id]}
                   onGenerate={() => void handleGenerate(topic.id)}
                   onReview={(decision) => void handleReview(topic.mediaId!, decision)}
+                  onEnlarge={() => setEnlarged(topic)}
                 />
               ))}
             </div>
           )}
         </>
       )}
+
+      <ReviewDialog
+        topic={enlarged}
+        onClose={() => setEnlarged(null)}
+        onReview={(decision) => {
+          if (enlarged?.mediaId) void handleReview(enlarged.mediaId, decision)
+          setEnlarged(null)
+        }}
+      />
     </div>
+  )
+}
+
+/**
+ * The full-size look before a decision.
+ *
+ * Reviewing 200-odd illustrations in a grid of 300px thumbnails cannot
+ * work: the single most important thing a reviewer checks is that the
+ * image contains no text anywhere, and a stray word in a corner is simply
+ * not visible at that size. This shows the whole image as large as the
+ * viewport allows, with the prompt that produced it and the two decisions.
+ *
+ * Native <dialog> rather than a library: focus trapping, Escape to close
+ * and the backdrop come with it, and @radix-ui/react-dialog -- though
+ * present in package.json -- is not used anywhere in this codebase, so
+ * reaching for it here would introduce the first instance of a second
+ * pattern.
+ *
+ * Nothing here weakens the review gate. Approving still goes through
+ * approveIllustration, which is the only path that flips approval_status,
+ * and a generated image remains invisible to learners until a human does
+ * exactly that.
+ */
+function ReviewDialog({
+  topic,
+  onClose,
+  onReview,
+}: {
+  topic: TopicIllustrationStatus | null
+  onClose: () => void
+  onReview: (decision: 'approve' | 'reject') => void
+}) {
+  const ref = useRef<HTMLDialogElement>(null)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    if (topic && !el.open) el.showModal()
+    if (!topic && el.open) el.close()
+  }, [topic])
+
+  return (
+    <dialog
+      ref={ref}
+      // Escape and the backdrop both resolve to the same close path, so
+      // the parent's state can never disagree with the element's.
+      onClose={onClose}
+      onClick={(e) => {
+        if (e.target === ref.current) ref.current?.close()
+      }}
+      className="max-h-[92dvh] w-[min(56rem,92vw)] rounded-2xl border border-ink-700 bg-ink-900 p-0 text-white backdrop:bg-ink-950/80"
+    >
+      {topic && (
+        <div className="flex max-h-[92dvh] flex-col">
+          <div className="flex items-start justify-between gap-3 border-b border-ink-700 p-4">
+            <div className="min-w-0">
+              <h2 className="font-display text-lg font-extrabold break-words">
+                {topic.name}
+              </h2>
+              <p className="mt-0.5 text-xs text-ink-400">
+                Grade {topic.grade_number} · {topic.subject_name} ·{' '}
+                {STATUS_LABEL[topic.status]}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => ref.current?.close()}
+              className="shrink-0 rounded-lg p-2 text-ink-300 hover:bg-white/10 hover:text-white"
+            >
+              <X size={18} aria-hidden />
+              <span className="sr-only">Close</span>
+            </button>
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto p-4">
+            {topic.imageUrl && (
+              <img
+                src={topic.imageUrl}
+                alt=""
+                className="mx-auto max-h-[60dvh] w-auto rounded-xl bg-ink-950 object-contain"
+              />
+            )}
+            {topic.generationPrompt && (
+              <p className="mt-4 rounded-xl bg-ink-950 p-3 text-xs leading-relaxed text-ink-300">
+                {topic.generationPrompt}
+              </p>
+            )}
+          </div>
+
+          {topic.status === 'pending' && topic.mediaId && (
+            <div className="flex gap-2 border-t border-ink-700 p-4">
+              <button
+                type="button"
+                onClick={() => onReview('approve')}
+                className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg bg-success-600 px-3 font-semibold text-white hover:bg-success-500"
+              >
+                <Check size={16} aria-hidden /> Approve
+              </button>
+              <button
+                type="button"
+                onClick={() => onReview('reject')}
+                className="inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-lg bg-ink-700 px-3 font-semibold text-white hover:bg-ink-600"
+              >
+                <X size={16} aria-hidden /> Reject
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+    </dialog>
   )
 }
 
@@ -400,6 +540,7 @@ function TopicCard({
   error,
   onGenerate,
   onReview,
+  onEnlarge,
 }: {
   topic: TopicIllustrationStatus
   busy: boolean
@@ -407,12 +548,22 @@ function TopicCard({
   error?: string
   onGenerate: () => void
   onReview: (decision: 'approve' | 'reject') => void
+  onEnlarge: () => void
 }) {
   const [promptOpen, setPromptOpen] = useState(false)
 
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-ink-700 bg-ink-800">
       <div className="relative aspect-square w-full bg-ink-900">
+        {topic.imageUrl && (
+          <button
+            type="button"
+            onClick={onEnlarge}
+            className="absolute inset-0 z-10 cursor-zoom-in focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-volt-400"
+          >
+            <span className="sr-only">View {topic.name} full size</span>
+          </button>
+        )}
         {topic.imageUrl ? (
           <img
             src={topic.imageUrl}
@@ -421,7 +572,11 @@ function TopicCard({
             // screen reader announce it twice.
             alt=""
             loading="lazy"
-            className="h-full w-full object-cover"
+            // contain, not cover. This is a review surface: a reviewer
+            // deciding whether an illustration is usable has to see all of
+            // it, and a square crop can quietly hide the very corner where
+            // the model rendered a stray word.
+            className="h-full w-full object-contain"
           />
         ) : (
           <div className="flex h-full w-full items-center justify-center text-ink-600">
