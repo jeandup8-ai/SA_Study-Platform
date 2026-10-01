@@ -59,7 +59,7 @@ export function GuidedHelp({
             key={key}
             type="button"
             onClick={onClick}
-            className="inline-flex min-h-9 items-center gap-1.5 rounded-full border border-brand-200 bg-white px-3.5 text-xs font-semibold text-brand-700 transition-colors hover:bg-brand-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 active:bg-brand-100"
+            className="inline-flex min-h-11 items-center gap-1.5 rounded-full border border-brand-200 bg-white px-4 text-xs font-semibold text-brand-700 transition-colors hover:bg-brand-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 active:bg-brand-100"
           >
             <Icon size={14} aria-hidden />
             {label}

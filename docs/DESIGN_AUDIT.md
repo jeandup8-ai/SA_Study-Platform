@@ -261,16 +261,43 @@ generation, and it needs 8 images, not 224.
 
 | Step | State |
 |---|---|
-| 1. Tokens | **Done** — radius and shadow scales added (`4927272`) |
-| 2. Responsive containers | **Done** — `app-column` / `app-grid-page` across 10 screens, list pages go two-up at `lg` (`4927272`) |
-| 3. Lesson page | **Partly done** — accessible `StepProgress`, `GuidedHelp` region, V2/legacy action lists merged (`4927272`). The 675-line component itself is not yet split |
-| 4. Scan my work | **Done** — `UploadZone`, analysing shows the page being worked on, rejection is calm (`0975504`) |
-| 5. Parent surface | **Partly done** — the dashboard no longer shows a week of zeroes while loading. Settings and Subscription untouched |
-| 6. Practice CTA | Not started |
-| 7. Level B subject illustrations | Not started — needs `IMAGE_GENERATION_MANIFEST.md` first |
-| 8. Exam prep, mock test, Illustration Studio | Not started |
-| 9. Full render audit | Partial — 390/768/1440 verified for the screens changed so far |
+| 1. Tokens | **Done** (`4927272`) |
+| 2. Responsive containers | **Done** (`4927272`) |
+| 3. Lesson page | **Done** — `StepProgress`, `GuidedHelp`, merged action lists (`4927272`); `useGuidedHelp` extracted, 629 → 516 lines (`2f2e0be`) |
+| 4. Scan my work | **Done** (`0975504`) |
+| 5. Parent surface | **Done** — dashboard skeleton (`4d7f0cb`); settings and subscription onto the shared chrome, three real defects fixed (`2f2e0be`) |
+| 6. Practice conversion | **Done** — one `PracticeUpsell` on hub, grade and subject (`d9ae423`) |
+| 7. Level B subject illustrations | **Architecture done, images not generated** — registry, `SubjectMark`, manifest for 10 images (`2a6bd54`) |
+| 8. Exam / mock test / Illustration Studio | **Done** (`67a3d4c`, `94e468a`) |
+| 9. Full render audit | **Done** — 360/390/430/768/1440 across six surfaces, English and Afrikaans |
 
-Everything above was verified with the project's own gates on each commit:
-`tsc -b --noEmit`, `oxlint`, `check-i18n-keys`, `check-illustration-prompts`
-and `vite build`.
+### Render audit result
+
+No horizontal overflow and no JavaScript errors at any of the five widths,
+on any of six surfaces (component harness in both languages, landing,
+practice, pricing, sign-up), including with a deliberately long learner
+name and the longest real CAPS topic name.
+
+One touch-target regression found and fixed: the Guided help chips were
+36 px tall, below a comfortable target for a child. Now 44 px.
+
+Remaining sub-40px targets are all pre-existing and all inline text
+links — the visually-hidden skip link, the header wordmark, footer links,
+and "Sign in instead". WCAG 2.5.8 exempts inline links, and rebuilding a
+footer out of 44 px blocks would be worse than the problem.
+
+### Reproduced defects fixed along the way
+
+The same mistake had been made in four places: state initialised to a
+value indistinguishable from a real answer, so the empty case rendered
+before the data arrived.
+
+| Where | What a user saw |
+|---|---|
+| Parent dashboard | "0 lessons, 0 questions, 0 minutes studied" for their child |
+| Subscription | "There are no plans yet", on the screen where they pay |
+| Mock test | "No questions for this subject yet", on every open |
+| Subject plans price | **R1199** where the pricing page and Terms both say **R1,199** |
+
+Also: "/mo" and "/yr" were hardcoded English on a bilingual product, and
+`QuestionRunner` carried both selection and right/wrong by colour alone.

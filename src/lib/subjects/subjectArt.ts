@@ -53,6 +53,12 @@ export const SUBJECT_SKINS: Record<string, SubjectSkin> = {
     art: null,
   },
   'social-sciences': { from: 'from-gold-300', to: 'to-gold-500', glyph: '⊕', art: null },
+  // The two language subjects share the 'Aa' glyph and differ only in
+  // gradient direction, which is subtle at tile size when they sit next to
+  // each other in the list. Left as-is rather than invented around: it is
+  // the clearest argument for generating B-04 and B-05 first, and those two
+  // are specified with deliberately different compositions (books and pen
+  // versus speech bubbles) for exactly this reason.
   'english-home-language': {
     from: 'from-volt-300',
     to: 'to-lilac-500',
