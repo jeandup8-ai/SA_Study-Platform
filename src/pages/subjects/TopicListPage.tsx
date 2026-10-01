@@ -11,20 +11,22 @@ import { fetchTopicSummaryContent } from '@/lib/curriculum/topicSummary'
 import { generateTopicSummaryPdf } from '@/lib/pdf/topicSummarySheet'
 import { supabase } from '@/lib/supabase'
 import {
-  Card,
-  ProgressRing,
   Badge,
-  PageHeader,
-  Stagger,
-  SkeletonList,
+  Card,
   EmptyState,
   ErrorState,
+  PageHeader,
+  ProgressRing,
+  SkeletonList,
+  Stagger,
+  SubjectMark,
 } from '@/components/ui'
 import { useAsync } from '@/hooks/useAsync'
 
 interface TopicListData {
   topics: TopicWithProgress[]
   subjectName: string
+  subjectSlug: string | null
 }
 
 export function TopicListPage() {
@@ -38,14 +40,24 @@ export function TopicListPage() {
     async () => {
       const learner = activeLearner!
       const [topics, subjectRow] = await Promise.all([
-        fetchTopicsWithProgress(subjectId!, learner.grade_id, learner.id, learner.preferred_language),
-        supabase.from('subjects').select('name, name_af').eq('id', subjectId!).maybeSingle(),
+        fetchTopicsWithProgress(
+          subjectId!,
+          learner.grade_id,
+          learner.id,
+          learner.preferred_language,
+        ),
+        supabase
+          .from('subjects')
+          .select('slug, name, name_af')
+          .eq('id', subjectId!)
+          .maybeSingle(),
       ])
       return {
         topics,
         subjectName: subjectRow.data
           ? localizedName(subjectRow.data, learner.preferred_language)
           : '',
+        subjectSlug: subjectRow.data?.slug ?? null,
       }
     },
     [learnerId, subjectId],
@@ -58,7 +70,10 @@ export function TopicListPage() {
     if (!activeLearner || downloadingKey) return
     setDownloadingKey(`${topic.id}:practice`)
     try {
-      const questions = await fetchPrintablePracticeSet(topic.id, activeLearner.preferred_language)
+      const questions = await fetchPrintablePracticeSet(
+        topic.id,
+        activeLearner.preferred_language,
+      )
       if (questions.length > 0) {
         await generatePracticeSheetPdf({
           subjectName,
@@ -82,7 +97,10 @@ export function TopicListPage() {
     if (!activeLearner || downloadingKey) return
     setDownloadingKey(`${topic.id}:summary`)
     try {
-      const content = await fetchTopicSummaryContent(topic.id, activeLearner.preferred_language)
+      const content = await fetchTopicSummaryContent(
+        topic.id,
+        activeLearner.preferred_language,
+      )
       if (
         content.narrationParagraphs.length > 0 ||
         content.workedExample ||
@@ -108,7 +126,18 @@ export function TopicListPage() {
 
   return (
     <div className="app-grid-page pt-6 pb-10">
-      <PageHeader eyebrow={t('subjects.topics')} title={subjectName || t('subjects.title')} />
+      {/* The one place inside the app that shows a single subject at any
+          size. The mark anchors which world you are in while you scroll a
+          long topic list; the subject name is right beside it, so the mark
+          stays decorative. */}
+      <div className="flex items-start gap-4">
+        <SubjectMark slug={data?.subjectSlug} size="lg" className="mt-1" />
+        <PageHeader
+          className="min-w-0 flex-1"
+          eyebrow={t('subjects.topics')}
+          title={subjectName || t('subjects.title')}
+        />
+      </div>
 
       {status === 'error' ? (
         <ErrorState className="mt-4" onRetry={reload} />
@@ -146,7 +175,9 @@ export function TopicListPage() {
                   <p className="text-sm text-slate-500">
                     {t('subjects.lessonsAvailable', { count: topic.lessonCount })}
                   </p>
-                  {topic.is_demo_content && <Badge tone="warning">{t('common.demoContent')}</Badge>}
+                  {topic.is_demo_content && (
+                    <Badge tone="warning">{t('common.demoContent')}</Badge>
+                  )}
                 </div>
                 <IconButton
                   label={t('subjects.downloadSummary')}

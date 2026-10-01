@@ -31,7 +31,7 @@ export function PracticeLanguageToggle({ tone = 'dark' }: { tone?: 'dark' | 'lig
             aria-pressed={active}
             onClick={() => void i18n.changeLanguage(code)}
             className={clsx(
-              'min-h-9 rounded-full px-4 text-sm font-bold transition-colors',
+              'min-h-11 rounded-full px-4 text-sm font-bold transition-colors',
               'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-volt-400',
               active
                 ? 'bg-volt-500 text-ink-950'
