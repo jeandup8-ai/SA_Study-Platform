@@ -18,7 +18,7 @@
 // children". The approval state lives in the registry -- a path is only
 // written there after someone has reviewed the image -- and nothing here
 // may be read as approval.
-import { readFileSync, existsSync, statSync } from 'node:fs'
+import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
 import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -91,6 +91,46 @@ try {
 const entries = Object.entries(SUBJECT_SKINS)
 const declared = entries.filter(([, skin]) => skin.art)
 const problems = []
+const notes = []
+
+// Cross-reference the manifest. The registry is what ships; the manifest is
+// what was planned. They should name the same files, and a mismatch means
+// one of them is stale.
+const MANIFEST = 'docs/image-generation-manifest.json'
+let manifestPaths = null
+if (existsSync(MANIFEST)) {
+  const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'))
+  manifestPaths = new Map(
+    manifest.assets
+      .filter((a) => a.level === 'B')
+      .map((a) => [`/${a.outputFilename}`, a.id]),
+  )
+  for (const [slug, skin] of declared) {
+    const name = skin.art.src.replace('/subject-art', '')
+    if (!manifestPaths.has(name)) {
+      problems.push(
+        `${slug}: declares "${skin.art.src}", which no Level B manifest asset plans. ` +
+          `Re-run scripts/build-image-manifest.mjs, or correct the path.`,
+      )
+    }
+  }
+} else {
+  notes.push(`${MANIFEST} is missing, so manifest cross-checking was skipped`)
+}
+
+// A file sitting in the directory that nothing declares is not shipping.
+// Usually it means someone dropped the image in and forgot to write the
+// registry entry, which is the one step that constitutes approval.
+if (existsSync(PUBLIC_DIR + '/subject-art')) {
+  const declaredFiles = new Set(declared.map(([, skin]) => skin.art.src.split('/').pop()))
+  for (const f of readdirSync(PUBLIC_DIR + '/subject-art')) {
+    if (f === 'README.md' || declaredFiles.has(f)) continue
+    notes.push(
+      `public/subject-art/${f} is present but not declared in subjectArt.ts, so it is not being used. ` +
+        `Declaring it is the approval step.`,
+    )
+  }
+}
 
 for (const [slug, skin] of declared) {
   const src = skin.art.src
@@ -145,6 +185,8 @@ if (problems.length > 0) {
   for (const p of problems) console.error(`  ${p}`)
   process.exit(1)
 }
+
+for (const n of notes) console.warn(`  note: ${n}`)
 
 const fallback = entries.length - declared.length
 console.log(
