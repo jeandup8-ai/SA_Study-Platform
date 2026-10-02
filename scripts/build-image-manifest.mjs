@@ -38,10 +38,19 @@ const OUT_JSON = 'docs/image-generation-manifest.json'
 // real ones and are asserted against the topic export below.
 // ---------------------------------------------------------------------------
 const SUBJECTS = [
-  { slug: 'mathematics', accentShort: 'cyan-teal', topicAvoid: 'equations, numerals, rulers with measurement markings, clock faces, calculator keys', name: 'Mathematics', id: 'B-01', accent: 'bright cyan-teal', priority: true,
-    concept: 'Spatial relationships made physical -- solids, a fraction split into parts, and balance, arranged as classroom apparatus rather than symbols.',
-    objects: 'a smooth cube and a cone resting beside it, a circular disc cleanly divided into three unequal coloured wedges that sit very slightly apart, a small two-pan balance scale tipped a fraction off level, a short stack of flat square tiles, and two or three plain round counters',
-    avoid: 'rulers with measurement markings, clock faces, dice pips, calculator keys, equations, numerals of any kind' },
+  // B-01 is the benchmark the rest of Level B is judged against, so its
+  // direction is the most specific in this list. Every object is here
+  // because it carries a mathematical idea physically -- quantity,
+  // part-and-whole, comparison, space -- and the whole avoid list exists to
+  // keep the notation out. The failure mode for a maths illustration is not
+  // ugliness, it is a desk of stationery: a calculator, a protractor and a
+  // page of formulae say "school subject" without saying anything
+  // mathematical, and every digit in them is a digit a model can render
+  // wrong in front of a child.
+  { slug: 'mathematics', accentShort: 'cyan-teal', topicAvoid: 'equations, numerals, rulers with measurement markings, clock faces, calculator keys, graph axes', name: 'Mathematics', id: 'B-01', accent: 'bright cyan-teal', priority: true,
+    concept: 'Mathematics as physical spatial relationships -- solids you could pick up, a whole split into parts, and two quantities compared -- arranged as apparatus rather than notation. The maths is in what the objects do, not in anything written on them.',
+    objects: 'a smooth cube in bright cyan-teal as the anchor of the group, a cone resting beside it, a circular disc cleanly divided into three unequal coloured wedges that sit very slightly apart so the part-and-whole relationship reads at a glance without any numbers or notation, a small two-pan balance tipped a fraction off level so that comparison and near-equivalence read from the tilt alone without any labels, a short stack of flat square tiles, and two or three plain round counters. These are six object groups that belong to one designed composition -- overlapping, consistent in material and scale, reading as a single considered arrangement rather than an assortment of separate clip-art items',
+    avoid: 'calculators and calculator keys, rulers, compasses, protractors, set squares, graph paper, notebooks, pencils, any measurement markings or graduated scales, graph axes, clock faces, dice pips, mathematical formulae, written symbols, operators, numerals or digits of any kind' },
   { slug: 'natural-sciences', accentShort: 'lilac and teal', topicAvoid: 'the atom-with-orbits cliche, periodic tables, chemical formulae, any labelled scientific diagram', name: 'Natural Sciences', id: 'B-02', accent: 'soft lilac with cyan-teal accents', priority: true,
     concept: 'Curiosity and observation through the natural world.',
     objects: 'a simple microscope seen three-quarter on, a rounded flask holding a band of teal liquid, a shallow dish with a single green seedling and two curved leaves, a smooth river pebble, one large soft water droplet, and a magnifying lens resting against the flask',
@@ -153,7 +162,7 @@ const STYLE =
   'Premium modern educational editorial illustration for a contemporary South African learning platform. ' +
   'Clean vector-leaning forms with soft dimensional shading, gently rounded geometry, subtle depth, and a ' +
   'tactile matte-paper or soft-touch-plastic quality -- never glossy, never photoreal. Confident flat colour ' +
-  'fills, crisp clean edges, no outlines or inked strokes, no texture noise or grain. Medium saturation. ' +
+  'fills, crisp clean edges, no outlines or inked strokes, no texture noise, grain or halftone. Medium saturation. ' +
   'Restrained visual complexity. Warm, intelligent, curious and optimistic: grown-up enough for a parent to ' +
   'trust, inviting enough for a nine-to-thirteen-year-old. NOT preschool or babyish, NOT Disney or Pixar, ' +
   'NOT anime, NOT generic 3D clipart, NOT corporate stock illustration, NOT photorealistic, NOT neon, ' +
@@ -368,14 +377,23 @@ for (const r of rows) {
       : 'No artwork commissioned. See classification.',
     routes: wanted ? ['/app/subjects/:subjectId', '/app/lessons/:lessonId'] : [],
     components: wanted ? ['TopicListPage thumbnail', 'LessonPage visual_explanation step'] : [],
+    // A naming convention for an export on its way to the Illustration
+    // Studio, NOT a publishing path. Level C publishes through the media
+    // table; check-topic-art.mjs fails the build on a file left here.
     outputDirectory: wanted ? `public/topic-art/${r.subjectSlug}` : null,
     outputFilename: wanted ? filename : null,
+    publishVia: wanted ? 'Illustration Studio upload (media row, approval_status=pending)' : null,
     format: wanted ? 'webp' : null,
-    dimensions: wanted ? { generate: '1024x1024', production: '768x768' } : null,
+    // Ships at the size it was generated at. The pipeline stores the file
+    // as uploaded, and all 151 existing images are 1024 square, so
+    // downsampling new artwork would make it the odd one out. The upload
+    // validator accepts 512-2048 and flags anything that is not 1024.
+    dimensions: wanted ? { generate: '1024x1024', production: '1024x1024' } : null,
     aspectRatio: wanted ? '1:1' : null,
-    // Topic art renders full-bleed in a rounded card, so unlike the subject
-    // marks it does not need an alpha channel.
-    transparency: wanted ? 'NOT_REQUIRED' : null,
+    // The opposite of a subject mark. Topic art renders full-bleed inside a
+    // rounded card, so a transparent background shows the card through the
+    // picture -- the upload validator rejects it.
+    transparency: wanted ? 'FORBIDDEN_MUST_BE_OPAQUE' : null,
     safeCrop: wanted ? 'Square container, object-cover. Keep the focal point off all four edges by at least 8%.' : null,
     visualConcept: wanted ? (scenes.length ? scenes.join('; and ') : null) : null,
     prohibited: wanted ? 'Text, digits, equations, labels, logos, watermarks, realistic photographic faces.' : null,

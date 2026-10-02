@@ -132,12 +132,74 @@ if (existsSync(PUBLIC_DIR + '/subject-art')) {
   }
 }
 
+// The real subject slugs, so a registry key that matches no subject is
+// caught rather than silently declaring artwork nothing can ever ask for.
+// Read from the same verified export the manifest is built from.
+const TOPICS_TSV = 'scripts/fixtures/topics-live.tsv'
+let liveSubjectSlugs = null
+if (existsSync(TOPICS_TSV)) {
+  liveSubjectSlugs = new Set(
+    readFileSync(TOPICS_TSV, 'utf8')
+      .split('\n')
+      .slice(1)
+      .filter(Boolean)
+      .map((line) => line.split('|')[2]),
+  )
+} else {
+  notes.push(`${TOPICS_TSV} is missing, so subject-slug cross-checking was skipped`)
+}
+
+const EXPECTED_DIR = '/subject-art/'
+
 for (const [slug, skin] of declared) {
   const src = skin.art.src
+
+  // Level C publishes through the media table, not the filesystem (see
+  // docs/ARTWORK_PIPELINE_RECONCILIATION.md). A subject mark pointed at
+  // public/topic-art/ -- or anywhere else -- is either a typo or the start
+  // of the shadow pipeline check-topic-art.mjs exists to prevent, and
+  // check-topic-art.mjs cannot see it because the file is reached through
+  // the registry rather than by sitting in the directory.
   if (!src.startsWith('/')) {
     problems.push(`${slug}: src "${src}" must be an absolute path served from /public`)
     continue
   }
+  if (!src.startsWith(EXPECTED_DIR)) {
+    problems.push(
+      `${slug}: src "${src}" is outside ${EXPECTED_DIR}. Level B artwork ships from ` +
+        `public/subject-art only; public/topic-art is not a publishing path.`,
+    )
+    continue
+  }
+  if (src.includes('..') || src.slice(EXPECTED_DIR.length).includes('/')) {
+    problems.push(`${slug}: src "${src}" must name a file directly inside ${EXPECTED_DIR}`)
+    continue
+  }
+
+  // The filename is the mapping. SubjectMark looks a skin up by subject
+  // slug, so a file named for a different subject would render the wrong
+  // subject's artwork and nothing else would notice -- both files exist,
+  // both are valid WebP, and the only wrong thing is which subject is
+  // looking at which picture.
+  const expectedName = `${slug}.webp`
+  const actualName = src.slice(EXPECTED_DIR.length)
+  if (actualName !== expectedName) {
+    problems.push(
+      `${slug}: declares "${actualName}" but a subject mark must be named after its ` +
+        `subject slug, "${expectedName}".`,
+    )
+    continue
+  }
+
+  if (liveSubjectSlugs && !liveSubjectSlugs.has(slug)) {
+    // A note rather than a failure: three subjects in the registry have no
+    // topics yet, so they legitimately do not appear in the topic export.
+    notes.push(
+      `"${slug}" declares artwork but no live topic belongs to that subject, so nothing ` +
+        `renders it yet.`,
+    )
+  }
+
   const file = join(PUBLIC_DIR, src.slice(1))
 
   if (!existsSync(file)) {

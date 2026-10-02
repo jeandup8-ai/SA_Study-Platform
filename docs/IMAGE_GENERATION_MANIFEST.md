@@ -56,7 +56,10 @@ Ten assets, seven priority. One image gives a whole subject its identity.
 | B-10 | Technology | — | deferred, no topics yet |
 
 **B-01 Mathematics is the benchmark.** Generate it first and judge the
-other six against it. Nothing else should go ahead until it is right.
+other six against it. Nothing else should go ahead until it is right. Its
+full acceptance specification — required objects, prohibited objects, the
+rejection checklist — is
+**[`docs/LEVEL_B_01_MATHEMATICS_SPEC.md`](./LEVEL_B_01_MATHEMATICS_SPEC.md)**.
 
 **Spec:** square, generate 1024 × 1024, ship 512 × 512 WebP, ≤120 KB,
 **transparent background required**, composition inside the central 80%,
@@ -86,9 +89,12 @@ here*, not *could we draw something*.
 The classification rules are keyword lists in
 `scripts/build-image-manifest.mjs` — readable, arguable, and regenerable.
 
-**Spec:** square, generate 1024 × 1024, ship 768 × 768 WebP, ≤260 KB,
-**opaque** (it renders full-bleed inside a rounded card, so transparency
-would show the card through the picture).
+**Spec:** square, generate and ship 1024 × 1024, **opaque** (it renders
+full-bleed inside a rounded card, so transparency would show the card
+through the picture). WebP preferred, PNG and JPEG accepted, 8 MB ceiling
+enforced on the storage bucket. The upload validator rejects anything
+non-square, under 512px, over 2048px, transparent, truncated, or not
+actually an image — see `npm run check:upload`.
 
 **Path:** `public/topic-art/<subject-slug>/g<grade>-<topic-slug>.webp`
 
@@ -156,9 +162,11 @@ Reconciled 2026-10-02. Full detail in
 
 **Level C is not.** Topic artwork is published through the **media table
 and the admin Illustration Studio**, and the canonical identity is
-`topics.id` — never a filename. `public/topic-art/` is a naming convention
-and a guard, not a publishing path; `npm run check:topic-art` fails the
-build if an image appears there.
+`topics.id` — never a filename. Each topic card in the Studio has an
+**Upload** button for artwork generated elsewhere; it validates the file,
+stores it, and writes a `media` row with `approval_status='pending'`.
+`public/topic-art/` is a naming convention and a guard, not a publishing
+path; `npm run check:topic-art` fails the build if an image appears there.
 
 ### What the reconciliation found
 

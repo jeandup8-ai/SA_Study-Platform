@@ -11,11 +11,11 @@ Two kinds of artwork, and they are **not** interchangeable:
 |---|---|---|
 | What it is | One image per subject | One image per topic |
 | Where it renders | 40–64 px square tile on subject cards and the topic-list header | Full-bleed square inside a card, and large in a lesson's visual step |
-| Published via | Filesystem + registry | **Media table + Illustration Studio** |
+| Published via | Filesystem + registry | **Media table + Illustration Studio upload** |
 | Canonical identity | Subject slug | **`topics.id`** |
 | Background | **Transparent — required** | **Opaque — it fills the card** |
 | Generate at | 1024 × 1024 | 1024 × 1024 |
-| Ship at | 512 × 512 WebP, ≤120 KB | 1024 × 1024, as the media pipeline stores it |
+| Ship at | 512 × 512 WebP, ≤120 KB | 1024 × 1024; WebP preferred, PNG accepted, ≤8 MB |
 | Human figures | Never | Allowed, but no realistic faces |
 | How many | 10 planned, 7 priority | 56 still need generating; 86 already exist and need review |
 
@@ -38,12 +38,18 @@ Two kinds of artwork, and they are **not** interchangeable:
    alpha channel must survive — see the trap below.
 6. **Rename** to exactly the `outputFilename` in the manifest.
 7. **Level C stops here and goes a different way.** Topic illustrations are
-   **not** filesystem assets. Upload the image through the admin
-   Illustration Studio so it becomes a `media` row with
-   `approval_status='pending'`, then review it there. Dropping it into
-   `public/topic-art/` will fail the build, because a file there would
-   never reach a learner and would never be reviewed. (Note: the Studio has
-   no upload control yet — see the reconciliation document.)
+   **not** filesystem assets. In the admin Illustration Studio, find the
+   topic, press **Upload**, and pick the file. It is checked (square,
+   opaque, right size, really an image), stored, and recorded as a `media`
+   row with `approval_status='pending'` — then reviewed in the same dialog
+   as a generated image. Dropping it into `public/topic-art/` instead will
+   fail the build, because a file there would never reach a learner and
+   would never be reviewed.
+
+   Paste the prompt you used into the **Prompt used** box. A reviewer
+   rejecting a weak picture can then tell whether the prompt or the model
+   was at fault, which is the same thing `generation_prompt` does for
+   generated images.
 8. **Level B only — drop it** into `public/subject-art/`, then **declare it**.
    Open `src/lib/subjects/subjectArt.ts` and
    change that subject's `art` from `null` to
@@ -100,13 +106,18 @@ separate times and they still slip through. Look at the corners.
 
 ```
 npm run check:art         # Level B: files the registry declares
-npm run check:topic-art   # Level C: files on disk vs the manifest
-npm run build             # runs both, plus i18n and prompt checks
+npm run check:topic-art   # Level C: guards against a filesystem pipeline
+npm run check:upload      # Level C: the upload rules, against real fixtures
+npm run build             # runs all three, plus i18n and prompt checks
 ```
 
 `check:art` fails the build on a declared file that is missing, is a
-renamed PNG, is the wrong size, or has no alpha. `check:topic-art` fails on
-a file no manifest asset claims — usually a typo in the filename.
+renamed PNG, is the wrong size, has no alpha, is named after something
+other than its subject slug, or sits outside `public/subject-art`.
+`check:topic-art` fails on *any* image in `public/topic-art`, because that
+directory is not a publishing path. `check:upload` runs the upload
+validator over fourteen real images in `scripts/fixtures/artwork`, each
+wrong in one specific way, and asserts which rule catches each.
 
 Neither says anything about whether the picture is good. **No automated
 check approves artwork.** A person does, by declaring it.

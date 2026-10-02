@@ -34,7 +34,11 @@ here instead of going through the Studio — in which case it will never
 reach a learner and will never be reviewed — or a second publishing
 pipeline is being built by accident. Both are worth stopping for.
 
-Upload the image through the Illustration Studio instead.
+Upload the image through the Illustration Studio instead: **Admin →
+Illustrations**, find the topic, press **Upload**. The file is validated
+(square, opaque, 1024px, really an image), stored in the
+`topic-illustrations` bucket under the topic's UUID, and recorded as a
+`media` row with `approval_status='pending'` for review.
 
 ## Level B is different
 

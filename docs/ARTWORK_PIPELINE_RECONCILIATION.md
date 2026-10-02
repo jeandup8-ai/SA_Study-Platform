@@ -40,7 +40,7 @@ Every figure queried, not assumed.
 |---|---:|
 | `media` rows, all types | 155 |
 | — images | **151** |
-| — non-image rows (video) | 4 |
+| — non-image rows (`svg_animation`, internally rendered) | 4 |
 | Images by provider | 151 OpenAI, 0 other |
 | Images with a `topic_id` | **151 / 151** |
 | Images with a `url` | **151 / 151** |
@@ -76,7 +76,11 @@ Mapped on `topic_id`, never on slug — topic slugs collide across grades.
 
 - `generation_prompt` is stored on every row — full provenance of what
   produced each image.
-- `source` records the model (`ai_generated:gpt-image-1`).
+- `source` records the model (`ai_generated:gpt-image-1`). Uploaded artwork
+  is recorded distinctly: `provider='external_upload'`,
+  `source='external_upload:chatgpt'`. An upload never claims the API
+  produced it, so the two routes stay separable in the one field that says
+  where a picture came from.
 - `approval_status` is the review state; the `media_read` RLS policy is what
   keeps a pending image away from learners.
 - **`subject_id` and `grade_id` are NULL on all 151 rows.** Those columns
@@ -214,12 +218,59 @@ added — it is simply no longer the planned route.
 the Studio, and `approval_status='approved'` remains the only thing that
 makes an image visible to a learner.
 
-> **One gap to be aware of.** The Illustration Studio can currently
-> *generate* an image and *review* one, but it has no **upload** control —
-> the existing pipeline only ever created media rows from its own generator.
-> Steps 5 and 6 above therefore need an upload path added to the Studio
-> before ChatGPT-generated topic artwork can enter the pipeline. That is
-> not built, and this task did not build it. See "Remaining work".
+> **The upload step exists as of 2026-10-02.** When this document was first
+> written the Studio could *generate* and *review* but not *upload*, so
+> ChatGPT-generated artwork had no route in. Each topic card now carries an
+> **Upload** button alongside Generate. It validates the file, stores it in
+> the same bucket under the same `<topic-uuid>/<epoch-ms>.<ext>` layout, and
+> records a `media` row with `approval_status='pending'` — the same state
+> the generator writes, reviewed through the same dialog.
+>
+> Nothing about the review gate changed. Approval is still a human pressing
+> Approve, and `media_read` still exposes only approved rows.
+
+---
+
+## Replacing artwork: what happens to what
+
+Several assets can exist for one topic, and the rules for which one a
+learner sees were already in the queries. Writing them down, because the
+upload path makes them load-bearing.
+
+**The learner-facing asset is the newest *approved* image.** Both
+learner-side queries (`src/lib/curriculum/topics.ts`,
+`src/lib/curriculum/queries.ts`) filter `approval_status = 'approved'` and
+order by `created_at` descending. Pending and rejected rows are invisible to
+them, and `media_read` would refuse the rows anyway.
+
+That gives replacement for free, and gives it the right shape:
+
+| Situation | What the upload does | What a learner sees |
+|---|---|---|
+| Topic has no artwork | New `pending` row | Nothing, until approved |
+| Topic has pending artwork | New `pending` row; the admin is asked whether to supersede the old ones | Nothing, until approved |
+| Topic has approved artwork | New `pending` row. **The approved row is not touched** | The old approved image, unchanged, until the new one is approved |
+| The new image is approved | — | The new image, because it is the newest approved row |
+| The new image is rejected | — | The old approved image, still |
+
+**An approved asset is never removed by an upload.** Nothing in the upload
+path writes to an approved row: the supersede step filters on
+`approval_status = 'pending'`, so passing it an approved id by mistake
+changes nothing. The only way an approved image stops serving is a human
+rejecting it, or a newer image being approved.
+
+**Superseding does not delete.** A superseded pending row is marked
+`rejected`; the row and the storage object both stay, so the decision is
+reversible by changing the status back. Nothing in this project deletes
+media rows or storage objects, and the upload path did not add the first
+one.
+
+**Why supersede at all.** The Studio card shows one thumbnail per topic —
+the newest row. Two pending candidates for one topic means the older one is
+invisible and therefore unreviewable. The card now says how many are
+waiting, and the upload dialog offers to clear the old ones, but it is a
+tick box rather than an automatic action: deciding that an earlier
+candidate is out of the running is a judgement, not bookkeeping.
 
 ---
 
