@@ -11,11 +11,13 @@ Two kinds of artwork, and they are **not** interchangeable:
 |---|---|---|
 | What it is | One image per subject | One image per topic |
 | Where it renders | 40–64 px square tile on subject cards and the topic-list header | Full-bleed square inside a card, and large in a lesson's visual step |
+| Published via | Filesystem + registry | **Media table + Illustration Studio** |
+| Canonical identity | Subject slug | **`topics.id`** |
 | Background | **Transparent — required** | **Opaque — it fills the card** |
 | Generate at | 1024 × 1024 | 1024 × 1024 |
-| Ship at | 512 × 512 WebP, ≤120 KB | 768 × 768 WebP, ≤260 KB |
+| Ship at | 512 × 512 WebP, ≤120 KB | 1024 × 1024, as the media pipeline stores it |
 | Human figures | Never | Allowed, but no realistic faces |
-| How many | 10 planned, 7 priority | 142 prompts generated, of 224 topics |
+| How many | 10 planned, 7 priority | 56 still need generating; 86 already exist and need review |
 
 ---
 
@@ -35,8 +37,15 @@ Two kinds of artwork, and they are **not** interchangeable:
 5. **Export** at the size in the table above, as WebP. For Level B the
    alpha channel must survive — see the trap below.
 6. **Rename** to exactly the `outputFilename` in the manifest.
-7. **Drop it** into the `outputDirectory` from the manifest.
-8. **Declare it** — Level B only. Open `src/lib/subjects/subjectArt.ts` and
+7. **Level C stops here and goes a different way.** Topic illustrations are
+   **not** filesystem assets. Upload the image through the admin
+   Illustration Studio so it becomes a `media` row with
+   `approval_status='pending'`, then review it there. Dropping it into
+   `public/topic-art/` will fail the build, because a file there would
+   never reach a learner and would never be reviewed. (Note: the Studio has
+   no upload control yet — see the reconciliation document.)
+8. **Level B only — drop it** into `public/subject-art/`, then **declare it**.
+   Open `src/lib/subjects/subjectArt.ts` and
    change that subject's `art` from `null` to
    `{ src: '/subject-art/<slug>.webp', focal: 'center' }`.
    **This step is the approval.** A file on disk that nothing declares does

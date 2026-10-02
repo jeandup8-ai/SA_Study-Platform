@@ -27,6 +27,9 @@ import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 const TOPICS_TSV = 'scripts/fixtures/topics-live.tsv'
+const SUBJECT_IDS_TSV = 'scripts/fixtures/subject-ids.tsv'
+const MEDIA_COVERAGE_TSV = 'scripts/fixtures/media-coverage.tsv'
+const COVERAGE_AS_OF = '2026-10-02'
 const PROMPT_SOURCE = 'supabase/functions/generate-topic-illustration/prompt.ts'
 const OUT_JSON = 'docs/image-generation-manifest.json'
 
@@ -266,6 +269,19 @@ const rows = readFileSync(TOPICS_TSV, 'utf8').trim().split('\n').map((line) => {
   return { id, slug, subjectSlug, grade: Number(grade), validationStatus, name: rest.join('|') }
 })
 
+const SUBJECT_IDS = Object.fromEntries(
+  readFileSync(SUBJECT_IDS_TSV, 'utf8').trim().split('\n').map((l) => l.split('|')),
+)
+
+// Which topics already carry an illustration in the media table. The key is
+// subject|grade|slug because topic slugs repeat across grades.
+const COVERED = new Set(
+  readFileSync(MEDIA_COVERAGE_TSV, 'utf8')
+    .split('\n')
+    .map((l) => l.trim())
+    .filter((l) => l && !l.startsWith('#')),
+)
+
 const unknown = rows.filter((r) => !SUBJECT_BY_SLUG[r.subjectSlug])
 if (unknown.length) throw new Error(`topics reference unknown subject slugs: ${[...new Set(unknown.map((u) => u.subjectSlug))].join(', ')}`)
 
@@ -277,6 +293,7 @@ for (const s of SUBJECTS) {
     level: 'B',
     subject: s.name,
     subjectSlug: s.slug,
+    subjectId: SUBJECT_IDS[s.slug] ?? null,
     topicId: null,
     topicSlug: null,
     grades: [...new Set(rows.filter((r) => r.subjectSlug === s.slug).map((r) => r.grade))].sort(),
@@ -316,11 +333,29 @@ for (const r of rows) {
   // leave a reviewer unable to tell which grade they approved.
   const filename = `g${r.grade}-${r.slug}.webp`
 
+  const hasExistingArtwork = COVERED.has(`${r.subjectSlug}|${r.grade}|${r.slug}`)
+
+  // What should happen to this topic next. Derived entirely from metadata --
+  // whether artwork exists, and how the topic is classified. Nothing here is
+  // a judgement about whether an existing picture is any good; that needs a
+  // person looking at it, which is what the Illustration Studio is for.
+  const action = hasExistingArtwork
+    ? wanted
+      ? 'HUMAN_VISUAL_REVIEW_REQUIRED'
+      : 'RETAIN_FOR_REVIEW_RECLASSIFIED'
+    : wanted
+      ? 'GENERATE'
+      : 'NO_ARTWORK_PLANNED'
+
   assets.push({
     id: `C-${r.subjectSlug}-g${r.grade}-${r.slug}`,
     level: 'C',
     subject: subject.name,
     subjectSlug: r.subjectSlug,
+    subjectId: SUBJECT_IDS[r.subjectSlug] ?? null,
+    // The topic id is the canonical identity for Level C artwork. The
+    // filesystem path below is documentation, not an address: topic images
+    // are published through the media table, keyed on this id.
     topicId: r.id,
     topicSlug: r.slug,
     topicName: r.name,
@@ -355,13 +390,36 @@ for (const r of rows) {
           accent: subject.accentShort,
         })
       : null,
-    status: 'NOT_GENERATED',
+    // Point-in-time reconciliation against the canonical pipeline. Re-derive
+    // it by refreshing scripts/fixtures/media-coverage.tsv.
+    existingArtwork: {
+      asOf: COVERAGE_AS_OF,
+      present: hasExistingArtwork,
+      reviewStatus: hasExistingArtwork ? 'pending' : null,
+      pipeline: 'media-table',
+      lookup: `public.media where media_type='image' and topic_id='${r.id}'`,
+    },
+    action,
+    // 'NOT_GENERATED' describes this manifest's own file-based planning
+    // layer, which holds no Level C artwork and is not a publishing path.
+    // The real lifecycle state lives on the media row above.
+    status: hasExistingArtwork ? 'GENERATED' : 'NOT_GENERATED',
   })
 }
 
+const actionCounts = assets.filter((a) => a.level === 'C')
+  .reduce((acc, a) => ({ ...acc, [a.action]: (acc[a.action] ?? 0) + 1 }), {})
+
 const manifest = {
   generatedBy: 'scripts/build-image-manifest.mjs',
-  generatedFrom: [TOPICS_TSV, PROMPT_SOURCE],
+  generatedFrom: [TOPICS_TSV, PROMPT_SOURCE, SUBJECT_IDS_TSV, MEDIA_COVERAGE_TSV],
+  canonicalPipelines: {
+    levelB: 'filesystem: public/subject-art/<subject-slug>.webp, declared in src/lib/subjects/subjectArt.ts',
+    levelC: "media table + Supabase storage + admin Illustration Studio review gate; canonical identity is topics.id",
+    note:
+      'public/topic-art/ is documentation and validation infrastructure only. It is NOT a publishing path and ' +
+      'nothing in the application reads it. Level C artwork is published through the media table.',
+  },
   note:
     'Generated. Do not hand-edit; re-run the script. No artwork has been generated: every asset is ' +
     'NOT_GENERATED until a real file exists in the repository and the validators pass. A valid file is ' +
@@ -374,7 +432,9 @@ const manifest = {
     topicsTotal: rows.length,
     ...counts,
     levelCPromptsGenerated: assets.filter((a) => a.level === 'C' && a.prompt).length,
-    assetsPresent: 0,
+    levelBFilesPresent: 0,
+    levelCExistingMediaRows: [...COVERED].length,
+    levelCActions: actionCounts,
   },
   assets,
 }
@@ -386,3 +446,5 @@ console.log(`  Level B: ${SUBJECTS.length} assets (${manifest.summary.levelBPrio
 console.log(`  Level C: ${rows.length} topics ->`)
 for (const [k, v] of Object.entries(counts)) console.log(`    ${k.padEnd(20)} ${v}`)
 console.log(`  prompts generated: ${manifest.summary.levelCPromptsGenerated}`)
+console.log(`  existing media rows: ${manifest.summary.levelCExistingMediaRows}`)
+for (const [k, v] of Object.entries(actionCounts).sort()) console.log(`    ${k.padEnd(32)} ${v}`)

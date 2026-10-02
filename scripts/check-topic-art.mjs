@@ -1,84 +1,39 @@
 #!/usr/bin/env node
-// Validates Level C topic artwork against the manifest.
+// Guards against a second Level C pipeline appearing.
 //
-// This is the counterpart to check-subject-art.mjs and differs from it in
-// two ways that matter.
+// Topic artwork has one publishing path, and it is not the filesystem:
 //
-// First, topic artwork does NOT need an alpha channel. A subject mark is
-// composited over the subject's gradient, so transparency is load-bearing
-// there; a topic illustration renders full-bleed inside a rounded card, so
-// an opaque background is correct.
+//   generate -> media row (approval_status='pending')
+//            -> admin Illustration Studio
+//            -> approved
+//            -> rendered to learners
 //
-// Second, nothing declares topic artwork in code. Subject artwork is wired
-// up by a registry entry, so a declared-but-missing file breaks the UI and
-// has to fail the build. Topic files are discovered by path, so the risks
-// are the other way round: a file in the tree that no topic will ever ask
-// for (a typo, a renamed topic, a stale export), or two files racing for
-// one path. Those are what this reports.
+// The canonical identity of a topic illustration is `topics.id`, and the
+// asset lives in Supabase storage referenced by a `media` row. That
+// pipeline already holds 151 images and already has a human review gate,
+// which is the thing that must not be bypassed.
 //
-// It never claims a file is approved. A valid 768-square WebP is not
-// "someone looked at this and judged it fit for children".
-import { readFileSync, existsSync, statSync, readdirSync } from 'node:fs'
+// `public/topic-art/` exists as documentation and as the planning layer in
+// docs/image-generation-manifest.json -- the per-topic paths there describe
+// what a file-based system *would* be called, and are useful for naming an
+// export before it is uploaded. Nothing in the application reads the
+// directory. An image file appearing in it therefore means one of two
+// things, and both are worth stopping for:
+//
+//   - someone exported artwork and dropped it here instead of putting it
+//     through the Studio, so it will never reach a learner and will never
+//     be reviewed; or
+//   - someone is starting to build the second pipeline that this project
+//     deliberately decided against.
+//
+// Hence: this directory must contain no images. The check explains rather
+// than merely failing, because the fix is a process, not a file edit.
+import { existsSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
-const MANIFEST = 'docs/image-generation-manifest.json'
 const ROOT = 'public/topic-art'
+const ALLOWED = new Set(['README.md'])
 
-const EXPECTED_EDGE = 768
-const EDGE_TOLERANCE = 0.5 // accept 384..1536
-const MAX_BYTES = 260 * 1024
-
-/** Minimal WebP header reader. Shared shape with check-subject-art.mjs. */
-function readWebp(buf) {
-  if (buf.length < 16) return { ok: false, why: 'file is too short to be an image' }
-  if (buf.toString('ascii', 0, 4) !== 'RIFF' || buf.toString('ascii', 8, 12) !== 'WEBP') {
-    const looksPng = buf.length > 8 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47
-    const looksJpeg = buf[0] === 0xff && buf[1] === 0xd8
-    const actual = looksPng ? 'a PNG' : looksJpeg ? 'a JPEG' : 'not an image this check recognises'
-    return { ok: false, why: `not a WebP file (it is ${actual}), despite the .webp name` }
-  }
-  const fourcc = buf.toString('ascii', 12, 16)
-  if (fourcc === 'VP8X') {
-    return {
-      ok: true,
-      width: 1 + (buf[24] | (buf[25] << 8) | (buf[26] << 16)),
-      height: 1 + (buf[27] | (buf[28] << 8) | (buf[29] << 16)),
-    }
-  }
-  if (fourcc === 'VP8L') {
-    const b = buf.subarray(21, 26)
-    const bits = b[0] | (b[1] << 8) | (b[2] << 16) | (b[3] << 24)
-    return { ok: true, width: (bits & 0x3fff) + 1, height: ((bits >> 14) & 0x3fff) + 1 }
-  }
-  if (fourcc === 'VP8 ') {
-    return { ok: true, width: buf.readUInt16LE(26) & 0x3fff, height: buf.readUInt16LE(28) & 0x3fff }
-  }
-  return { ok: false, why: `unrecognised WebP chunk "${fourcc}"` }
-}
-
-if (!existsSync(MANIFEST)) {
-  console.error(`topic art check failed: ${MANIFEST} is missing. Run scripts/build-image-manifest.mjs.`)
-  process.exit(1)
-}
-const manifest = JSON.parse(readFileSync(MANIFEST, 'utf8'))
-const problems = []
-const notes = []
-
-// --- manifest integrity, independent of whether any file exists ------------
-const declared = new Map()
-for (const a of manifest.assets) {
-  if (!a.outputFilename) continue
-  const path = `${a.outputDirectory}/${a.outputFilename}`
-  if (declared.has(path)) {
-    problems.push(`duplicate output path "${path}" claimed by both ${declared.get(path)} and ${a.id}`)
-  }
-  declared.set(path, a.id)
-}
-
-const topicAssets = manifest.assets.filter((a) => a.level === 'C' && a.outputFilename)
-const expected = new Set(topicAssets.map((a) => `${a.outputDirectory}/${a.outputFilename}`))
-
-// --- files on disk ---------------------------------------------------------
 function walk(dir) {
   if (!existsSync(dir)) return []
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
@@ -87,57 +42,24 @@ function walk(dir) {
   })
 }
 
-const onDisk = walk(ROOT).filter((p) => !p.endsWith('README.md'))
-let valid = 0
+const stray = walk(ROOT).filter((p) => !ALLOWED.has(p.split('/').pop()))
 
-for (const file of onDisk) {
-  if (!file.endsWith('.webp')) {
-    problems.push(`${file}: topic artwork must be .webp`)
-    continue
+if (stray.length > 0) {
+  console.error(`topic art check failed: ${stray.length} file(s) in ${ROOT}, which is not a publishing path.`)
+  for (const f of stray) {
+    console.error(`  ${f}  (${Math.round(statSync(f).size / 1024)}KB)`)
   }
-  if (!expected.has(file)) {
-    problems.push(
-      `${file}: no manifest asset claims this path. Either the filename is wrong, or the topic it ` +
-        `belongs to is classified as needing no artwork.`,
-    )
-    continue
-  }
-
-  const bytes = statSync(file).size
-  if (bytes === 0) {
-    problems.push(`${file} is empty`)
-    continue
-  }
-  if (bytes > MAX_BYTES) {
-    notes.push(`${file} is ${Math.round(bytes / 1024)}KB, over the ${MAX_BYTES / 1024}KB guide — review rather than reject`)
-  }
-
-  const info = readWebp(readFileSync(file))
-  if (!info.ok) {
-    problems.push(`${file} is ${info.why}`)
-    continue
-  }
-  if (info.width !== info.height) {
-    problems.push(`${file} is ${info.width}x${info.height}; topic artwork renders in a square container`)
-    continue
-  }
-  const lo = EXPECTED_EDGE * EDGE_TOLERANCE
-  const hi = EXPECTED_EDGE / EDGE_TOLERANCE
-  if (info.width < lo || info.width > hi) {
-    problems.push(`${file} is ${info.width}px; expected around ${EXPECTED_EDGE}px (${lo}-${hi})`)
-    continue
-  }
-  valid += 1
-}
-
-if (problems.length > 0) {
-  console.error(`topic art check failed (${problems.length}):`)
-  for (const p of problems) console.error(`  ${p}`)
+  console.error('')
+  console.error('  Topic illustrations are published through the media table and the admin')
+  console.error('  Illustration Studio, not from the filesystem. A file here will never reach')
+  console.error('  a learner and will never be reviewed.')
+  console.error('')
+  console.error('  Upload the image through the Illustration Studio instead, so it lands as a')
+  console.error('  media row with approval_status=\'pending\' and goes through the review gate.')
+  console.error('  See docs/ARTWORK_PIPELINE_RECONCILIATION.md.')
   process.exit(1)
 }
 
-for (const n of notes) console.warn(`  note: ${n}`)
 console.log(
-  `topic art ok: ${valid} file${valid === 1 ? '' : 's'} present and valid, ` +
-    `${expected.size} path${expected.size === 1 ? '' : 's'} planned in the manifest`,
+  'topic art ok: no files in public/topic-art (correct — Level C publishes through the media table)',
 )

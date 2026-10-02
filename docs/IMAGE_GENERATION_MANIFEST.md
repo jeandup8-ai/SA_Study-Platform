@@ -146,17 +146,34 @@ still slip through, so check the corners.
 
 ---
 
-## Two Level C pipelines now exist
+## Canonical pipelines — resolved
 
-Worth knowing before any topic artwork is generated.
+Reconciled 2026-10-02. Full detail in
+[`docs/ARTWORK_PIPELINE_RECONCILIATION.md`](./ARTWORK_PIPELINE_RECONCILIATION.md).
 
-The product already has a topic-illustration path: the `media` table,
-filled by the `generate-topic-illustration` edge function, gated by human
-review in the admin Illustration Studio. **It currently holds 151 images
-awaiting review**, and it is the source `TopicListPage` and the lesson
-visual step read from today.
+**Level B is file-based.** `public/subject-art/<slug>.webp`, declared in
+`src/lib/subjects/subjectArt.ts`. Declaring the path is the approval.
 
-This manifest specifies a second, file-based path for the same slot.
-Nothing in the application reads `public/topic-art/` yet, because wiring it
-up means deciding which source wins when both exist — and that is a
-product decision, not an engineering one. It has not been made.
+**Level C is not.** Topic artwork is published through the **media table
+and the admin Illustration Studio**, and the canonical identity is
+`topics.id` — never a filename. `public/topic-art/` is a naming convention
+and a guard, not a publishing path; `npm run check:topic-art` fails the
+build if an image appears there.
+
+### What the reconciliation found
+
+151 existing images, every one mapped to a live topic, **zero orphans,
+zero duplicates, all `pending`, none approved**. Against the 142 candidates:
+
+| Action | Count |
+|---|---:|
+| `HUMAN_VISUAL_REVIEW_REQUIRED` — artwork exists, needs a person | **86** |
+| `RETAIN_FOR_REVIEW_RECLASSIFIED` — exists, now classified as not needed | **65** |
+| `GENERATE` — wanted, missing. The real remaining work | **56** |
+| `NO_ARTWORK_PLANNED` | **17** |
+
+So **56 topic images genuinely need generating, not 142** — and 86 already
+exist and are visible to nobody because nothing has been reviewed yet.
+
+Each Level C asset in the JSON carries `topicId`, `subjectId`, grade,
+`topicSlug`, its `existingArtwork` reconciliation, and its `action`.
