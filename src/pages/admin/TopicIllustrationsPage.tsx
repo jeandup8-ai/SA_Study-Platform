@@ -8,6 +8,7 @@ import {
   Wand2,
   SlidersHorizontal,
   AlertTriangle,
+  Upload,
 } from 'lucide-react'
 import {
   fetchTopicIllustrationStatuses,
@@ -21,6 +22,7 @@ import {
   type BatchProgress,
 } from '@/lib/admin/illustrations'
 import { useAsync } from '@/hooks/useAsync'
+import { ArtworkUploadDialog } from '@/components/admin/ArtworkUploadDialog'
 
 type StatusKey = TopicIllustrationStatus['status']
 
@@ -63,6 +65,7 @@ export function TopicIllustrationsPage() {
   } | null>(null)
   const batchContinueRef = useRef(true)
   const [enlarged, setEnlarged] = useState<TopicIllustrationStatus | null>(null)
+  const [uploadTarget, setUploadTarget] = useState<TopicIllustrationStatus | null>(null)
 
   const topics = useMemo(() => data ?? [], [data])
 
@@ -184,10 +187,11 @@ export function TopicIllustrationsPage() {
           Illustration Studio
         </h1>
         <p className="mt-1 max-w-2xl text-sm text-ink-300">
-          One AI-generated scene per topic. The prompt is built per topic from its subject
-          and name, and hard-forbids text, letters and numbers in the image — models still
-          render those unreliably, and a wrong label read as fact is worse than no
-          picture. Every image waits here for your approval before any learner can see it.
+          One scene per topic, either generated here or made elsewhere and uploaded. The
+          built-in prompt hard-forbids text, letters and numbers in the image — models
+          still render those unreliably, and a wrong label read as fact is worse than no
+          picture. Every image, however it arrived, waits here for your approval before
+          any learner can see it.
         </p>
       </header>
 
@@ -375,12 +379,19 @@ export function TopicIllustrationsPage() {
                   onGenerate={() => void handleGenerate(topic.id)}
                   onReview={(decision) => void handleReview(topic.mediaId!, decision)}
                   onEnlarge={() => setEnlarged(topic)}
+                  onUpload={() => setUploadTarget(topic)}
                 />
               ))}
             </div>
           )}
         </>
       )}
+
+      <ArtworkUploadDialog
+        topic={uploadTarget}
+        onClose={() => setUploadTarget(null)}
+        onUploaded={reload}
+      />
 
       <ReviewDialog
         topic={enlarged}
@@ -541,6 +552,7 @@ function TopicCard({
   onGenerate,
   onReview,
   onEnlarge,
+  onUpload,
 }: {
   topic: TopicIllustrationStatus
   busy: boolean
@@ -549,6 +561,7 @@ function TopicCard({
   onGenerate: () => void
   onReview: (decision: 'approve' | 'reject') => void
   onEnlarge: () => void
+  onUpload: () => void
 }) {
   const [promptOpen, setPromptOpen] = useState(false)
 
@@ -602,6 +615,25 @@ function TopicCard({
           {STATUS_LABEL[topic.status]}
         </span>
 
+        {/* The thumbnail is the newest row, which during a replacement is the
+            candidate rather than the picture lessons are serving. Without
+            this line the card reads "Pending review" and looks as though the
+            topic has nothing live. */}
+        {topic.status === 'pending' && topic.approvedMediaId && (
+          <p className="mt-1.5 text-xs text-success-500">
+            An approved image is still live for learners; this is a replacement awaiting
+            your decision.
+          </p>
+        )}
+        {topic.pendingCount > 1 && (
+          <p className="mt-1.5 text-xs text-gold-300">
+            {topic.pendingCount} images awaiting review — only the newest is shown.
+          </p>
+        )}
+        {topic.source?.startsWith('external_upload') && (
+          <p className="mt-1.5 text-xs text-ink-400">Uploaded, not generated here.</p>
+        )}
+
         {error && (
           <p className="mt-2 break-words rounded-lg bg-danger-500/15 px-3 py-2 text-xs font-medium text-danger-500">
             {error}
@@ -647,10 +679,18 @@ function TopicCard({
           <button
             onClick={onGenerate}
             disabled={busy || disabled}
-            className="inline-flex min-h-9 w-full items-center justify-center gap-1.5 rounded-lg border border-ink-600 px-3 text-sm font-semibold text-ink-100 hover:bg-white/5 disabled:opacity-40"
+            className="inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-ink-600 px-3 text-sm font-semibold text-ink-100 hover:bg-white/5 disabled:opacity-40"
           >
             <Wand2 size={15} aria-hidden />
             {busy ? 'Generating…' : topic.status === 'none' ? 'Generate' : 'Regenerate'}
+          </button>
+          <button
+            onClick={onUpload}
+            disabled={busy || disabled}
+            className="inline-flex min-h-9 flex-1 items-center justify-center gap-1.5 rounded-lg border border-ink-600 px-3 text-sm font-semibold text-ink-100 hover:bg-white/5 disabled:opacity-40"
+          >
+            <Upload size={15} aria-hidden />
+            Upload
           </button>
         </div>
       </div>

@@ -1,0 +1,66 @@
+{
+  "actually-png.webp": {
+    "height": 1024,
+    "transparentFraction": 0.0,
+    "width": 1024
+  },
+  "empty.webp": {
+    "undecodable": true
+  },
+  "nonsquare-1024x768.webp": {
+    "height": 768,
+    "transparentFraction": 0.0,
+    "width": 1024
+  },
+  "not-an-image.webp": {
+    "undecodable": true
+  },
+  "off-target-768.webp": {
+    "height": 768,
+    "transparentFraction": 0.0,
+    "width": 768
+  },
+  "too-large-4096.webp": {
+    "height": 4096,
+    "transparentFraction": 0.0,
+    "width": 4096
+  },
+  "too-small-256.webp": {
+    "height": 256,
+    "transparentFraction": 0.0,
+    "width": 256
+  },
+  "transparent-1024.png": {
+    "height": 1024,
+    "transparentFraction": 0.802936,
+    "width": 1024
+  },
+  "transparent-1024.webp": {
+    "height": 1024,
+    "transparentFraction": 0.802936,
+    "width": 1024
+  },
+  "truncated.webp": {
+    "undecodable": true
+  },
+  "valid-1024-rgba-opaque.png": {
+    "height": 1024,
+    "transparentFraction": 0.0,
+    "width": 1024
+  },
+  "valid-1024.jpg": {
+    "height": 1024,
+    "transparentFraction": 0.0,
+    "width": 1024
+  },
+  "valid-1024.png": {
+    "height": 1024,
+    "transparentFraction": 0.0,
+    "width": 1024
+  },
+  "valid-1024.webp": {
+    "height": 1024,
+    "transparentFraction": 0.0,
+    "width": 1024
+  }
+}

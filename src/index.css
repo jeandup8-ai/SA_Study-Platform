@@ -130,6 +130,19 @@
   select {
     -webkit-tap-highlight-color: transparent;
   }
+
+  /* Put a modal dialog back in the middle of the screen.
+     The browser centres `dialog:modal` with `margin: auto`, and Tailwind's
+     Preflight resets `margin: 0` on every element -- so a dialog opened
+     with showModal() silently lands in the top-left corner. It reads as a
+     deliberate side panel rather than a bug, which is why it survived: the
+     Illustration Studio's review dialog, where every topic illustration is
+     approved or rejected, has been rendering in the corner all along.
+     `:modal` is deliberate -- a non-modal <dialog> is positioned by
+     whatever opened it and should not be dragged to the centre. */
+  dialog:modal {
+    margin: auto;
+  }
 }
 
 @layer utilities {

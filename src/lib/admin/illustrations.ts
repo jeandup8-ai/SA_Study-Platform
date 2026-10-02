@@ -35,6 +35,31 @@ export interface TopicIllustrationStatus {
   imageUrl: string | null
   /** The prompt that produced the current image, when it was AI-generated. */
   generationPrompt: string | null
+  /** Where the current image came from: the generator, or a human upload. */
+  provider: string | null
+  source: string | null
+  /**
+   * The newest *approved* image -- what a learner actually sees right now.
+   *
+   * Distinct from the fields above, which describe the newest row of any
+   * status. Uploading a replacement for a topic that already has approved
+   * artwork creates a newer pending row, and without this the card would
+   * read "Pending review", show the candidate, and give no hint that an
+   * approved image is still live in lessons. The learner-facing queries
+   * order by created_at among approved rows only
+   * (src/lib/curriculum/topics.ts), so the old image keeps serving until
+   * the new one is approved -- which is correct, and worth being able to
+   * see.
+   */
+  approvedMediaId: string | null
+  approvedUrl: string | null
+  /**
+   * How many rows for this topic are awaiting review. More than one means
+   * earlier candidates exist that a single-thumbnail card cannot show.
+   */
+  pendingCount: number
+  /** Every pending row, newest first. Used by the replacement flow. */
+  pending: { mediaId: string; url: string | null; createdAt: string }[]
 }
 
 /** Every real (non-demo) topic with its current illustration state. */
@@ -58,7 +83,9 @@ export async function fetchTopicIllustrationStatuses(): Promise<
     supabase.from('grades').select('id, grade_number').in('id', gradeIds),
     supabase
       .from('media')
-      .select('id, topic_id, approval_status, url, generation_prompt, created_at')
+      .select(
+        'id, topic_id, approval_status, url, generation_prompt, provider, source, created_at',
+      )
       .eq('media_type', 'image')
       .in('topic_id', topicIds)
       .order('created_at', { ascending: false }),
@@ -69,13 +96,27 @@ export async function fetchTopicIllustrationStatuses(): Promise<
   // First row per topic (already sorted newest-first) is that topic's current image.
   type MediaSummary = NonNullable<typeof mediaRows>[number]
   const currentByTopic = new Map<string, MediaSummary>()
+  // Tracked separately from `current` because the newest row and the live
+  // one are not the same thing once a replacement is pending.
+  const approvedByTopic = new Map<string, MediaSummary>()
+  const pendingByTopic = new Map<string, MediaSummary[]>()
   for (const row of mediaRows ?? []) {
-    if (row.topic_id && !currentByTopic.has(row.topic_id))
-      currentByTopic.set(row.topic_id, row)
+    if (!row.topic_id) continue
+    if (!currentByTopic.has(row.topic_id)) currentByTopic.set(row.topic_id, row)
+    if (row.approval_status === 'approved' && !approvedByTopic.has(row.topic_id)) {
+      approvedByTopic.set(row.topic_id, row)
+    }
+    if (row.approval_status === 'pending') {
+      const list = pendingByTopic.get(row.topic_id)
+      if (list) list.push(row)
+      else pendingByTopic.set(row.topic_id, [row])
+    }
   }
 
   return topics.map((t) => {
     const current = currentByTopic.get(t.id)
+    const approved = approvedByTopic.get(t.id)
+    const pending = pendingByTopic.get(t.id) ?? []
     return {
       id: t.id,
       name: t.name,
@@ -85,6 +126,16 @@ export async function fetchTopicIllustrationStatuses(): Promise<
       mediaId: current?.id ?? null,
       imageUrl: current?.url ?? null,
       generationPrompt: current?.generation_prompt ?? null,
+      provider: current?.provider ?? null,
+      source: current?.source ?? null,
+      approvedMediaId: approved?.id ?? null,
+      approvedUrl: approved?.url ?? null,
+      pendingCount: pending.length,
+      pending: pending.map((p) => ({
+        mediaId: p.id,
+        url: p.url,
+        createdAt: p.created_at,
+      })),
     }
   })
 }
