@@ -2653,6 +2653,7 @@ export type Database = {
           id: string
           language: Database["public"]["Enums"]["language_code"]
           notes: string | null
+          reviewed_at: string | null
           reviewer_id: string | null
           suggested_by: string
           title: string
@@ -2667,6 +2668,7 @@ export type Database = {
           id?: string
           language?: Database["public"]["Enums"]["language_code"]
           notes?: string | null
+          reviewed_at?: string | null
           reviewer_id?: string | null
           suggested_by?: string
           title: string
@@ -2681,6 +2683,7 @@ export type Database = {
           id?: string
           language?: Database["public"]["Enums"]["language_code"]
           notes?: string | null
+          reviewed_at?: string | null
           reviewer_id?: string | null
           suggested_by?: string
           title?: string

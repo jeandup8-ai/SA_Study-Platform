@@ -292,12 +292,28 @@ certain about rather than inferring.
 hit the same signal and draw the same provisional conclusion. This
 attestation is the answer to it.
 
-**To make the claim self-evidencing in future** (a recommendation, not a
-blocker, and not implemented here): `topic_videos` has `reviewer_id` but no
-`reviewed_at`. A nullable timestamp set when an admin flips `verified`, and
-written by the existing review screen, would turn "we reviewed these" from a
-statement requiring trust into a queryable fact. Small change, and it would
-have answered this question in one query.
+**The claim is now self-evidencing going forward.** Added 2026-10-04:
+`topic_videos.reviewed_at`, written by a BEFORE INSERT OR UPDATE trigger
+(`internal.stamp_topic_video_reviewed_at`) rather than by the application.
+That distinction is the point — a timestamp the client writes is another
+claim, since the same session that flips `verified` could write any value it
+liked. Set in a trigger, it is the database's own observation of when
+`verified` changed, and no caller can write a different one.
+
+**Nothing was backfilled.** The 71 existing rows keep `reviewed_at = null`,
+because the database does not know when they were reviewed and inventing a
+plausible timestamp would fabricate precisely the evidence the column exists
+to provide. Null is not ambiguous here, because an unreviewed row is
+identified by `verified = false`:
+
+| State | Meaning | Count |
+|---|---|---:|
+| `verified = false` | Awaiting review | 0 |
+| `verified = true`, `reviewed_at` null | Approved before the column existed — covered by the attestation above | **71** |
+| `verified = true`, `reviewed_at` set | Reviewed, timestamped by the database | 0 |
+
+The third row is the one that grows from here, and it is answerable in one
+query. Verified live against the database.
 
 ---
 
@@ -311,4 +327,4 @@ have answered this question in one query.
 3. **Regenerate B-01** with fewer, larger objects, matte, no ground plane, true transparency; check with `npm run check:art && npm run check:art:deep`, then look at it at 44 px before declaring it.
 4. **Decide the entitlement model**: ship without a paywall deliberately, or add one. The insert hole is closed either way.
 5. **Have the legal pages reviewed by a lawyer.** They are honest and unusually careful — the privacy page discloses its own gaps, which is rare — but careful is not the same as reviewed, and this pass is not that review.
-6. **Housekeeping, not urgent:** drop the duplicate `subscriptions_guard_billing_fields` trigger (statements in migration 0051), and consider adding `topic_videos.reviewed_at` so the video-review claim is queryable rather than attested (§K.2).
+6. **Housekeeping, not urgent:** drop the duplicate `subscriptions_guard_billing_fields` trigger (statements in migration 0051). (`topic_videos.reviewed_at` is done — §K.2.)
