@@ -6,16 +6,16 @@ without being re-checked.
 
 ## A. Overall status
 
-**GO_LIVE_READY_WITH_DOCUMENTED_LIMITATIONS** — conditional on two owner
-actions that only the owner can take (§K).
+**GO_LIVE_READY_WITH_DOCUMENTED_LIMITATIONS** — conditional on one owner
+action that only the owner can take (§K).
 
 The product is structurally sound: RLS is enforced on all 56 public tables
 with no cross-account path found, the child-safety gates are real and
 fail-closed, the AI is curriculum-grounded and cannot be used as an answer
 machine, and the build is clean. What stops an unqualified GO_LIVE_READY is
-not a code defect but two things requiring human confirmation: one live
-legal claim this pass could not substantiate, and one security migration
-that was written but not applied.
+not a code defect but one thing requiring human confirmation: a live legal
+claim this pass could not substantiate. The subscription-state migration
+that was outstanding has since been applied.
 
 ### A material limit on this report
 
@@ -41,7 +41,7 @@ Public routes were exercised in real Chromium at five widths.
 | 3 | P2 | **Auth secondary links were 16 px tall** — "Create a parent account" and "Sign in instead", the only alternative action on each auth screen, and the smallest tap targets in the product. Now 44 px (measured in-browser). |
 | 4 | P3 | **Topic thumbnails had no intrinsic size**, so rows reflowed as each image arrived. Added `width`/`height`/`decoding`. This fixes layout shift, not bytes — see the payload limitation in §J. |
 | 5 | — | Added `npm run check:art:deep`, which decodes declared Level B artwork in Chromium and fails on a translucent body, a feathered halo, or a mark with no clear space. Written in response to the B-01 candidate, which passed the existing header-level check. |
-| 6 | P1 | **Written but NOT applied:** migration `0051_subscription_state_not_client_writable.sql` (§H, §K). |
+| 6 | P1 | **Applied 2026-10-04:** `subscriptions_no_client_paid_state`, a RESTRICTIVE INSERT policy stopping a client from inserting a paid subscription state. See §F for a correction to the original finding. |
 
 ---
 
@@ -119,14 +119,49 @@ client-forgeable state; path traversal in the artwork upload; service-role
 usage (only `payfast-itn`, `payfast-cancel`'s final step, and the cron
 batch job).
 
-**One real finding, fix written and not applied:** `subscriptions` INSERT
-and UPDATE checked only `parent_id = auth.uid()`, so any signed-in parent
-could write `status = 'active'` with a future `current_period_end` from the
-browser. Today the blast radius is small because **no learning content is
-gated on subscription status** — it affects the badge shown on the
-subscription page and the `max_learners` cap. The moment a paywall is added
-it becomes a free lifetime subscription, and the hole would be in the
-schema rather than in the new code. See §K.
+### Correction to this report's first version
+
+The first version of this report said `subscriptions` was forgeable on both
+INSERT and UPDATE. **Only INSERT was.** UPDATE was already protected by
+`internal.protect_subscription_billing_fields()`, a BEFORE UPDATE trigger
+that predates this work and raises if any non-`service_role` caller changes
+status, plan, trial end, period end, provider fields or `parent_id`. The
+audit read the RLS policies and never looked at the triggers, which is how
+an existing protection got reported as missing. Flagging it rather than
+quietly editing it: the audit method had a gap, and a policy-only read of a
+Postgres table is not a complete authorization audit.
+
+**The real finding, now fixed.** `subscriptions_owner_insert` checked only
+`parent_id = auth.uid()`, and the existing trigger is BEFORE UPDATE so it
+never fired on an insert. Any signed-in parent could insert
+`status = 'active'` with a future `current_period_end` straight from the
+browser. Small blast radius today — **no learning content is gated on
+subscription status**, so it affected the badge on the subscription page and
+the `max_learners` cap — and a free lifetime subscription the day a paywall
+ships.
+
+**Applied 2026-10-04:** `subscriptions_no_client_paid_state`, a RESTRICTIVE
+INSERT policy ANDed with the existing ownership policy, limiting a client
+insert to `status in ('trialing','incomplete')` with no client-set paid
+period and a trial bounded at 30 days. Nothing was dropped. Verified live:
+the policy is present and RESTRICTIVE. Both legitimate callers
+(`startTrial`, `payfast-checkout`) name only permitted states, and
+`service_role` has BYPASSRLS so the PayFast handlers are untouched.
+
+**One piece of mess, recorded rather than hidden.** A second BEFORE UPDATE
+trigger, `subscriptions_guard_billing_fields`, was applied from the first
+draft before the existing one was discovered, and this session was not
+permitted to drop it again — so both are live. It is redundant, not
+harmful: triggers fire alphabetically, `guard_` runs first and lets admins
+through, `protect_` runs second and still raises, so the net behaviour is
+the stricter pre-existing one for every caller. The drop statements are in
+the migration file under "HOUSEKEEPING". It is a tidy-up, not a fix.
+
+**Not verified behaviourally.** The permission layer in this session
+declined the test that would have attempted the forgery and the legitimate
+inserts against a real row. The policy is confirmed present, RESTRICTIVE,
+and correct by inspection of its stored expression — but no insert was
+actually attempted.
 
 ---
 
@@ -213,21 +248,18 @@ Nothing was regenerated, deleted or approved.
 
 ## K. Launch blockers
 
-**Two. Both need you, not more code.**
+**One remaining.** (The subscription migration is applied — see §F.)
 
-### 1. Apply migration 0051 before any paywall ships — P1
+### 1. ~~Apply migration 0051~~ — DONE 2026-10-04
 
-`supabase/migrations/0051_subscription_state_not_client_writable.sql` is
-written, reviewed and committed, but **the apply call was declined during
-this session, so the database is unchanged.** It narrows the INSERT policy
-to `status in ('trialing','incomplete')` with no client-set paid period, and
-adds a trigger making the billing columns read-only to user sessions while
-leaving the service role and admins untouched. It was checked against every
-caller in the repo and breaks none of them: `startTrial`, `payfast-checkout`
-and `payfast-cancel` all stay working.
+Applied and verified present. See §F, including a correction to the
+original finding and one redundant trigger left behind for housekeeping.
+**No longer a blocker.**
 
-**Action:** apply it. It only ever narrows. Not urgent while nothing is
-gated; mandatory before anything is.
+Two follow-ups, neither blocking:
+- Drop the duplicate trigger (statements are in the migration file).
+- Attempt a real forged insert from a browser session to confirm
+  behaviourally; this session's permission layer declined the write test.
 
 ### 2. Confirm the video-review claim — P1, child safety and legal
 
@@ -254,8 +286,7 @@ one claim worth being certain about before taking money.
 
 ## L. Recommended final human actions
 
-1. **Apply migration 0051.**
-2. **Resolve the video-review claim** (§K.2).
+1. **Resolve the video-review claim** (§K.2) — the one true blocker.
 3. **Do one real artwork upload** through the Illustration Studio against live storage — the only part of that pipeline this environment could not exercise.
 4. **Regenerate B-01** with fewer, larger objects, matte, no ground plane, true transparency; check with `npm run check:art && npm run check:art:deep`, then look at it at 44 px before declaring it.
 5. **Decide the entitlement model**: ship without a paywall deliberately, or add one — and if you add one, 0051 first.
