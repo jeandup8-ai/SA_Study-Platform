@@ -854,5 +854,11 @@
       "cta": "Begin jou {{days}} dae gratis proeftydperk",
       "reassurance": "Kanselleer enige tyd vanaf jou ouerpaneel."
     }
+  },
+  "notFound": {
+    "title": "Ons kon nie daardie bladsy kry nie",
+    "body": "Die skakel is dalk verouderd, of daar is 'n klein tikfout in die adres. Niks is stukkend nie — kom ons kry jou terug.",
+    "home": "Terug na die tuisblad",
+    "keepLearning": "Hou aan leer"
   }
 }

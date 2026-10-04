@@ -162,6 +162,16 @@ export function TopicListPage() {
                     src={topic.illustrationUrl}
                     alt=""
                     loading="lazy"
+                    decoding="async"
+                    // Intrinsic size reserved so the row does not jump when the
+                    // picture arrives. NOTE: these attributes change layout, not
+                    // bytes -- the stored asset is a 1024px PNG (~1.4MB) being
+                    // painted into 56 CSS pixels. See "Artwork payload" in
+                    // docs/GO_LIVE_REPORT.md; it needs either Supabase image
+                    // transforms (a paid plan feature, unavailable on free) or
+                    // re-encoding on upload.
+                    width={56}
+                    height={56}
                     className="h-14 w-14 shrink-0 rounded-xl object-cover"
                   />
                 )}

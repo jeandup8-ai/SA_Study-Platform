@@ -1,5 +1,7 @@
 import { Suspense, lazy } from 'react'
 import { Routes, Route } from 'react-router-dom'
+import { ErrorBoundary } from '@/components/layout/ErrorBoundary'
+import { NotFoundPage } from '@/pages/NotFoundPage'
 import { LandingPage } from '@/pages/marketing/LandingPage'
 import { PricingPage } from '@/pages/marketing/PricingPage'
 import { PracticeHubPage } from '@/pages/practice/PracticeHubPage'
@@ -130,117 +132,129 @@ const PracticeTestsPage = lazy(() =>
 
 export default function App() {
   return (
-    <Suspense fallback={<FullScreenLoading />}>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/pricing" element={<PricingPage />} />
+    <ErrorBoundary>
+      <Suspense fallback={<FullScreenLoading />}>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/pricing" element={<PricingPage />} />
 
-        {/* Free, ungated practice tests. Crawlable and linkable; no auth guard. */}
-        <Route path="/practice" element={<PracticeHubPage />} />
-        <Route path="/practice/:gradeSlug" element={<PracticeGradePage />} />
-        <Route
-          path="/practice/:gradeSlug/:subjectSlug"
-          element={<PracticeSubjectPage />}
-        />
-        <Route
-          path="/practice/:gradeSlug/:subjectSlug/:testSlug"
-          element={<PracticeTestPage />}
-        />
-        <Route path="/terms" element={<TermsPage />} />
-        <Route path="/privacy" element={<PrivacyPage />} />
-        <Route path="/refund-policy" element={<RefundPolicyPage />} />
-        <Route
-          path="/subscription-cancellation"
-          element={<SubscriptionCancellationPage />}
-        />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/sign-in" element={<SignInPage />} />
-        <Route path="/sign-up" element={<SignUpPage />} />
+          {/* Free, ungated practice tests. Crawlable and linkable; no auth guard. */}
+          <Route path="/practice" element={<PracticeHubPage />} />
+          <Route path="/practice/:gradeSlug" element={<PracticeGradePage />} />
+          <Route
+            path="/practice/:gradeSlug/:subjectSlug"
+            element={<PracticeSubjectPage />}
+          />
+          <Route
+            path="/practice/:gradeSlug/:subjectSlug/:testSlug"
+            element={<PracticeTestPage />}
+          />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/refund-policy" element={<RefundPolicyPage />} />
+          <Route
+            path="/subscription-cancellation"
+            element={<SubscriptionCancellationPage />}
+          />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/sign-in" element={<SignInPage />} />
+          <Route path="/sign-up" element={<SignUpPage />} />
 
-        <Route
-          path="/onboarding/learner"
-          element={
-            <RequireAuth>
-              <CreateLearnerPage />
-            </RequireAuth>
-          }
-        />
+          <Route
+            path="/onboarding/learner"
+            element={
+              <RequireAuth>
+                <CreateLearnerPage />
+              </RequireAuth>
+            }
+          />
 
-        <Route
-          path="/onboarding/starting-point"
-          element={
-            <RequireAuth>
-              <RequireLearner>
-                <StartingPointPage />
-              </RequireLearner>
-            </RequireAuth>
-          }
-        />
+          <Route
+            path="/onboarding/starting-point"
+            element={
+              <RequireAuth>
+                <RequireLearner>
+                  <StartingPointPage />
+                </RequireLearner>
+              </RequireAuth>
+            }
+          />
 
-        <Route
-          path="/app/*"
-          element={
-            <RequireAuth>
-              <RequireLearner>
-                <ChildShell>
+          <Route
+            path="/app/*"
+            element={
+              <RequireAuth>
+                <RequireLearner>
+                  <ChildShell>
+                    <Routes>
+                      <Route index element={<ChildDashboardPage />} />
+                      <Route path="subjects" element={<SubjectsPage />} />
+                      <Route path="subjects/:subjectId" element={<TopicListPage />} />
+                      <Route
+                        path="subjects/:subjectId/topics/:topicId"
+                        element={<LessonListPage />}
+                      />
+                      <Route path="lessons/:lessonId" element={<LessonPage />} />
+                      <Route path="scan" element={<ScanMyWorkPage />} />
+                      <Route path="progress" element={<LearnerProgressPage />} />
+                      <Route path="achievements" element={<AchievementsPage />} />
+                      <Route path="exam" element={<ExamPrepPage />} />
+                      <Route
+                        path="exam/:subjectId/mock-test"
+                        element={<MockTestPage />}
+                      />
+                    </Routes>
+                  </ChildShell>
+                </RequireLearner>
+              </RequireAuth>
+            }
+          />
+
+          <Route
+            path="/parent/*"
+            element={
+              <RequireAuth>
+                <ParentShell>
                   <Routes>
-                    <Route index element={<ChildDashboardPage />} />
-                    <Route path="subjects" element={<SubjectsPage />} />
-                    <Route path="subjects/:subjectId" element={<TopicListPage />} />
-                    <Route
-                      path="subjects/:subjectId/topics/:topicId"
-                      element={<LessonListPage />}
-                    />
-                    <Route path="lessons/:lessonId" element={<LessonPage />} />
-                    <Route path="scan" element={<ScanMyWorkPage />} />
-                    <Route path="progress" element={<LearnerProgressPage />} />
-                    <Route path="achievements" element={<AchievementsPage />} />
-                    <Route path="exam" element={<ExamPrepPage />} />
-                    <Route path="exam/:subjectId/mock-test" element={<MockTestPage />} />
+                    <Route index element={<ParentDashboardPage />} />
+                    <Route path="subscription" element={<SubscriptionPage />} />
+                    <Route path="settings" element={<SettingsPage />} />
                   </Routes>
-                </ChildShell>
-              </RequireLearner>
-            </RequireAuth>
-          }
-        />
+                </ParentShell>
+              </RequireAuth>
+            }
+          />
 
-        <Route
-          path="/parent/*"
-          element={
-            <RequireAuth>
-              <ParentShell>
-                <Routes>
-                  <Route index element={<ParentDashboardPage />} />
-                  <Route path="subscription" element={<SubscriptionPage />} />
-                  <Route path="settings" element={<SettingsPage />} />
-                </Routes>
-              </ParentShell>
-            </RequireAuth>
-          }
-        />
-
-        <Route
-          path="/admin/*"
-          element={
-            <RequireAdmin>
-              <AdminShell>
-                <Routes>
-                  <Route index element={<AdminDashboardPage />} />
-                  <Route path="curriculum-sources" element={<CurriculumSourcesPage />} />
-                  <Route path="review-queue" element={<CurriculumReviewPage />} />
-                  <Route path="terminology" element={<TerminologyReviewPage />} />
-                  <Route path="illustrations" element={<TopicIllustrationsPage />} />
-                  <Route
-                    path="video-suggestions"
-                    element={<VideoSuggestionsReviewPage />}
-                  />
-                  <Route path="practice-tests" element={<PracticeTestsPage />} />
-                </Routes>
-              </AdminShell>
-            </RequireAdmin>
-          }
-        />
-      </Routes>
-    </Suspense>
+          <Route
+            path="/admin/*"
+            element={
+              <RequireAdmin>
+                <AdminShell>
+                  <Routes>
+                    <Route index element={<AdminDashboardPage />} />
+                    <Route
+                      path="curriculum-sources"
+                      element={<CurriculumSourcesPage />}
+                    />
+                    <Route path="review-queue" element={<CurriculumReviewPage />} />
+                    <Route path="terminology" element={<TerminologyReviewPage />} />
+                    <Route path="illustrations" element={<TopicIllustrationsPage />} />
+                    <Route
+                      path="video-suggestions"
+                      element={<VideoSuggestionsReviewPage />}
+                    />
+                    <Route path="practice-tests" element={<PracticeTestsPage />} />
+                  </Routes>
+                </AdminShell>
+              </RequireAdmin>
+            }
+          />
+          {/* Last. Without it an unknown URL matched nothing and React
+              rendered an empty page -- a mistyped address looked exactly
+              like a broken product. */}
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </Suspense>
+    </ErrorBoundary>
   )
 }

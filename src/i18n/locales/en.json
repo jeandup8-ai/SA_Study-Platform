@@ -854,5 +854,11 @@
       "cta": "Start your {{days}}-day free trial",
       "reassurance": "Cancel any time from your parent dashboard."
     }
+  },
+  "notFound": {
+    "title": "We could not find that page",
+    "body": "The link may be out of date, or there may be a small typo in the address. Nothing is broken — let's get you back.",
+    "home": "Back to the home page",
+    "keepLearning": "Keep learning"
   }
 }

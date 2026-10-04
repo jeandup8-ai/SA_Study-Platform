@@ -175,6 +175,52 @@ built around.
 
 ---
 
+## Review log
+
+### Candidate 1 — 2026-10-04 · REVIEW_REQUIRED, not approved, not shipped
+
+A candidate was generated in ChatGPT and assessed against this document.
+It is **not** declared in `subjectArt.ts`, and no file was added to
+`public/subject-art/`. All ten subjects still render the gradient fallback.
+
+**What it gets right.** Every required object is present and recognisable:
+cyan-teal cube, cone, three-wedge fraction disc, two-pan balance, square
+tiles, round counters. No text, no digits, no formulae. None of the
+prohibited stationery — no calculator, ruler, compass, protractor, graph
+paper, notebook or pencil. The palette is the product's own. At 128 px it
+is an attractive, competent image.
+
+**Why it is not approved.**
+
+| # | Finding | Evidence |
+|---|---|---|
+| 1 | **Fails the squint test at the sizes it actually renders at.** This is the blocking one. | Composited on the Mathematics gradient at 40, 48 and 64 px — the sizes `SubjectMark` uses on subject cards — the objects collapse into an unreadable cluster. Too many elements, too much internal detail, and low contrast between the cyan artwork and the cyan ground. |
+| 2 | **Technically translucent.** | Measured: **0.5%** of pixels fully opaque, **48.5%** partial alpha, peak alpha 253 across the subject body. The image was keyed out of a generated background rather than rendered onto transparency. |
+| 3 | **Ground plane and contact shadow present.** | The objects sit on a lit surface with shadows pooling beneath them. The spec requires none. |
+| 4 | **Glossy, not matte.** | High-specular plastic render. The style lock says "never glossy", "NOT generic 3D clipart". |
+| 5 | Balance reads level rather than tipped. | The tilt is what communicates comparison without labels. |
+| 6 | Right margin 5.6%. | Spec requires 10% clear on all four sides. Measured margins: 8.3 / 14.2 / 5.6 / 15.6. |
+
+**One correction to a first impression.** Finding 2 sounds worse than it
+looks *here*. Because the artwork is cyan-dominant and the Mathematics
+gradient is also cyan, the feathered edge blends and no halo is visible on
+this subject. It would be visible on a subject whose gradient is a
+different hue, and the translucency is a real file defect either way — but
+it is not what makes this candidate unusable. Finding 1 is.
+
+**What would fix it.** Fewer objects, larger, with more separation and
+stronger value contrast against the subject colour; matte finish; no
+ground plane; exported on true transparency rather than background-removed.
+The composition that reads at 128 px is not the composition that reads at
+44 px, and 44 px is where this lives.
+
+`npm run check:art:deep` was written in response to this candidate: the
+header-level check passed it (512 square, real WebP, alpha flag set, 60 KB),
+and only decoding the pixels exposed findings 2 and the halo. Run both
+before declaring anything.
+
+---
+
 ## Shipping it
 
 Generating the file is not approval. Nothing reads
@@ -188,6 +234,9 @@ Generating the file is not approval. Nothing reads
 3. `npm run check:art` — fails on a missing file, a renamed PNG, the wrong
    size, no alpha channel, a filename that is not the subject slug, or a path
    outside `public/subject-art`.
+   Then `npm run check:art:deep` — decodes the pixels in Chromium and fails
+   on a translucent body, a feathered halo, or a mark with no clear space.
+   It is not in `prebuild`, because a build should not need a browser.
 4. `npm run typecheck && npm run lint && npm run build`.
 
 A file sitting in the directory with no registry entry does not ship, and

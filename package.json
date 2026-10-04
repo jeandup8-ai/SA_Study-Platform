@@ -17,7 +17,8 @@
     "check:art": "node scripts/check-subject-art.mjs",
     "check:topic-art": "node scripts/check-topic-art.mjs",
     "check:upload": "node scripts/check-artwork-validation.mjs",
-    "build:manifest": "node scripts/build-image-manifest.mjs"
+    "build:manifest": "node scripts/build-image-manifest.mjs",
+    "check:art:deep": "node scripts/check-subject-art-deep.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.21",
