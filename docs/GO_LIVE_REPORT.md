@@ -6,16 +6,24 @@ without being re-checked.
 
 ## A. Overall status
 
-**GO_LIVE_READY_WITH_DOCUMENTED_LIMITATIONS** — conditional on one owner
-action that only the owner can take (§K).
+**GO_LIVE_READY_WITH_DOCUMENTED_LIMITATIONS** — **no launch blockers
+remain.**
 
 The product is structurally sound: RLS is enforced on all 56 public tables
 with no cross-account path found, the child-safety gates are real and
 fail-closed, the AI is curriculum-grounded and cannot be used as an answer
-machine, and the build is clean. What stops an unqualified GO_LIVE_READY is
-not a code defect but one thing requiring human confirmation: a live legal
-claim this pass could not substantiate. The subscription-state migration
-that was outstanding has since been applied.
+machine, and the build is clean. Both items this pass raised have been
+closed — the subscription-state fix is applied, and the owner has confirmed
+the video-review claim.
+
+**What stops an unqualified GO_LIVE_READY is not a known defect — it is a
+gap in evidence.** The entire signed-in product could not be loaded in a
+browser from this environment (see below), so "the core learning journey
+works" rests on reading code and querying the database, not on clicking
+through it. No defect was found there; nothing was exercised there either.
+Calling that GO_LIVE_READY would be asserting something this pass did not
+test. One run-through on a machine with network access to Supabase closes
+it.
 
 ### A material limit on this report
 
@@ -248,7 +256,9 @@ Nothing was regenerated, deleted or approved.
 
 ## K. Launch blockers
 
-**One remaining.** (The subscription migration is applied — see §F.)
+**NONE.** Both items raised by this pass are resolved: the subscription
+migration is applied (§F), and the video-review claim is confirmed by the
+owner (below).
 
 ### 1. ~~Apply migration 0051~~ — DONE 2026-10-04
 
@@ -261,33 +271,44 @@ Two follow-ups, neither blocking:
 - Attempt a real forged insert from a browser session to confirm
   behaviourally; this session's permission layer declined the write test.
 
-### 2. Confirm the video-review claim — P1, child safety and legal
+### 2. ~~Confirm the video-review claim~~ — CONFIRMED BY OWNER 2026-10-04
 
-The live privacy page states: *"Every video is watched in full and approved
-by a human on our team before it can appear to any Learner."*
+**The owner has confirmed they watched all 71 videos in full.** The privacy
+page's claim — *"Every video is watched in full and approved by a human on
+our team before it can appear to any Learner"* — is therefore accurate, and
+no wording change is needed. **No longer a blocker.**
 
-**71 videos are `verified = true` and learner-visible.** They carry a single
-reviewer id and were created across **15 distinct minutes** spanning five
-days — a rate inconsistent with watching each one in full at the time of
-insert. This does **not** prove no review happened (`created_at` records the
-insert, not the viewing), which is exactly why I have not changed either the
-data or the wording: unverifying 71 videos would destroy your work, and
-rewriting your own process claim on an inference would be worse.
+Why it was raised, and why the evidence looked the way it did: the 71 rows
+carry a single reviewer id and were inserted across **15 distinct minutes**
+spanning five days. That rate is inconsistent with watching each video in
+full *at the moment of insert* — but `created_at` records the insert, not
+the viewing, so the data could never settle the question either way. It was
+raised rather than resolved precisely because an automated read cannot
+distinguish "reviewed earlier, then batch-inserted" from "never reviewed",
+and a specific child-safety promise on a live legal page is worth being
+certain about rather than inferring.
 
-**Action, one of:**
-- Confirm you did watch all 71 in full — then nothing changes; or
-- Soften the wording to describe what actually happens (e.g. "every video is reviewed and approved by a person before it appears"); or
-- Set `verified = false` on the ones you have not watched, and work through them in the admin review queue.
+**Recorded so this is not re-litigated.** The next person to audit this will
+hit the same signal and draw the same provisional conclusion. This
+attestation is the answer to it.
 
-A specific, falsifiable child-safety promise on a live legal page is the
-one claim worth being certain about before taking money.
+**To make the claim self-evidencing in future** (a recommendation, not a
+blocker, and not implemented here): `topic_videos` has `reviewer_id` but no
+`reviewed_at`. A nullable timestamp set when an admin flips `verified`, and
+written by the existing review screen, would turn "we reviewed these" from a
+statement requiring trust into a queryable fact. Small change, and it would
+have answered this question in one query.
 
 ---
 
 ## L. Recommended final human actions
 
-1. **Resolve the video-review claim** (§K.2) — the one true blocker.
-3. **Do one real artwork upload** through the Illustration Studio against live storage — the only part of that pipeline this environment could not exercise.
-4. **Regenerate B-01** with fewer, larger objects, matte, no ground plane, true transparency; check with `npm run check:art && npm run check:art:deep`, then look at it at 44 px before declaring it.
-5. **Decide the entitlement model**: ship without a paywall deliberately, or add one — and if you add one, 0051 first.
-6. **Have the legal pages reviewed by a person.** They are honest and unusually careful, but they have not been reviewed by a lawyer and this pass is not that review.
+1. **Click through the signed-in product once** on a machine that can reach
+   Supabase — sign up, create a learner, open a lesson, practise, upload to
+   Scan My Work, check parent progress. This is the single largest gap in
+   the evidence behind this report, and it is an hour's work.
+2. **Do one real artwork upload** through the Illustration Studio against live storage — the only part of that pipeline this environment could not exercise.
+3. **Regenerate B-01** with fewer, larger objects, matte, no ground plane, true transparency; check with `npm run check:art && npm run check:art:deep`, then look at it at 44 px before declaring it.
+4. **Decide the entitlement model**: ship without a paywall deliberately, or add one. The insert hole is closed either way.
+5. **Have the legal pages reviewed by a lawyer.** They are honest and unusually careful — the privacy page discloses its own gaps, which is rare — but careful is not the same as reviewed, and this pass is not that review.
+6. **Housekeeping, not urgent:** drop the duplicate `subscriptions_guard_billing_fields` trigger (statements in migration 0051), and consider adding `topic_videos.reviewed_at` so the video-review claim is queryable rather than attested (§K.2).
