@@ -10,10 +10,10 @@ export function RefundPolicyPage() {
 
       <h2>Free trial</h2>
       <p>
-        Every Family Plan subscription starts with a 3-day free trial. Starting a trial
-        directly does not charge a card and does not go through PayFast at all — it simply
-        activates trial access on your account. Only choosing to subscribe with PayFast
-        takes you to their checkout to enter card details.
+        Every subscription, Solo or Family, starts with a 3-day free trial. Starting a
+        trial directly does not charge a card and does not go through PayFast at all — it
+        simply activates trial access on your account. Only choosing to subscribe with
+        PayFast takes you to their checkout to enter card details.
       </p>
 
       <h2>Refunds</h2>
