@@ -213,7 +213,9 @@
     "nextSlide": "Volgende skyfie",
     "placeValue.hundreds": "Honderde",
     "placeValue.tens": "Tiene",
-    "placeValue.units": "Eenhede"
+    "placeValue.units": "Eenhede",
+    "couldNotLoad": "Ons kon nie hierdie les laai nie. Kontroleer jou verbinding en probeer weer — jou vordering is veilig.",
+    "backToSubjects": "Terug na vakke"
   },
   "quiz": {
     "questionOf": "Vraag {{current}} van {{total}}",

@@ -213,7 +213,9 @@
     "nextSlide": "Next slide",
     "placeValue.hundreds": "Hundreds",
     "placeValue.tens": "Tens",
-    "placeValue.units": "Units"
+    "placeValue.units": "Units",
+    "couldNotLoad": "We could not load this lesson. Check your connection and try again — your progress is safe.",
+    "backToSubjects": "Back to subjects"
   },
   "quiz": {
     "questionOf": "Question {{current}} of {{total}}",

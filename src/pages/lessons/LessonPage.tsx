@@ -46,7 +46,7 @@ import {
   paragraphize,
 } from '@/lib/curriculum/lessonV2'
 import { supabase } from '@/lib/supabase'
-import { Button, Card, ProgressRing, StepProgress } from '@/components/ui'
+import { Button, Card, ErrorState, ProgressRing, StepProgress } from '@/components/ui'
 import { LessonVisual } from '@/components/lesson/LessonVisual'
 import { StoryboardSlides } from '@/components/lesson/StoryboardSlides'
 import { WorkedExampleCard } from '@/components/lesson/WorkedExampleCard'
@@ -112,6 +112,12 @@ export function LessonPage() {
   const [nextLesson, setNextLesson] = useState<Lesson | null>(null)
   const [sessionStartedAt] = useState(() => new Date())
   const [topicIllustrationUrl, setTopicIllustrationUrl] = useState<string | null>(null)
+  // `lesson` stays null both while the fetch is in flight and when it fails,
+  // and the two must not look the same: the query helpers swallow the
+  // Supabase error and return null, so a dropped mobile connection was
+  // rendering the same spinner as a slow one, forever.
+  const [loadFailed, setLoadFailed] = useState(false)
+  const [reloadNonce, setReloadNonce] = useState(0)
   const [topicVideo, setTopicVideo] = useState<
     Database['public']['Tables']['topic_videos']['Row'] | null
   >(null)
@@ -120,15 +126,19 @@ export function LessonPage() {
 
   useEffect(() => {
     if (!lessonId || !activeLearner) return
-    fetchLesson(lessonId).then((row) => {
-      setLesson(row)
-      if (row) {
-        fetchTopicIllustration(row.topic_id).then(setTopicIllustrationUrl)
-        fetchVerifiedTopicVideo(row.topic_id, activeLearner.preferred_language).then(
-          setTopicVideo,
-        )
-      }
-    })
+    setLoadFailed(false)
+    fetchLesson(lessonId)
+      .catch(() => null)
+      .then((row) => {
+        setLesson(row)
+        if (!row) setLoadFailed(true)
+        if (row) {
+          fetchTopicIllustration(row.topic_id).then(setTopicIllustrationUrl)
+          fetchVerifiedTopicVideo(row.topic_id, activeLearner.preferred_language).then(
+            setTopicVideo,
+          )
+        }
+      })
     fetchLessonContent(lessonId).then(setContent)
     fetchLessonMedia(lessonId).then(setMedia)
 
@@ -145,7 +155,7 @@ export function LessonPage() {
         { onConflict: 'learner_id,lesson_id', ignoreDuplicates: false },
       )
       .then(() => {})
-  }, [lessonId, activeLearner])
+  }, [lessonId, activeLearner, reloadNonce])
 
   useEffect(() => {
     if (!lesson || !activeLearner) return
@@ -205,9 +215,39 @@ export function LessonPage() {
   }, [stepIndex, lesson, activeLearner])
 
   if (!lesson || !activeLearner) {
+    // A lesson that will never arrive gets a way out. Retry first, because
+    // the usual cause is a phone losing signal mid-request and the second
+    // attempt simply works.
+    if (loadFailed) {
+      return (
+        <div className="app-column pt-10 pb-10">
+          <ErrorState
+            message={t('lesson.couldNotLoad')}
+            onRetry={() => setReloadNonce((n) => n + 1)}
+          />
+          <div className="mt-4 flex justify-center">
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => navigate('/app/subjects')}
+            >
+              {t('lesson.backToSubjects')}
+            </Button>
+          </div>
+        </div>
+      )
+    }
     return (
-      <div className="flex min-h-dvh items-center justify-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600" />
+      <div
+        role="status"
+        aria-busy="true"
+        className="flex min-h-dvh items-center justify-center"
+      >
+        <div
+          aria-hidden
+          className="h-8 w-8 animate-spin rounded-full border-4 border-brand-200 border-t-brand-600"
+        />
+        <span className="sr-only">{t('common.loading')}</span>
       </div>
     )
   }
