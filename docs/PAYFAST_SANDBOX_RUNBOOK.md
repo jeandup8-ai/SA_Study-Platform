@@ -65,17 +65,40 @@ https://dzphkuzhdpzawhucmjzh.supabase.co/functions/v1/payfast-itn
 it without a token. That is correct and intentional — the signature and
 PayFast's own validation endpoint are what authenticate it, not a JWT.
 
-## 2. Your sandbox account
+## 2. Getting into the sandbox
 
-Log in at **sandbox.payfast.co.za** with your sandbox merchant account —
-the one whose merchant id is `10054207`, which is what your September test
-used. Confirm the passphrase under *Settings → Integration* matches what
-you just put in Supabase.
+**The sandbox is a separate system from your live dashboard.** You cannot
+reach it from `my.payfast.io`; there is no menu item for it, and looking
+for one is the usual reason people get stuck.
 
-PayFast's sandbox does not take a real card; it presents a simulated
-payment you confirm. Their current test-payment details are on
-**developers.payfast.co.za** — check there rather than reusing a card
-number from memory, as they change it.
+Go to **https://sandbox.payfast.co.za** and sign in with the **same email
+address as your live PayFast account**. Same credentials, different system.
+Once in, *Settings → Integration* shows that account's own **Merchant ID,
+Merchant Key and passphrase** — these are the values to put in Supabase,
+and they are not the same as your live ones.
+
+Your September test ran against sandbox merchant `10054207`, so an account
+already exists. Those are the credentials to look for.
+
+If you cannot get in, PayFast publishes shared test credentials. Two sets
+circulate in their documentation and support articles:
+
+| Merchant ID | Merchant Key | Passphrase |
+|---|---|---|
+| `10000100` | `46f0cd694581a` | `jt7NOE43FZPn` |
+| `10004002` | `q1cd2rdny4a53` | `payfast` |
+
+They are public test values, not secrets. Prefer your own account's — a
+shared sandbox is used by everyone, so its transaction list is noisy, and
+matching your September run makes the comparison cleaner.
+
+### There is no test card
+
+The sandbox does **not** process cards at all. It replaces every payment
+method with a **virtual wallet**, pre-loaded with R99,999,999.99 and reset
+nightly. You complete a test payment by pressing **"Pay Now Using Your
+Wallet"**. So R3,349 will go through regardless of balance, and there is no
+card number to find.
 
 ## 3. Run the checkout
 
