@@ -42,33 +42,56 @@ Either way, **not** `jeandup8@gmail.com`.
 
 ---
 
-## Step 2 — Get your PayFast sandbox credentials
+## Step 2 — Get sandbox credentials
 
-The sandbox is a **completely separate system** from `my.payfast.io`. There
-is no link between them and no menu item for it. Looking for one in the
-live dashboard is why this step gets stuck.
+**You do not need a sandbox account to run this test.** PayFast publishes
+shared test credentials, and the merchant login exists only so you can read
+your own. If the login gives you trouble, skip it entirely — Path A below
+is the faster route either way.
 
-1. Open a new tab: **https://sandbox.payfast.co.za**
-2. Sign in with the **same email address as your live PayFast account**.
-3. Once in, go to **Settings → Integration**.
-4. Write down three values:
-   - **Merchant ID** (your September test used `10054207`)
-   - **Merchant Key**
-   - **Passphrase** — if the passphrase field is blank, set one now and
-     save it. A blank passphrase works, but then Supabase must also have it
-     blank, and it is easier to set one than to keep them both empty.
+### Path A — use the published credentials (recommended)
 
-**If you cannot sign in**, PayFast publishes shared test credentials. These
-are public test values, not secrets:
+Nothing to log into. Take one of these straight to Step 3:
 
 | Merchant ID | Merchant Key | Passphrase |
 |---|---|---|
 | `10000100` | `46f0cd694581a` | `jt7NOE43FZPn` |
 | `10004002` | `q1cd2rdny4a53` | `payfast` |
 
-Prefer your own — the shared sandbox has everyone else's transactions in it.
+These are public test values from PayFast's own documentation, not secrets,
+and they are shared with every other developer testing against the sandbox.
+That is fine for this purpose: you are verifying *your* code builds a valid
+request and *your* ITN handler accepts the reply. The only cost is that the
+sandbox transaction list has other people's activity in it, which does not
+matter because you verify from your own database, not from PayFast's
+dashboard.
 
----
+If the first set is rejected, try the second — both are in circulation and
+PayFast has rotated them before.
+
+### Path B — your own sandbox account (optional)
+
+Only worth it if you want your September merchant (`10054207`) for a
+like-for-like comparison.
+
+Go to **https://sandbox.payfast.co.za**. It asks for an email and nothing
+else — no password. Enter it, press **Proceed**, and it either signs you in
+or creates the account and emails you.
+
+Then **Settings → Integration** for the Merchant ID, Merchant Key and
+passphrase.
+
+**If you get "There was an error. Please try again":** that is PayFast's
+own page failing, not something you did wrong, and there is no documented
+cause. Worth trying, in order:
+
+1. **Switch to a desktop browser.** That page's mobile layout is visibly
+   broken — the heading and panel overlap and some of the form is off
+   screen — so it is plausible the form is not fully usable on a phone.
+2. Try a different email address; the form both creates and logs in.
+3. Disable any ad blocker or tracking protection for the domain.
+4. Otherwise, **use Path A** and move on. Nothing in this test depends on
+   having your own sandbox account.
 
 ## Step 3 — Put those credentials into Supabase
 
@@ -86,9 +109,9 @@ Prefer your own — the shared sandbox has everyone else's transactions in it.
 | Key | Value |
 |---|---|
 | `PAYFAST_MODE` | `sandbox` |
-| `PAYFAST_MERCHANT_ID` | your sandbox Merchant ID from Step 2 |
-| `PAYFAST_MERCHANT_KEY` | your sandbox Merchant Key from Step 2 |
-| `PAYFAST_PASSPHRASE` | your sandbox Passphrase from Step 2 |
+| `PAYFAST_MERCHANT_ID` | from Step 2 — e.g. `10000100` |
+| `PAYFAST_MERCHANT_KEY` | from Step 2 — e.g. `46f0cd694581a` |
+| `PAYFAST_PASSPHRASE` | from Step 2 — e.g. `jt7NOE43FZPn` |
 | `APP_BASE_URL` | `https://studylegends.co.za` |
 
 3. **Write down the current live values first** if any already exist — you
@@ -166,7 +189,7 @@ limit 1;
 | `signature_valid` | **true** |
 | `server_validated` | **true** |
 | `processed` | **true** |
-| `merchant_id` | your sandbox ID |
+| `merchant_id` | whichever sandbox ID you used in Step 3 |
 | `subscription_status` | **active** |
 | `token_stored` | **true** |
 | `days_granted` | **≈365** |
@@ -179,7 +202,7 @@ limit 1;
 | What you see | What it means | Fix |
 |---|---|---|
 | No rows at all | PayFast never reached the function | Check the logs — Dashboard → **Edge Functions** → `payfast-itn` → **Logs** |
-| `signature_valid` false | Passphrase mismatch | The Supabase passphrase is not the sandbox one. Redo Steps 2–3 |
+| `signature_valid` false | Passphrase mismatch | The passphrase in Supabase does not match the merchant ID you used. If on Path A, the published pair may have rotated — try the other row in Step 2 |
 | `signature_valid` true, `server_validated` false | Mode mismatch | `PAYFAST_MODE` disagrees with the account you paid on |
 | `processed` true but status not `active` | Amount or merchant mismatch | Check `amount_gross` is exactly 3349.00 and `merchant_id` matches |
 
