@@ -2958,6 +2958,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      has_paid_access: { Args: never; Returns: boolean }
       increment_learner_points: {
         Args: { p_amount: number; p_learner_id: string }
         Returns: undefined

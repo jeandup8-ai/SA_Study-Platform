@@ -862,5 +862,11 @@
     "body": "The link may be out of date, or there may be a small typo in the address. Nothing is broken — let's get you back.",
     "home": "Back to the home page",
     "keepLearning": "Keep learning"
+  },
+  "entitlement": {
+    "title": "Your access has not started yet",
+    "body": "StudyLegends lessons and practice are part of the Family Plan. Start your 3-day free trial, or pick up a subscription, and everything unlocks straight away.",
+    "cta": "Start free trial or subscribe",
+    "freePractice": "Try the free practice tests instead"
   }
 }

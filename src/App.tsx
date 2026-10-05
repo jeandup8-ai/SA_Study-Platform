@@ -21,6 +21,7 @@ import { AdminShell } from '@/components/layout/AdminShell'
 import {
   RequireAuth,
   RequireLearner,
+  RequireEntitlement,
   RequireAdmin,
   FullScreenLoading,
 } from '@/components/layout/Guards'
@@ -185,26 +186,28 @@ export default function App() {
             element={
               <RequireAuth>
                 <RequireLearner>
-                  <ChildShell>
-                    <Routes>
-                      <Route index element={<ChildDashboardPage />} />
-                      <Route path="subjects" element={<SubjectsPage />} />
-                      <Route path="subjects/:subjectId" element={<TopicListPage />} />
-                      <Route
-                        path="subjects/:subjectId/topics/:topicId"
-                        element={<LessonListPage />}
-                      />
-                      <Route path="lessons/:lessonId" element={<LessonPage />} />
-                      <Route path="scan" element={<ScanMyWorkPage />} />
-                      <Route path="progress" element={<LearnerProgressPage />} />
-                      <Route path="achievements" element={<AchievementsPage />} />
-                      <Route path="exam" element={<ExamPrepPage />} />
-                      <Route
-                        path="exam/:subjectId/mock-test"
-                        element={<MockTestPage />}
-                      />
-                    </Routes>
-                  </ChildShell>
+                  <RequireEntitlement>
+                    <ChildShell>
+                      <Routes>
+                        <Route index element={<ChildDashboardPage />} />
+                        <Route path="subjects" element={<SubjectsPage />} />
+                        <Route path="subjects/:subjectId" element={<TopicListPage />} />
+                        <Route
+                          path="subjects/:subjectId/topics/:topicId"
+                          element={<LessonListPage />}
+                        />
+                        <Route path="lessons/:lessonId" element={<LessonPage />} />
+                        <Route path="scan" element={<ScanMyWorkPage />} />
+                        <Route path="progress" element={<LearnerProgressPage />} />
+                        <Route path="achievements" element={<AchievementsPage />} />
+                        <Route path="exam" element={<ExamPrepPage />} />
+                        <Route
+                          path="exam/:subjectId/mock-test"
+                          element={<MockTestPage />}
+                        />
+                      </Routes>
+                    </ChildShell>
+                  </RequireEntitlement>
                 </RequireLearner>
               </RequireAuth>
             }

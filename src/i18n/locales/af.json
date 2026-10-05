@@ -862,5 +862,11 @@
     "body": "Die skakel is dalk verouderd, of daar is 'n klein tikfout in die adres. Niks is stukkend nie — kom ons kry jou terug.",
     "home": "Terug na die tuisblad",
     "keepLearning": "Hou aan leer"
+  },
+  "entitlement": {
+    "title": "Jou toegang het nog nie begin nie",
+    "body": "StudyLegends se lesse en oefeninge is deel van die Gesinsplan. Begin jou 3-dae gratis proeftydperk, of neem 'n intekening, en alles word dadelik oopgesluit.",
+    "cta": "Begin gratis proeftydperk of teken in",
+    "freePractice": "Probeer eerder die gratis oefentoetse"
   }
 }
