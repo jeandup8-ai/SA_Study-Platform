@@ -12,7 +12,7 @@
 //   PAYFAST_PASSPHRASE (optional but strongly recommended -- set one in the
 //     PayFast merchant dashboard under Settings > Integration, then mirror it
 //     here; it is the shared secret that makes the signature unforgeable)
-//   APP_BASE_URL (e.g. https://www.studylegends.co.za)
+//   APP_BASE_URL (e.g. https://studylegends.co.za)
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
@@ -129,6 +129,43 @@ function md5Hex(input: string): string {
 
 const FREQUENCY_BY_INTERVAL: Record<string, number> = { monthly: 3, annual: 6 }
 
+/**
+ * Where PayFast sends the customer back to.
+ *
+ * This has to be the origin they started on, not merely *an* origin that
+ * serves the app. Supabase keeps the session in localStorage, which is
+ * scoped per origin, so returning an apex-domain visitor to the www host
+ * -- or the reverse -- lands them on a page with no session and looks
+ * exactly like being silently logged out, on the screen immediately after
+ * they paid us. That is what the old hardcoded www default did.
+ *
+ * The request's own Origin is therefore preferred, checked against a fixed
+ * allowlist first. Without that check this would be an open redirect: the
+ * header is attacker-controllable, and PayFast would happily bounce a
+ * customer to any host named in it. Anything unrecognised falls back to
+ * APP_BASE_URL, and the fallback's own default is now the canonical apex
+ * rather than www.
+ */
+const ALLOWED_RETURN_HOSTS = new Set([
+  'studylegends.co.za',
+  'www.studylegends.co.za',
+  'localhost',
+  '127.0.0.1',
+])
+
+function resolveAppBaseUrl(req: Request): string {
+  const configured = Deno.env.get('APP_BASE_URL') ?? 'https://studylegends.co.za'
+  const origin = req.headers.get('Origin')
+  if (!origin) return configured
+  try {
+    const url = new URL(origin)
+    if (ALLOWED_RETURN_HOSTS.has(url.hostname)) return url.origin
+  } catch {
+    // Unparseable Origin header; use the configured value.
+  }
+  return configured
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS_HEADERS })
   if (req.method !== 'POST') return jsonResponse({ error: 'method_not_allowed' }, 405)
@@ -144,7 +181,7 @@ Deno.serve(async (req: Request) => {
   const merchantKey = Deno.env.get('PAYFAST_MERCHANT_KEY')
   const passphrase = Deno.env.get('PAYFAST_PASSPHRASE') ?? ''
   const mode = Deno.env.get('PAYFAST_MODE') ?? 'sandbox'
-  const appBaseUrl = Deno.env.get('APP_BASE_URL') ?? 'https://www.studylegends.co.za'
+  const appBaseUrl = resolveAppBaseUrl(req)
   if (!merchantId || !merchantKey) return jsonResponse({ error: 'feature_not_configured' }, 503)
 
   // Scoped to the caller's own JWT -- the insert below only succeeds because
