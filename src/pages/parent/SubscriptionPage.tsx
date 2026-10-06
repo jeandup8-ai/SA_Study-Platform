@@ -15,6 +15,7 @@ import { Badge, Button, Card, PageHeader, Skeleton } from '@/components/ui'
 import type { Subscription } from '@/types/curriculum'
 import type { Database } from '@/types/database'
 import { TRIAL_DAYS } from '@/lib/billing/trial'
+import { pickCurrentSubscription } from '@/lib/billing/currentSubscription'
 
 type SubscriptionPlan = Database['public']['Tables']['subscription_plans']['Row']
 
@@ -46,16 +47,16 @@ export function SubscriptionPage() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [interval, setInterval] = useState<BillingInterval>('monthly')
 
+  // All of them, not the newest one: a parent accumulates an `incomplete`
+  // row per abandoned checkout, and pickCurrentSubscription decides which
+  // row actually describes where they stand. See that module for why.
   function loadSubscription() {
     if (!parent) return
     supabase
       .from('subscriptions')
       .select('*')
       .eq('parent_id', parent.id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }) => setSubscription(data))
+      .then(({ data }) => setSubscription(pickCurrentSubscription(data)))
   }
 
   useEffect(() => {
@@ -112,8 +113,9 @@ export function SubscriptionPage() {
     loadSubscription()
   }
 
-  const isPayingStatus =
-    subscription && ['active', 'past_due', 'incomplete'].includes(subscription.status)
+  // 'incomplete' is gone: pickCurrentSubscription never surfaces an
+  // abandoned checkout, so offering to cancel one is dead code.
+  const isPayingStatus = subscription && ['active', 'past_due'].includes(subscription.status)
 
   return (
     <div>

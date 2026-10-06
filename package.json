@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/check-i18n-keys.mjs && node scripts/check-illustration-prompts.mjs && node scripts/check-subject-art.mjs && node scripts/check-topic-art.mjs && node scripts/check-artwork-validation.mjs && node scripts/generate-sitemap.mjs",
+    "prebuild": "node scripts/check-i18n-keys.mjs && node scripts/check-illustration-prompts.mjs && node scripts/check-subject-art.mjs && node scripts/check-topic-art.mjs && node scripts/check-artwork-validation.mjs && node --experimental-strip-types scripts/check-subscription-picker.mjs && node scripts/generate-sitemap.mjs",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b --noEmit",
     "lint": "oxlint",
@@ -18,7 +18,8 @@
     "check:topic-art": "node scripts/check-topic-art.mjs",
     "check:upload": "node scripts/check-artwork-validation.mjs",
     "build:manifest": "node scripts/build-image-manifest.mjs",
-    "check:art:deep": "node scripts/check-subject-art-deep.mjs"
+    "check:art:deep": "node scripts/check-subject-art-deep.mjs",
+    "check:subscription": "node --experimental-strip-types scripts/check-subscription-picker.mjs"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.21",
