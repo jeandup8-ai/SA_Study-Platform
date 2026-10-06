@@ -5,6 +5,39 @@
 [build.environment]
   NODE_VERSION = "22"
 
+# Send www to the apex before anything else sees the request.
+#
+# Both hosts serve this app, and Supabase keeps the login in localStorage,
+# which browsers scope per origin. So www and the apex each had their own
+# separate session: a parent signed in on studylegends.co.za who landed on
+# www.studylegends.co.za arrived with no session and looked logged out.
+# That is what happened to people coming back from PayFast, and the
+# checkout function now returns them to the origin they started on. This
+# rule closes the same hole everywhere else -- a shared link, a typed
+# address, an old bookmark.
+#
+# Netlify can do this itself: set the apex as the primary domain under
+# Domains and www is redirected to it automatically. That setting and this
+# rule point the same way, so running both is safe and this one keeps the
+# behaviour in version control. Setting *www* as the primary domain would
+# point the opposite way and loop against this rule -- don't.
+#
+# force = true because the catch-all below would otherwise serve the SPA on
+# www instead of redirecting. Order matters: Netlify takes the first match,
+# so this has to come first. The http rule saves a hop for anyone arriving
+# over plain http, who would otherwise be bounced to https://www first.
+[[redirects]]
+  from = "https://www.studylegends.co.za/*"
+  to = "https://studylegends.co.za/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.studylegends.co.za/*"
+  to = "https://studylegends.co.za/:splat"
+  status = 301
+  force = true
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
