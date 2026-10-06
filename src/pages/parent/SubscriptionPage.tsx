@@ -4,6 +4,13 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '@/context/AuthContext'
 import { supabase } from '@/lib/supabase'
 import { formatRand } from '@/lib/billing/formatRand'
+import {
+  groupPlansByTier,
+  planFor,
+  hasInterval,
+  type BillingInterval,
+} from '@/lib/billing/planGroups'
+import { BillingIntervalToggle } from '@/components/billing/BillingIntervalToggle'
 import { Badge, Button, Card, PageHeader, Skeleton } from '@/components/ui'
 import type { Subscription } from '@/types/curriculum'
 import type { Database } from '@/types/database'
@@ -37,6 +44,7 @@ export function SubscriptionPage() {
   const [checkingOut, setCheckingOut] = useState<string | null>(null)
   const [canceling, setCanceling] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const [interval, setInterval] = useState<BillingInterval>('monthly')
 
   function loadSubscription() {
     if (!parent) return
@@ -186,27 +194,104 @@ export function SubscriptionPage() {
           <span className="sr-only">{t('common.loading')}</span>
         </div>
       ) : (
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          {plans.map((plan) => (
-            <Card key={plan.id}>
-              <p className="font-bold text-slate-900">{plan.name}</p>
+        <PlanChooser
+          plans={plans}
+          interval={interval}
+          onIntervalChange={setInterval}
+          checkingOut={checkingOut}
+          startingTrial={startingTrial}
+          onCheckout={checkout}
+          onStartTrial={startTrial}
+        />
+      )}
+    </div>
+  )
+}
+
+/**
+ * One card per tier, with a monthly/annual switch above them.
+ *
+ * Previously every active plan got its own card, which was fine while
+ * there were two and confusing the moment there were four: "Solo" and
+ * "Solo (Annual)" read as separate products, and on a phone the annual
+ * options sat below the fold where nobody scrolled. Grouping first means a
+ * parent picks a tier and a billing period, which is the decision they are
+ * actually making.
+ */
+function PlanChooser({
+  plans,
+  interval,
+  onIntervalChange,
+  checkingOut,
+  startingTrial,
+  onCheckout,
+  onStartTrial,
+}: {
+  plans: SubscriptionPlan[]
+  interval: BillingInterval
+  onIntervalChange: (next: BillingInterval) => void
+  checkingOut: string | null
+  startingTrial: string | null
+  onCheckout: (planId: string) => void
+  onStartTrial: (planId: string) => void
+}) {
+  const { t } = useTranslation()
+  const groups = groupPlansByTier(plans)
+
+  if (groups.length === 0) {
+    return <p className="mt-4 text-sm text-slate-400">{t('parent.noPlansYet')}</p>
+  }
+
+  const showToggle = hasInterval(groups, 'monthly') && hasInterval(groups, 'annual')
+  const bestSaving = Math.max(0, ...groups.map((g) => g.annualSavingCents ?? 0))
+
+  // Tiers that have nothing at the selected interval are hidden rather than
+  // shown as a dead card -- an annual-only tier has no monthly price to
+  // put on one.
+  const visible = groups.filter((g) => planFor(g, interval) !== null)
+
+  return (
+    <>
+      {showToggle && (
+        <BillingIntervalToggle
+          value={interval}
+          onChange={onIntervalChange}
+          savingLabel={
+            bestSaving > 0
+              ? t('billing.saveUpTo', { amount: formatRand(bestSaving) })
+              : undefined
+          }
+          className="mt-6"
+        />
+      )}
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2">
+        {visible.map((group) => {
+          const plan = planFor(group, interval)!
+          const saving = interval === 'annual' ? group.annualSavingCents : null
+          return (
+            <Card key={group.key}>
+              <p className="font-bold text-slate-900">{group.name}</p>
               <p className="mt-1 text-2xl font-extrabold text-brand-700">
                 {plan.price_cents != null
                   ? formatRand(plan.price_cents)
                   : t('common.priceTbc')}
                 <span className="text-sm font-medium text-slate-500">
-                  {plan.billing_interval === 'monthly'
-                    ? t('parent.perMonth')
-                    : t('parent.perYear')}
+                  {interval === 'monthly' ? t('billing.perMonth') : t('billing.perYear')}
                 </span>
               </p>
               <p className="text-sm text-slate-500">
                 {t('parent.maxLearnersOnPlan', { count: plan.max_learners })}
               </p>
+              {saving != null && saving > 0 && (
+                <p className="mt-1 text-sm font-semibold text-success-600">
+                  {t('pricing.annualSavings', { amount: formatRand(saving) })}
+                </p>
+              )}
               <Button
                 className="mt-4 w-full"
                 disabled={checkingOut === plan.id}
-                onClick={() => checkout(plan.id)}
+                onClick={() => onCheckout(plan.id)}
               >
                 {checkingOut === plan.id
                   ? t('common.loading')
@@ -216,19 +301,16 @@ export function SubscriptionPage() {
                 className="mt-2 w-full"
                 variant="secondary"
                 disabled={startingTrial === plan.id}
-                onClick={() => startTrial(plan.id)}
+                onClick={() => onStartTrial(plan.id)}
               >
                 {startingTrial === plan.id
                   ? t('common.loading')
                   : t('parent.startFreeTrial')}
               </Button>
             </Card>
-          ))}
-          {plans.length === 0 && (
-            <p className="text-sm text-slate-400">{t('parent.noPlansYet')}</p>
-          )}
-        </div>
-      )}
-    </div>
+          )
+        })}
+      </div>
+    </>
   )
 }

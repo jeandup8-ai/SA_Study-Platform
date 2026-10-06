@@ -300,8 +300,6 @@
     "subscribeWithPayfast": "Subscribe with PayFast",
     "startFreeTrial": "Start free trial",
     "noPlansYet": "No plans published yet.",
-    "perMonth": "/month",
-    "perYear": "/year",
     "noLearnersYet": "No child profiles yet.",
     "noAttentionNeeded": "Nothing needs attention right now."
   },
@@ -823,10 +821,6 @@
       "eyebrow": "Pricing",
       "title": "One subscription. The whole family.",
       "lead": "Start with a {{days}}-day free trial. Cancel any time from your parent dashboard.",
-      "monthlyName": "Monthly",
-      "annualName": "Annual",
-      "perMonth": "/month",
-      "perYear": "/year",
       "bestValue": "Best value",
       "saving": "Save {{amount}} a year",
       "cancelAnytime": "Cancel any time",
@@ -868,5 +862,13 @@
     "body": "StudyLegends lessons and practice are part of the Family Plan. Start your 3-day free trial, or pick up a subscription, and everything unlocks straight away.",
     "cta": "Start free trial or subscribe",
     "freePractice": "Try the free practice tests instead"
+  },
+  "billing": {
+    "monthly": "Monthly",
+    "annual": "Annual",
+    "intervalLabel": "Billing period",
+    "saveUpTo": "Save up to {{amount}} a year",
+    "perMonth": "/month",
+    "perYear": "/year"
   }
 }

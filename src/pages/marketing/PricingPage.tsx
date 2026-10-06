@@ -20,6 +20,13 @@ import {
   SectionHeading,
 } from '@/components/marketing'
 import { formatRand } from '@/lib/billing/formatRand'
+import {
+  groupPlansByTier,
+  planFor,
+  hasInterval,
+  type BillingInterval,
+} from '@/lib/billing/planGroups'
+import { BillingIntervalToggle } from '@/components/billing/BillingIntervalToggle'
 import { supabase } from '@/lib/supabase'
 import type { Database } from '@/types/database'
 
@@ -54,6 +61,7 @@ const WHY_US_KEYS = [
 export function PricingPage() {
   const { t } = useTranslation()
   const [plans, setPlans] = useState<SubscriptionPlan[]>([])
+  const [interval, setInterval] = useState<BillingInterval>('monthly')
 
   useEffect(() => {
     supabase
@@ -64,12 +72,14 @@ export function PricingPage() {
       .then(({ data }) => setPlans(data ?? []))
   }, [])
 
-  const monthlyPlan = plans.find((plan) => plan.billing_interval === 'monthly')
-  const annualPlan = plans.find((plan) => plan.billing_interval === 'annual')
-  const annualSavingsCents =
-    monthlyPlan?.price_cents != null && annualPlan?.price_cents != null
-      ? monthlyPlan.price_cents * 12 - annualPlan.price_cents
-      : null
+  // One saving per tier, computed from that tier's own two prices. The
+  // previous version derived a single figure from the cheapest monthly and
+  // cheapest annual plan and then printed it on every annual card, which
+  // was wrong the moment a second tier existed.
+  const groups = groupPlansByTier(plans)
+  const showToggle = hasInterval(groups, 'monthly') && hasInterval(groups, 'annual')
+  const bestSavingCents = Math.max(0, ...groups.map((g) => g.annualSavingCents ?? 0))
+  const visible = groups.filter((g) => planFor(g, interval) !== null)
 
   return (
     <MarketingShell surface="dark">
@@ -80,13 +90,27 @@ export function PricingPage() {
       />
 
       <Section tone="light">
+        {showToggle && (
+          <BillingIntervalToggle
+            value={interval}
+            onChange={setInterval}
+            savingLabel={
+              bestSavingCents > 0
+                ? t('billing.saveUpTo', { amount: formatRand(bestSavingCents) })
+                : undefined
+            }
+            className="mb-10"
+          />
+        )}
+
         <div className="mx-auto grid max-w-4xl gap-6 sm:grid-cols-2">
-          {plans.map((plan, i) => {
-            const isAnnual = plan.billing_interval === 'annual'
-            const highlight =
-              isAnnual && annualSavingsCents != null && annualSavingsCents > 0
+          {visible.map((group, i) => {
+            const plan = planFor(group, interval)
+            if (!plan) return null
+            const saving = interval === 'annual' ? group.annualSavingCents : null
+            const highlight = i === visible.length - 1 && visible.length > 1
             return (
-              <Reveal key={plan.id} delay={i * 80}>
+              <Reveal key={group.key} delay={i * 80}>
                 <div
                   className={`relative flex h-full flex-col rounded-3xl bg-white p-7 shadow-sm ${
                     highlight
@@ -100,24 +124,24 @@ export function PricingPage() {
                     </span>
                   )}
                   <p className="font-display text-lg font-extrabold text-ink-900">
-                    {plan.name}
+                    {group.name}
                   </p>
                   <p className="font-display mt-3 text-4xl font-extrabold tracking-tight text-ink-900">
                     {plan.price_cents != null
                       ? formatRand(plan.price_cents)
                       : t('common.priceTbc')}
                     <span className="text-base font-medium text-ink-400">
-                      /{plan.billing_interval === 'monthly' ? 'mo' : 'yr'}
+                      {interval === 'monthly'
+                        ? t('billing.perMonth')
+                        : t('billing.perYear')}
                     </span>
                   </p>
                   <p className="mt-1.5 text-sm text-ink-500">
                     {t('parent.maxLearnersOnPlan', { count: plan.max_learners })}
                   </p>
-                  {highlight && (
+                  {saving != null && saving > 0 && (
                     <p className="mt-1 text-sm font-semibold text-volt-700">
-                      {t('pricing.annualSavings', {
-                        amount: formatRand(annualSavingsCents!),
-                      })}
+                      {t('pricing.annualSavings', { amount: formatRand(saving) })}
                     </p>
                   )}
                   <MarketingButton
@@ -132,7 +156,7 @@ export function PricingPage() {
               </Reveal>
             )
           })}
-          {plans.length === 0 && (
+          {visible.length === 0 && (
             <p className="col-span-2 text-center text-ink-400">
               {t('pricing.noPlansYet')}
             </p>

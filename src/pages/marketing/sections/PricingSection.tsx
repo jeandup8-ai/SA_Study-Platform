@@ -5,6 +5,13 @@ import { Check } from 'lucide-react'
 import { MarketingButton, Reveal, Section, SectionHeading } from '@/components/marketing'
 import { supabase } from '@/lib/supabase'
 import { formatRand } from '@/lib/billing/formatRand'
+import {
+  groupPlansByTier,
+  planFor,
+  hasInterval,
+  type BillingInterval,
+} from '@/lib/billing/planGroups'
+import { BillingIntervalToggle } from '@/components/billing/BillingIntervalToggle'
 import { TRIAL_DAYS } from '@/lib/billing/trial'
 import { withTimeout } from '@/lib/marketing/withTimeout'
 import type { Database } from '@/types/database'
@@ -36,6 +43,7 @@ export function PricingSection() {
   const { t } = useTranslation()
   const [plans, setPlans] = useState<Plan[]>([])
   const [loading, setLoading] = useState(true)
+  const [interval, setInterval] = useState<BillingInterval>('monthly')
 
   useEffect(() => {
     // Same reason as the subjects section: a network failure rejects, and
@@ -66,12 +74,13 @@ export function PricingSection() {
     }
   }, [])
 
-  const monthly = plans.find((plan) => plan.billing_interval === 'monthly')
-  const annual = plans.find((plan) => plan.billing_interval === 'annual')
-  const annualSavingCents =
-    monthly?.price_cents != null && annual?.price_cents != null
-      ? monthly.price_cents * 12 - annual.price_cents
-      : null
+  // Grouped, not `find`-ed. Taking the first monthly and the first annual
+  // plan silently dropped the Family tier from this section the moment a
+  // second tier existed -- the landing page advertised Solo only.
+  const groups = groupPlansByTier(plans)
+  const showToggle = hasInterval(groups, 'monthly') && hasInterval(groups, 'annual')
+  const bestSavingCents = Math.max(0, ...groups.map((g) => g.annualSavingCents ?? 0))
+  const visible = groups.filter((g) => planFor(g, interval) !== null)
 
   return (
     <Section tone="light" id="pricing">
@@ -83,7 +92,20 @@ export function PricingSection() {
         align="center"
       />
 
-      <div className="mx-auto mt-14 grid max-w-3xl gap-5 sm:grid-cols-2">
+      {showToggle && (
+        <BillingIntervalToggle
+          value={interval}
+          onChange={setInterval}
+          savingLabel={
+            bestSavingCents > 0
+              ? t('billing.saveUpTo', { amount: formatRand(bestSavingCents) })
+              : undefined
+          }
+          className="mt-10"
+        />
+      )}
+
+      <div className="mx-auto mt-8 grid max-w-3xl gap-5 sm:grid-cols-2">
         {loading &&
           Array.from({ length: 2 }).map((_, index) => (
             <div
@@ -92,16 +114,21 @@ export function PricingSection() {
               aria-hidden
             />
           ))}
-        {[monthly, annual].map((plan, index) => {
+        {visible.map((group, index) => {
+          const plan = planFor(group, interval)
           if (!plan) return null
-          const isAnnual = plan.billing_interval === 'annual'
-          const showsSaving = isAnnual && annualSavingCents != null && annualSavingCents > 0
+          // The richer tier carries the emphasis now, not the annual card --
+          // billing period is the toggle's job, so the cards are free to
+          // compare tiers against each other.
+          const isFeatured = index === visible.length - 1 && visible.length > 1
+          const saving = interval === 'annual' ? group.annualSavingCents : null
+          const showsSaving = saving != null && saving > 0
           return (
-            <Reveal key={plan.id} delay={index * 100}>
+            <Reveal key={group.key} delay={index * 100}>
               <div
                 className={clsx(
                   'relative flex h-full flex-col rounded-[1.75rem] p-7',
-                  isAnnual
+                  isFeatured
                     ? 'bg-ink-900 text-white ring-2 ring-volt-400'
                     : 'border border-ink-200 bg-white text-ink-900',
                 )}
@@ -112,39 +139,56 @@ export function PricingSection() {
                   </span>
                 )}
 
-                <p className={clsx('font-bold', isAnnual ? 'text-volt-200' : 'text-ink-500')}>
-                  {t(isAnnual ? 'm.pricing.annualName' : 'm.pricing.monthlyName')}
+                <p
+                  className={clsx(
+                    'font-bold',
+                    isFeatured ? 'text-volt-200' : 'text-ink-500',
+                  )}
+                >
+                  {group.name}
                 </p>
 
                 <p className="mt-3 font-display text-5xl font-extrabold tracking-tight">
-                  {plan.price_cents != null ? formatRand(plan.price_cents) : t('common.priceTbc')}
+                  {plan.price_cents != null
+                    ? formatRand(plan.price_cents)
+                    : t('common.priceTbc')}
                   <span
                     className={clsx(
                       'ml-1 font-sans text-base font-semibold',
-                      isAnnual ? 'text-ink-300' : 'text-ink-400',
+                      isFeatured ? 'text-ink-300' : 'text-ink-400',
                     )}
                   >
-                    {t(isAnnual ? 'm.pricing.perYear' : 'm.pricing.perMonth')}
+                    {interval === 'annual' ? t('billing.perYear') : t('billing.perMonth')}
                   </span>
                 </p>
 
                 {showsSaving ? (
                   <p className="mt-2 text-sm font-bold text-volt-300">
-                    {t('m.pricing.saving', { amount: formatRand(annualSavingCents) })}
+                    {t('m.pricing.saving', { amount: formatRand(saving) })}
                   </p>
                 ) : (
-                  <p className={clsx('mt-2 text-sm', isAnnual ? 'text-ink-300' : 'text-ink-400')}>
+                  <p
+                    className={clsx(
+                      'mt-2 text-sm',
+                      isFeatured ? 'text-ink-300' : 'text-ink-400',
+                    )}
+                  >
                     {t('m.pricing.cancelAnytime')}
                   </p>
                 )}
 
-                <p className={clsx('mt-4 text-sm', isAnnual ? 'text-ink-300' : 'text-ink-500')}>
+                <p
+                  className={clsx(
+                    'mt-4 text-sm',
+                    isFeatured ? 'text-ink-300' : 'text-ink-500',
+                  )}
+                >
                   {t('m.pricing.learners', { count: plan.max_learners })}
                 </p>
 
                 <MarketingButton
                   to="/sign-up"
-                  variant={isAnnual ? 'volt' : 'light'}
+                  variant={isFeatured ? 'volt' : 'light'}
                   className="mt-7 w-full"
                 >
                   {t('m.cta.trial')}
@@ -180,11 +224,15 @@ export function PricingSection() {
             {INCLUDED.map((key) => (
               <li key={key} className="flex items-start gap-2.5">
                 <Check size={17} className="mt-0.5 shrink-0 text-volt-600" />
-                <span className="text-sm text-ink-700">{t(`m.pricing.included.${key}`)}</span>
+                <span className="text-sm text-ink-700">
+                  {t(`m.pricing.included.${key}`)}
+                </span>
               </li>
             ))}
           </ul>
-          <p className="mt-8 text-center text-xs text-ink-400">{t('m.pricing.footnote')}</p>
+          <p className="mt-8 text-center text-xs text-ink-400">
+            {t('m.pricing.footnote')}
+          </p>
         </Reveal>
       )}
     </Section>

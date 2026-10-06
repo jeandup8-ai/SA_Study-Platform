@@ -300,8 +300,6 @@
     "subscribeWithPayfast": "Teken in met PayFast",
     "startFreeTrial": "Begin gratis proeftydperk",
     "noPlansYet": "Nog geen planne gepubliseer nie.",
-    "perMonth": "/maand",
-    "perYear": "/jaar",
     "noLearnersYet": "Nog geen kinderprofiele nie.",
     "noAttentionNeeded": "Niks benodig tans aandag nie."
   },
@@ -823,10 +821,6 @@
       "eyebrow": "Pryse",
       "title": "Een intekening. Die hele gesin.",
       "lead": "Begin met 'n gratis proeftydperk van {{days}} dae. Kanselleer enige tyd vanaf jou ouerpaneel.",
-      "monthlyName": "Maandeliks",
-      "annualName": "Jaarliks",
-      "perMonth": "/maand",
-      "perYear": "/jaar",
       "bestValue": "Beste waarde",
       "saving": "Bespaar {{amount}} per jaar",
       "cancelAnytime": "Kanselleer enige tyd",
@@ -868,5 +862,13 @@
     "body": "StudyLegends se lesse en oefeninge is deel van die Gesinsplan. Begin jou 3-dae gratis proeftydperk, of neem 'n intekening, en alles word dadelik oopgesluit.",
     "cta": "Begin gratis proeftydperk of teken in",
     "freePractice": "Probeer eerder die gratis oefentoetse"
+  },
+  "billing": {
+    "monthly": "Maandeliks",
+    "annual": "Jaarliks",
+    "intervalLabel": "Rekeningperiode",
+    "saveUpTo": "Bespaar tot {{amount}} per jaar",
+    "perMonth": "/maand",
+    "perYear": "/jaar"
   }
 }
