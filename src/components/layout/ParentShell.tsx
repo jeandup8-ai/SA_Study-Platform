@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import clsx from 'clsx'
 import { useAuth } from '@/context/AuthContext'
 import { useIsAdmin } from '@/hooks/useIsAdmin'
+import { LanguageToggle } from '@/components/layout/LanguageToggle'
 
 function navClass({ isActive }: { isActive: boolean }): string {
   return clsx(
@@ -38,6 +39,10 @@ export function ParentShell({ children }: { children: ReactNode }) {
             </button>
           </div>
           <nav className="mt-2 flex flex-wrap items-center gap-1">
+            {/* Sits with the nav rather than beside sign-out so it wraps with
+                the links on a narrow phone instead of squeezing the title.
+                With a child selected this also sets that child's content
+                language, not just the parent's menus. */}
             <NavLink to="/parent" end className={navClass}>
               {t('nav.progress')}
             </NavLink>
@@ -52,6 +57,7 @@ export function ParentShell({ children }: { children: ReactNode }) {
                 {t('admin.title')}
               </NavLink>
             )}
+            <LanguageToggle tone="light" className="ml-auto" />
           </nav>
         </div>
       </header>

@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { LanguageToggle } from '@/components/layout/LanguageToggle'
 import { useTranslation } from 'react-i18next'
 import clsx from 'clsx'
 import { Menu, X } from 'lucide-react'
@@ -117,6 +118,9 @@ export function MarketingShell({
           </nav>
 
           <div className="ml-auto flex items-center gap-2">
+            {/* Hidden below sm: the small-screen header is already logo +
+                hamburger, so the toggle rides in the mobile menu instead. */}
+            <LanguageToggle className="hidden sm:inline-flex" />
             <Link
               to="/sign-in"
               className="hidden px-3 text-sm font-bold text-ink-200 transition-colors hover:text-white sm:block"
@@ -160,6 +164,7 @@ export function MarketingShell({
             ))}
           </nav>
           <div className="safe-bottom space-y-3 border-t border-white/10 px-4 py-6">
+            <LanguageToggle className="w-full justify-center sm:hidden" />
             <MarketingButton to="/sign-up" className="w-full" onClick={() => setMenuOpen(false)}>
               {t('m.cta.trial')}
             </MarketingButton>

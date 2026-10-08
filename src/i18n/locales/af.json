@@ -16,7 +16,8 @@
     "loadingSubjects": "Laai jou vakke",
     "loadingLessons": "Laai lesse",
     "loadingTopics": "Laai onderwerpe",
-    "loadingProgress": "Laai vordering"
+    "loadingProgress": "Laai vordering",
+    "languageLabel": "Taal"
   },
   "nav": {
     "dashboard": "Tuis",

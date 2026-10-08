@@ -38,6 +38,8 @@ interface LearnerContextValue {
   activeLearner: Learner | null
   loading: boolean
   setActiveLearnerId: (id: string) => void
+  /** Changes the active learner's language, UI and content together. */
+  setLearnerLanguage: (code: LanguageCode) => Promise<void>
   createLearner: (input: CreateLearnerInput) => Promise<Learner>
   deleteLearner: (id: string) => Promise<void>
   refreshLearners: () => Promise<void>
@@ -138,6 +140,30 @@ export function LearnerProvider({ children }: { children: ReactNode }) {
     return data
   }
 
+  /**
+   * Changes the active learner's language.
+   *
+   * This writes to the database rather than only switching i18next,
+   * because the two are not interchangeable here. Every content query --
+   * lessons, quizzes, videos, exam papers, the AI tutor -- is parameterised
+   * on learner.preferred_language, and the effect below forces the UI back
+   * to that value whenever the active learner changes. A toggle that moved
+   * only the interface would therefore give a child Afrikaans menus around
+   * English lessons, and would snap back on the next learner switch.
+   *
+   * With no active learner (a visitor, or a parent before adding a child)
+   * there is nothing to write to, and the caller just changes i18next.
+   */
+  async function setLearnerLanguage(code: LanguageCode): Promise<void> {
+    if (!activeLearner || activeLearner.preferred_language === code) return
+    const { error } = await supabase
+      .from('learners')
+      .update({ preferred_language: code })
+      .eq('id', activeLearner.id)
+    if (error) throw error
+    await refreshLearners()
+  }
+
   async function deleteLearner(id: string): Promise<void> {
     // Cascades to every table referencing learners(id) -- assessment history,
     // AI-tutor logs, points, baselines, everything. See migration 0002 etc.
@@ -160,7 +186,16 @@ export function LearnerProvider({ children }: { children: ReactNode }) {
 
   return (
     <LearnerContext.Provider
-      value={{ learners, activeLearner, loading, setActiveLearnerId, createLearner, deleteLearner, refreshLearners }}
+      value={{
+        learners,
+        activeLearner,
+        loading,
+        setActiveLearnerId,
+        setLearnerLanguage,
+        createLearner,
+        deleteLearner,
+        refreshLearners,
+      }}
     >
       {children}
     </LearnerContext.Provider>

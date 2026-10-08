@@ -16,7 +16,8 @@
     "loadingSubjects": "Loading your subjects",
     "loadingLessons": "Loading lessons",
     "loadingTopics": "Loading topics",
-    "loadingProgress": "Loading progress"
+    "loadingProgress": "Loading progress",
+    "languageLabel": "Language"
   },
   "nav": {
     "dashboard": "Home",
