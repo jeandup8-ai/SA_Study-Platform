@@ -290,6 +290,8 @@
     "removeLearnerFailed": "Kon nie daardie profiel verwyder nie. Probeer asseblief weer.",
     "checkoutFeatureUnavailable": "Kaartbetaling is nog nie aangeskakel nie — begin eerder 'n gratis proeftydperk, of kontak ons.",
     "checkoutFailed": "Iets het verkeerd geloop met die begin van uitkas. Probeer asseblief weer.",
+    "trialAlreadyUsed": "Jy het jou gratis proeftydperk al gebruik. Kies hierbo 'n plan om voort te gaan.",
+    "trialFailed": "Iets het verkeerd geloop met die begin van jou proeftydperk. Probeer asseblief weer.",
     "paymentConfirming": "Dankie! Ons bevestig nou jou betaling met PayFast — dit neem gewoonlik net 'n paar sekondes. Herlaai hierdie bladsy binnekort as jou status hieronder nie outomaties opdateer nie.",
     "checkoutCancelled": "Uitkas is gekanselleer — geen betaling is gemaak nie.",
     "trialEndsOn": "Proeftydperk eindig {{date}}",

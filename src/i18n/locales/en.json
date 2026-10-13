@@ -290,6 +290,8 @@
     "removeLearnerFailed": "Couldn't remove that profile. Please try again.",
     "checkoutFeatureUnavailable": "Card payment is not switched on yet — start a free trial instead, or contact us.",
     "checkoutFailed": "Something went wrong starting checkout. Please try again.",
+    "trialAlreadyUsed": "You have already used your free trial. Pick a plan above to carry on.",
+    "trialFailed": "Something went wrong starting your trial. Please try again.",
     "paymentConfirming": "Thanks! We're confirming your payment with PayFast now — this usually only takes a few seconds. Refresh this page shortly if your status below doesn't update automatically.",
     "checkoutCancelled": "Checkout was cancelled — no payment was made.",
     "trialEndsOn": "Trial ends {{date}}",

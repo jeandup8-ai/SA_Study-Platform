@@ -42,6 +42,10 @@ export function SubscriptionPage() {
   const [plans, setPlans] = useState<SubscriptionPlan[] | null>(null)
   const [subscription, setSubscription] = useState<Subscription | null>(null)
   const [startingTrial, setStartingTrial] = useState<string | null>(null)
+  // Ever had one, not has one now. Defaults to true so a parent never sees
+  // the trial button for the instant before the rows arrive -- offering a
+  // trial and then withdrawing it reads worse than showing it a beat late.
+  const [trialUsed, setTrialUsed] = useState(true)
   const [checkingOut, setCheckingOut] = useState<string | null>(null)
   const [canceling, setCanceling] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
@@ -56,7 +60,13 @@ export function SubscriptionPage() {
       .from('subscriptions')
       .select('*')
       .eq('parent_id', parent.id)
-      .then(({ data }) => setSubscription(pickCurrentSubscription(data)))
+      .then(({ data }) => {
+        setSubscription(pickCurrentSubscription(data))
+        // A lapsed trial still counts as used -- nothing ever moves a row
+        // out of 'trialing', and that is exactly the rule the database
+        // enforces on insert (migration 0064), so the two agree.
+        setTrialUsed((data ?? []).some((row) => row.status === 'trialing'))
+      })
   }
 
   useEffect(() => {
@@ -69,12 +79,27 @@ export function SubscriptionPage() {
     loadSubscription()
   }, [parent])
 
+  /**
+   * One trial per parent, enforced in the database (migration 0064) and
+   * mirrored here.
+   *
+   * `trialUsed` below hides the button once a trial exists, but the button
+   * is not the gate -- a RESTRICTIVE insert policy is, because anyone can
+   * POST to the REST API with the public anon key. What this does is keep
+   * the refusal legible instead of mysterious.
+   *
+   * The error is read, not discarded. The previous version destructured only
+   * `data`, so a refused insert set the subscription to null and the page
+   * silently lost the trial the parent already had -- an invisible failure
+   * before 0064, and a guaranteed one after it.
+   */
   async function startTrial(planId: string) {
     if (!parent) return
     setStartingTrial(planId)
+    setCheckoutError(null)
     const trialEnd = new Date()
     trialEnd.setDate(trialEnd.getDate() + TRIAL_DAYS)
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('subscriptions')
       .insert({
         parent_id: parent.id,
@@ -84,7 +109,19 @@ export function SubscriptionPage() {
       })
       .select('*')
       .single()
-    setSubscription(data ?? null)
+    if (error) {
+      // Row-level security refuses with 42501. Anything else is unexpected,
+      // so say something true but general rather than guessing.
+      setCheckoutError(
+        error.code === '42501' ? t('parent.trialAlreadyUsed') : t('parent.trialFailed'),
+      )
+      // Re-read rather than trusting local state: whatever the database
+      // thinks is authoritative, and it just disagreed with us.
+      loadSubscription()
+      setStartingTrial(null)
+      return
+    }
+    setSubscription(data)
     setStartingTrial(null)
   }
 
@@ -115,7 +152,8 @@ export function SubscriptionPage() {
 
   // 'incomplete' is gone: pickCurrentSubscription never surfaces an
   // abandoned checkout, so offering to cancel one is dead code.
-  const isPayingStatus = subscription && ['active', 'past_due'].includes(subscription.status)
+  const isPayingStatus =
+    subscription && ['active', 'past_due'].includes(subscription.status)
 
   return (
     <div>
@@ -202,6 +240,7 @@ export function SubscriptionPage() {
           onIntervalChange={setInterval}
           checkingOut={checkingOut}
           startingTrial={startingTrial}
+          trialUsed={trialUsed}
           onCheckout={checkout}
           onStartTrial={startTrial}
         />
@@ -226,6 +265,7 @@ function PlanChooser({
   onIntervalChange,
   checkingOut,
   startingTrial,
+  trialUsed,
   onCheckout,
   onStartTrial,
 }: {
@@ -234,6 +274,8 @@ function PlanChooser({
   onIntervalChange: (next: BillingInterval) => void
   checkingOut: string | null
   startingTrial: string | null
+  /** Their one trial is spent, so don't offer a second (migration 0064). */
+  trialUsed: boolean
   onCheckout: (planId: string) => void
   onStartTrial: (planId: string) => void
 }) {
@@ -299,16 +341,21 @@ function PlanChooser({
                   ? t('common.loading')
                   : t('parent.subscribeWithPayfast')}
               </Button>
-              <Button
-                className="mt-2 w-full"
-                variant="secondary"
-                disabled={startingTrial === plan.id}
-                onClick={() => onStartTrial(plan.id)}
-              >
-                {startingTrial === plan.id
-                  ? t('common.loading')
-                  : t('parent.startFreeTrial')}
-              </Button>
+              {/* The trial is once per parent. Showing the button to
+                  someone who has already had theirs only sets up a
+                  refusal. */}
+              {!trialUsed && (
+                <Button
+                  className="mt-2 w-full"
+                  variant="secondary"
+                  disabled={startingTrial === plan.id}
+                  onClick={() => onStartTrial(plan.id)}
+                >
+                  {startingTrial === plan.id
+                    ? t('common.loading')
+                    : t('parent.startFreeTrial')}
+                </Button>
+              )}
             </Card>
           )
         })}
