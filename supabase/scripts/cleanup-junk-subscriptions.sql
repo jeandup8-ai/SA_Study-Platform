@@ -1,3 +1,22 @@
+-- ===========================================================================
+-- RUN on 2026-10-13. 9 rows deleted, 7 remain. The unique index at the
+-- bottom is built. DO NOT RUN AGAIN -- it names specific rows, and the ids
+-- below no longer exist.
+--
+-- Kept for the record of what was removed and, more importantly, why the
+-- seven survivors had to survive.
+--
+-- Verified afterwards: 1 active, 4 canceled, 2 trialing (one per parent),
+-- 0 incomplete; all 5 payment_events intact; jeandup8 still entitled via
+-- the active subscription and zyliaduplessis still on their live trial to
+-- 2026-10-15; internal.parent_has_trialed() still true for both, so neither
+-- can mint a second free trial.
+--
+-- info@legendsupplies.co.za is now at zero rows and IS trial-eligible. That
+-- is correct, not a regression: they only ever had abandoned checkouts and
+-- have never taken a trial.
+-- ===========================================================================
+
 -- One-off cleanup of dead subscription rows. NOT a migration: it names
 -- specific rows in this database, so it must not re-run anywhere else.
 --
