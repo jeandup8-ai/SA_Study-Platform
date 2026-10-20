@@ -1,0 +1,5 @@
+{
+  "extends": "./tsconfig.server.json",
+  "compilerOptions": { "noEmit": true, "noUnusedLocals": false },
+  "include": ["server", "shared", "tests"]
+}
