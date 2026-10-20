@@ -163,6 +163,38 @@ describe('preferences validation', () => {
   })
 })
 
+describe('sensitive notes consent', () => {
+  it('refuses to store accessibility/dietary notes without explicit consent', async () => {
+    const c = client(setup().app)
+    const { data } = await c.post('/api/trips', {
+      provider: 'demo',
+      providerPlaceId: 'demo-acc-kestrel-resort',
+    })
+    const refused = await c.put(`/api/trips/${data.id}/preferences`, {
+      ...PREFS,
+      accessibilityNeeds: 'step-free access',
+    })
+    expect(refused.status).toBe(400)
+    expect(refused.data.error.details[0].path).toBe('sensitiveNotesConsent')
+    const ok = await c.put(`/api/trips/${data.id}/preferences`, {
+      ...PREFS,
+      accessibilityNeeds: 'step-free access',
+      sensitiveNotesConsent: true,
+    })
+    expect(ok.status).toBe(200)
+    expect(ok.data.preferences.accessibilityNeeds).toBe('step-free access')
+    // Blank notes need no consent.
+    expect(
+      (
+        await c.put(`/api/trips/${data.id}/preferences`, {
+          ...PREFS,
+          accessibilityNeeds: '  ',
+        })
+      ).status,
+    ).toBe(200)
+  })
+})
+
 describe('50 km radius enforcement', () => {
   it('keeps only places within 50 km and reports what was rejected', async () => {
     const c = client(setup().app)
@@ -702,5 +734,31 @@ describe('sample guide', () => {
     expect(
       r.data.issues.filter((i: { severity: string }) => i.severity === 'error'),
     ).toEqual([])
+  })
+})
+
+describe('rate limiting', () => {
+  it('limits expensive endpoints per client (default limits)', async () => {
+    const c = client(setup().app)
+    const { id } = await readyTrip(c) // uses 1 discovery
+    const statuses: number[] = []
+    for (let i = 0; i < 13; i++)
+      statuses.push((await c.post(`/api/trips/${id}/discover`, {})).status)
+    expect(statuses.filter((s) => s === 200)).toHaveLength(11)
+    const limited = await c.post(`/api/trips/${id}/discover`, {})
+    expect(limited.status).toBe(429)
+    expect(limited.headers.get('retry-after')).toMatch(/^\d+$/)
+  })
+})
+
+describe('retention', () => {
+  it('deletes inactive trips and keeps recent ones', async () => {
+    const { app, store } = setup()
+    const { id } = await readyTrip(client(app))
+    expect(await store.deleteInactiveTrips('2000-01-01T00:00:00Z')).toBe(0)
+    expect(
+      await store.deleteInactiveTrips(new Date(Date.now() + 1000).toISOString()),
+    ).toBe(1)
+    expect(await store.getTrip(id)).toBeNull()
   })
 })

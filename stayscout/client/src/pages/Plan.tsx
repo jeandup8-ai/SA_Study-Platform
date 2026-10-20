@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import type { AccommodationCandidate } from '../../../shared/types'
 import { api } from '../api'
 import { AccommodationSearch } from '../components/AccommodationSearch'
-import { ErrorNotice, useNoIndex, usePageTitle, useStatus } from '../components/ui'
+import { ErrorNotice } from '../components/ui'
+import { useNoIndex, usePageTitle, useStatus } from '../lib'
 
 export function Plan() {
   usePageTitle('Plan my stay')

@@ -105,7 +105,9 @@ export const api = {
   unshare: (id: string) => call<void>('DELETE', `/api/trips/${id}/share`),
   shared: (token: string) => call<TripView>('GET', `/api/shared/${token}`),
   checkout: (id: string) =>
-    call<{ orderId: string }>('POST', `/api/trips/${id}/checkout`, {}),
+    call<{ orderId: string }>('POST', `/api/trips/${id}/checkout`, {
+      acknowledgeImmediateSupply: true,
+    }),
   capture: (id: string, orderId: string) =>
     call<{
       status: 'paid' | 'pending' | 'awaiting_approval' | 'failed'

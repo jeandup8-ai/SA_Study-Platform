@@ -48,6 +48,12 @@ export class MemoryStore implements Store {
     for (const o of this.orders.values()) if (o.tripId === id) o.tripId = null
   }
 
+  async deleteInactiveTrips(before: string) {
+    const stale = [...this.trips.values()].filter((t) => t.updatedAt < before)
+    for (const t of stale) await this.deleteTrip(t.id)
+    return stale.length
+  }
+
   async findTripByShareHash(hash: string) {
     for (const t of this.trips.values())
       if (t.shareTokenHash === hash) return structuredClone(t)

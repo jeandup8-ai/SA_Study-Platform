@@ -13,7 +13,11 @@ describe.skipIf(!url)('PostgresStore', () => {
     await store.pool.query(
       'drop table if exists orders, trip_places, trips, schema_migrations cascade',
     )
-    expect(await store.migrate()).toEqual(['001_init', '002_keep_orders_add_refunded'])
+    expect(await store.migrate()).toEqual([
+      '001_init',
+      '002_keep_orders_add_refunded',
+      '003_order_waiver_acknowledgement',
+    ])
     expect(await store.migrate()).toEqual([]) // idempotent
   })
   afterAll(async () => {
@@ -69,6 +73,7 @@ describe.skipIf(!url)('PostgresStore', () => {
       currency: 'USD',
       status: 'created' as const,
       captureId: null,
+      waiverAcknowledgedAt: null,
       createdAt: now,
       updatedAt: now,
     }
@@ -102,5 +107,14 @@ describe.skipIf(!url)('PostgresStore', () => {
     const next = { ...trip.itinerary!, version: v + 1 }
     expect(await store.saveItinerary(id, next, v, now)).not.toBeNull()
     expect(await store.saveItinerary(id, { ...next, version: v + 2 }, v, now)).toBeNull()
+  })
+
+  it('retention deletes only trips untouched since the cutoff', async () => {
+    const { app } = setup({ store })
+    const { id } = await readyTrip(client(app))
+    expect(await store.deleteInactiveTrips('2000-01-01T00:00:00Z')).toBe(0)
+    expect(await store.getTrip(id)).not.toBeNull()
+    await store.deleteInactiveTrips(new Date(Date.now() + 1000).toISOString())
+    expect(await store.getTrip(id)).toBeNull()
   })
 })

@@ -139,8 +139,8 @@ export function safeExternalUrl(value: unknown): string | null {
 /** Strips control characters and trims provider-supplied text to a sane length. */
 export function cleanText(value: unknown, max = 200): string | null {
   if (typeof value !== 'string') return null
-  // oxlint-disable-next-line no-control-regex
   const s = value
+    // oxlint-disable-next-line no-control-regex -- stripping control characters is the point
     .replace(/[\u0000-\u001f\u007f]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()

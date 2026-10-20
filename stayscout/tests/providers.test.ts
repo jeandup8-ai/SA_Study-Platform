@@ -525,6 +525,7 @@ describe('Anthropic AI provider', () => {
     pace: 'balanced',
     accessibilityNeeds: null,
     dietaryPreferences: null,
+    sensitiveNotesConsent: false,
     settingPreference: 'no_preference',
     language: 'en',
   }
@@ -663,5 +664,31 @@ describe('PayPal webhook verification', () => {
       }),
     ).toBeNull()
     expect(webhookOrderId(null)).toBeNull()
+  })
+})
+
+describe('sensitive notes', () => {
+  it('never sends accessibility or dietary notes to the AI provider', () => {
+    const msg = buildUserMessage({
+      preferences: {
+        checkIn: '2026-12-10',
+        checkOut: '2026-12-12',
+        adults: 1,
+        childAgeRanges: [],
+        tripType: 'general',
+        budget: null,
+        transport: 'taxi',
+        interests: [],
+        pace: 'balanced',
+        accessibilityNeeds: 'wheelchair user, epilepsy',
+        dietaryPreferences: 'halal',
+        sensitiveNotesConsent: true,
+        settingPreference: 'no_preference',
+        language: 'en',
+      },
+      dates: ['2026-12-10'],
+      places: [],
+    })
+    expect(msg).not.toMatch(/wheelchair|epilepsy|halal|accessibility|dietary/i)
   })
 })

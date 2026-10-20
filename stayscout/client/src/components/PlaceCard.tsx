@@ -1,57 +1,8 @@
 import { useState } from 'react'
 import { formatDistance } from '../../../shared/geo'
 import type { TripPlace } from '../../../shared/types'
+import { CATEGORY_LABEL, directionsUrl, hoursText, priceText } from '../lib'
 import { SampleTag, VerificationBadge } from './ui'
-
-export const CATEGORY_LABEL: Record<string, string> = {
-  nature: 'Nature & viewpoints',
-  beach: 'Beaches & swimming',
-  park: 'Parks & gardens',
-  wildlife: 'Wildlife',
-  culture: 'Museums, history & culture',
-  tour: 'Tours & experiences',
-  food: 'Food & drink',
-  family: 'Family & children',
-  shopping: 'Shopping & markets',
-  adventure: 'Adventure & sport',
-  wellness: 'Wellness',
-  rainy_day: 'Rainy-day',
-  practical: 'Practical services',
-}
-
-const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-const PRICE_LABEL: Record<string, string> = {
-  free: 'Free',
-  low: '$',
-  moderate: '$$',
-  high: '$$$',
-  very_high: '$$$$',
-}
-
-export function priceText(p: TripPlace): string {
-  if (!p.price) return 'Price not verified'
-  const { amount, level } = p.price.value
-  if (amount)
-    return `${amount.currency} ${amount.min}${amount.max !== amount.min ? `–${amount.max}` : ''} pp`
-  return level ? PRICE_LABEL[level]! : 'Price not verified'
-}
-
-export function hoursText(p: TripPlace): string {
-  if (!p.openingHours) return 'Opening hours not verified'
-  const byDay = DAYS.map((d, i) => {
-    const h = p.openingHours!.value.filter((x) => x.day === i)
-    return `${d} ${h.length ? h.map((x) => `${x.open}–${x.close}`).join(', ') : 'closed'}`
-  })
-  return byDay.join(' · ')
-}
-
-export function directionsUrl(p: TripPlace): string | null {
-  if (p.isSample) return null
-  return (
-    p.mapsUrl ??
-    `https://www.openstreetmap.org/directions?to=${p.location.lat}%2C${p.location.lng}`
-  )
-}
 
 interface Props {
   place: TripPlace

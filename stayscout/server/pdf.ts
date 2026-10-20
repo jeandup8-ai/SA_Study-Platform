@@ -1,6 +1,10 @@
 // PDF guide. Rendered only from a saved itinerary that has just passed
 // validation (see TripService.exportableView) — never from a fresh AI call.
 
+import { readFileSync } from 'node:fs'
+import { createRequire } from 'node:module'
+import path from 'node:path'
+import * as fontkit from 'fontkit'
 import PDFDocument from 'pdfkit'
 import { formatDistance } from '../shared/geo.js'
 import type {
@@ -26,23 +30,29 @@ const STATUS_LABEL: Record<VerificationStatus, string> = {
   UNAVAILABLE: 'could not be checked',
 }
 
-// The built-in PDF fonts cover Windows-1252 only. Map common typography and
-// replace anything else rather than emitting garbage glyphs.
-const WINANSI_EXTRA = new Set('€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ')
+// Embedded DejaVu fonts (Bitstream Vera licence: free to embed and
+// redistribute) cover Latin, Greek, Cyrillic and many other scripts. Any
+// character they lack (e.g. Chinese, Japanese, Korean) becomes "?" rather
+// than an empty box. pdfkit does not do right-to-left shaping, so Arabic and
+// Hebrew names print in the right glyphs but not in the right order.
+const fontDir = path.join(
+  path.dirname(createRequire(import.meta.url).resolve('dejavu-fonts-ttf/package.json')),
+  'ttf',
+)
+const FONTS = {
+  Body: readFileSync(path.join(fontDir, 'DejaVuSans.ttf')),
+  Bold: readFileSync(path.join(fontDir, 'DejaVuSans-Bold.ttf')),
+  Heading: readFileSync(path.join(fontDir, 'DejaVuSerif-Bold.ttf')),
+}
+const bodyGlyphs = fontkit.create(FONTS.Body) as {
+  hasGlyphForCodePoint(cp: number): boolean
+}
+
 export function pdfSafe(s: string): string {
   let out = ''
   for (const ch of s.normalize('NFC')) {
-    const code = ch.codePointAt(0)!
-    if (
-      (code >= 0x20 && code <= 0x7e) ||
-      (code >= 0xa0 && code <= 0xff) ||
-      WINANSI_EXTRA.has(ch)
-    )
-      out += ch
-    else if (ch === '\n') out += ch
-    else if (ch === '→') out += '->'
-    else if (ch === '≈') out += '~'
-    else out += '?'
+    const cp = ch.codePointAt(0)!
+    out += ch === '\n' || (cp >= 0x20 && bodyGlyphs.hasGlyphForCodePoint(cp)) ? ch : '?'
   }
   return out
 }
@@ -59,6 +69,7 @@ export function renderGuidePdf(
       Author: 'StayScout',
     },
   })
+  for (const [name, data] of Object.entries(FONTS)) doc.registerFont(name, data)
   const chunks: Buffer[] = []
   doc.on('data', (c: Buffer) => chunks.push(c))
   const done = new Promise<Buffer>((resolve, reject) => {
@@ -73,11 +84,11 @@ export function renderGuidePdf(
   const text = (s: string, opts: PDFKit.Mixins.TextOptions = {}) =>
     doc.text(pdfSafe(s), opts)
 
-  doc.fillColor(ACCENT).font('Helvetica-Bold').fontSize(10).text('STAYSCOUT')
+  doc.fillColor(ACCENT).font('Bold').fontSize(10).text('STAYSCOUT')
   doc.moveDown(0.3)
-  doc.fillColor(INK).font('Times-Bold').fontSize(24)
+  doc.fillColor(INK).font('Heading').fontSize(24)
   text(`Your stay at ${a.name}`)
-  doc.font('Helvetica').fontSize(10).fillColor(MUTED)
+  doc.font('Body').fontSize(10).fillColor(MUTED)
   if (prefs)
     text(
       `${prefs.checkIn} to ${prefs.checkOut} · ${prefs.adults} adult${prefs.adults === 1 ? '' : 's'}${prefs.childAgeRanges.length ? ` · ${prefs.childAgeRanges.length} child${prefs.childAgeRanges.length === 1 ? '' : 'ren'}` : ''}`,
@@ -89,26 +100,26 @@ export function renderGuidePdf(
   doc.moveDown(0.6)
 
   if (a.isSample) {
-    doc.fillColor(WARN).font('Helvetica-Bold')
+    doc.fillColor(WARN).font('Bold')
     text(
       'SAMPLE DATA: this guide uses a fictional destination and fictional places for demonstration only.',
     )
     doc.moveDown(0.4)
   }
-  doc.fillColor(ACCENT).font('Helvetica-Bold').fontSize(10)
+  doc.fillColor(ACCENT).font('Bold').fontSize(10)
   text(RADIUS_NOTICE)
   doc.moveDown(0.8)
 
   for (const w of itin.warnings) {
-    doc.fillColor(WARN).font('Helvetica').fontSize(9)
+    doc.fillColor(WARN).font('Body').fontSize(9)
     text(`Note: ${w}`)
   }
 
   for (const day of itin.days) {
     doc.moveDown(0.8)
-    doc.fillColor(INK).font('Times-Bold').fontSize(15)
+    doc.fillColor(INK).font('Heading').fontSize(15)
     text(`${day.label} — ${day.date}`)
-    doc.font('Helvetica').fontSize(9).fillColor(MUTED)
+    doc.font('Body').fontSize(9).fillColor(MUTED)
     const cost = day.estimatedCost
     text(
       cost
@@ -119,9 +130,9 @@ export function renderGuidePdf(
     doc.moveDown(0.3)
     for (const item of day.items) {
       const place = item.placeId ? byId.get(item.placeId) : undefined
-      doc.fillColor(INK).font('Helvetica-Bold').fontSize(11)
+      doc.fillColor(INK).font('Bold').fontSize(11)
       text(`${item.startTime}  ${item.title}  (${item.durationMinutes} min, estimated)`)
-      doc.font('Helvetica').fontSize(9).fillColor(MUTED)
+      doc.font('Body').fontSize(9).fillColor(MUTED)
       if (place) placeLines(place).forEach((l) => text(l, { indent: 36 }))
       if (item.travelMinutesEstimate)
         text(
@@ -134,14 +145,14 @@ export function renderGuidePdf(
   }
 
   doc.addPage()
-  doc.fillColor(INK).font('Times-Bold').fontSize(16)
+  doc.fillColor(INK).font('Heading').fontSize(16)
   text('Safety information')
-  doc.font('Helvetica').fontSize(9).fillColor(MUTED)
+  doc.font('Body').fontSize(9).fillColor(MUTED)
   if (safety) {
     for (const e of safety.entries) {
-      doc.font('Helvetica-Bold').fillColor(INK)
+      doc.font('Bold').fillColor(INK)
       text(e.title)
-      doc.font('Helvetica').fillColor(MUTED)
+      doc.font('Body').fillColor(MUTED)
       text(e.summary)
       if (e.source?.url)
         text(
@@ -161,9 +172,9 @@ export function renderGuidePdf(
   }
 
   doc.moveDown(1)
-  doc.fillColor(INK).font('Times-Bold').fontSize(16)
+  doc.fillColor(INK).font('Heading').fontSize(16)
   text('About this data')
-  doc.font('Helvetica').fontSize(9).fillColor(MUTED)
+  doc.font('Body').fontSize(9).fillColor(MUTED)
   text(
     'Distances are straight-line (great-circle) from your confirmed stay. Visit durations and travel times are estimates. Opening hours and prices are shown with their source and may have changed — confirm with each venue. Nothing in this guide has been booked.',
   )

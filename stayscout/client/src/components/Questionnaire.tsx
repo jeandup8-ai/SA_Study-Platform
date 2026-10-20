@@ -49,7 +49,7 @@ const STEP_FIELDS: string[][] = [
   ['checkIn', 'checkOut', 'adults', 'childAgeRanges'],
   ['tripType', 'budget', 'transport', 'pace'],
   ['interests', 'settingPreference'],
-  ['accessibilityNeeds', 'dietaryPreferences', 'language'],
+  ['accessibilityNeeds', 'dietaryPreferences', 'sensitiveNotesConsent', 'language'],
 ]
 
 const isoToday = (offset = 0) =>
@@ -75,6 +75,7 @@ function initial(
         interests: [],
         pace: 'balanced',
         accessibilityNeeds: '',
+        sensitiveNotesConsent: false,
         dietaryPreferences: '',
         settingPreference: 'no_preference',
         language: 'en',
@@ -184,6 +185,7 @@ export function Questionnaire({
             </label>
             <input
               id="checkIn"
+              aria-invalid={Boolean(errors.checkIn)}
               type="date"
               className="field"
               value={form.checkIn}
@@ -198,6 +200,7 @@ export function Questionnaire({
             </label>
             <input
               id="checkOut"
+              aria-invalid={Boolean(errors.checkOut)}
               type="date"
               className="field"
               value={form.checkOut}
@@ -217,6 +220,7 @@ export function Questionnaire({
             </label>
             <input
               id="adults"
+              aria-invalid={Boolean(errors.adults)}
               type="number"
               min={1}
               max={20}
@@ -292,6 +296,7 @@ export function Questionnaire({
             <div className="flex gap-2">
               <input
                 id="budget"
+                aria-invalid={Boolean(errors.budget)}
                 inputMode="decimal"
                 className="field"
                 value={budgetText}
@@ -314,7 +319,7 @@ export function Questionnaire({
           </div>
           <fieldset>
             <legend className="field-label">Pace</legend>
-            <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Pace">
+            <div className="flex flex-wrap gap-2">
               {(
                 [
                   ['relaxed', 'Relaxed · 1 a day'],
@@ -325,9 +330,8 @@ export function Questionnaire({
                 <button
                   key={v}
                   type="button"
-                  role="radio"
                   className="chip"
-                  aria-checked={form.pace === v}
+                  aria-pressed={form.pace === v}
                   onClick={() => set('pace', v)}
                 >
                   {l}
@@ -358,11 +362,7 @@ export function Questionnaire({
           </fieldset>
           <fieldset>
             <legend className="field-label">Indoors or outdoors?</legend>
-            <div
-              className="flex flex-wrap gap-2"
-              role="radiogroup"
-              aria-label="Indoors or outdoors"
-            >
+            <div className="flex flex-wrap gap-2">
               {(
                 [
                   ['no_preference', 'No preference'],
@@ -373,9 +373,8 @@ export function Questionnaire({
                 <button
                   key={v}
                   type="button"
-                  role="radio"
                   className="chip"
-                  aria-checked={form.settingPreference === v}
+                  aria-pressed={form.settingPreference === v}
                   onClick={() => set('settingPreference', v)}
                 >
                   {l}
@@ -416,6 +415,30 @@ export function Questionnaire({
               onChange={(e) => set('dietaryPreferences', e.target.value)}
             />
           </div>
+          {(form.accessibilityNeeds?.trim() || form.dietaryPreferences?.trim()) && (
+            <div className="rounded-xl bg-sand p-4 sm:col-span-2">
+              <label className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  className="mt-1 h-5 w-5 shrink-0"
+                  checked={form.sensitiveNotesConsent ?? false}
+                  onChange={(e) => set('sensitiveNotesConsent', e.target.checked)}
+                  aria-invalid={Boolean(errors.sensitiveNotesConsent)}
+                  aria-describedby="notes-consent-help"
+                />
+                <span>
+                  Save these notes with my trip. They can say something about health or
+                  beliefs, so we keep them only to show alongside your plan; they are
+                  never sent to our AI planner or included in share links, and are deleted
+                  with your trip.
+                </span>
+              </label>
+              <p id="notes-consent-help" className="mt-2 text-sm text-muted">
+                You can untick this and clear the notes at any time.
+              </p>
+              {err('sensitiveNotesConsent')}
+            </div>
+          )}
           <div>
             <label className="field-label" htmlFor="language">
               Language

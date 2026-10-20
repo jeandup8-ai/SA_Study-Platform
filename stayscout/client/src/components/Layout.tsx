@@ -1,5 +1,6 @@
 import { Link, NavLink, Outlet } from 'react-router-dom'
-import { RingIcon, useStatus } from './ui'
+import { useStatus } from '../lib'
+import { RingIcon } from './ui'
 
 export function Layout() {
   const status = useStatus()

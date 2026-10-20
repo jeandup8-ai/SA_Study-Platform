@@ -73,6 +73,11 @@ export const preferencesSchema = z
     pace: z.enum(['relaxed', 'balanced', 'packed']).default('balanced'),
     accessibilityNeeds: optionalText,
     dietaryPreferences: optionalText,
+    /**
+     * Explicit consent to store the two notes above, which can reveal health
+     * or religious information (special-category data under GDPR/POPIA).
+     */
+    sensitiveNotesConsent: z.boolean().default(false),
     settingPreference: z
       .enum(['indoor', 'outdoor', 'no_preference'])
       .default('no_preference'),
@@ -82,6 +87,13 @@ export const preferencesSchema = z
       .default('en'),
   })
   .superRefine((p, ctx) => {
+    if ((p.accessibilityNeeds || p.dietaryPreferences) && !p.sensitiveNotesConsent) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['sensitiveNotesConsent'],
+        message: 'Tick the box to let us save these notes, or leave them blank.',
+      })
+    }
     const nights = nightsBetween(p.checkIn, p.checkOut)
     if (nights < 1) {
       ctx.addIssue({

@@ -38,6 +38,11 @@ export interface OrderRow {
   currency: string
   status: OrderStatus
   captureId: string | null
+  /**
+   * When the buyer asked for immediate access and acknowledged losing the
+   * 14-day cancellation right (EU/UK consumer law for digital content).
+   */
+  waiverAcknowledgedAt: string | null
   createdAt: string
   updatedAt: string
 }
@@ -58,6 +63,8 @@ export interface Store {
   /** Deletes the trip and its places; its orders are kept, detached from it. */
   deleteTrip(id: string): Promise<void>
   findTripByShareHash(hash: string): Promise<TripRow | null>
+  /** Deletes trips not updated since `before` (orders are kept, detached). Returns the count. */
+  deleteInactiveTrips(before: string): Promise<number>
 
   getPlaces(tripId: string): Promise<PlaceRow[]>
   /** Replaces the trip's place records; selections survive for ids that remain. */

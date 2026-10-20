@@ -73,7 +73,10 @@ describe('payments', () => {
       reason: 'payments_not_configured',
       lockedDays: 0,
     })
-    expect((await c.post(`/api/trips/${id}/checkout`, {})).status).toBe(409)
+    expect(
+      (await c.post(`/api/trips/${id}/checkout`, { acknowledgeImmediateSupply: true }))
+        .status,
+    ).toBe(409)
   })
 
   it('with payments on, the server withholds later days and the PDF until paid', async () => {
@@ -109,7 +112,9 @@ describe('payments', () => {
     })
     const c = client(setup({ payments: provider }).app)
     const id = await generatedTrip(c)
-    const { data } = await c.post(`/api/trips/${id}/checkout`, {})
+    const { data } = await c.post(`/api/trips/${id}/checkout`, {
+      acknowledgeImmediateSupply: true,
+    })
     const r = await c.post(`/api/trips/${id}/checkout/capture`, { orderId: data.orderId })
     expect(r.data.status).toBe('awaiting_approval')
     expect((await c.get(`/api/trips/${id}`)).data.entitlement.fullGuide).toBe(false)
@@ -120,7 +125,9 @@ describe('payments', () => {
     state.capture = (orderId) => completed(orderId)
     const c = client(setup({ payments: provider }).app)
     const id = await generatedTrip(c)
-    const { data } = await c.post(`/api/trips/${id}/checkout`, {})
+    const { data } = await c.post(`/api/trips/${id}/checkout`, {
+      acknowledgeImmediateSupply: true,
+    })
     const results = await Promise.all(
       [1, 2, 3].map(() =>
         c.post(`/api/trips/${id}/checkout/capture`, { orderId: data.orderId }),
@@ -136,7 +143,10 @@ describe('payments', () => {
     expect(v.data.entitlement).toMatchObject({ fullGuide: true, reason: 'paid' })
     expect(v.data.itinerary.days).toHaveLength(5)
     expect((await c.get(`/api/trips/${id}/guide.pdf`)).status).toBe(200)
-    expect((await c.post(`/api/trips/${id}/checkout`, {})).status).toBe(409)
+    expect(
+      (await c.post(`/api/trips/${id}/checkout`, { acknowledgeImmediateSupply: true }))
+        .status,
+    ).toBe(409)
   })
 
   it('a wrong amount, currency or guide id does not unlock', async () => {
@@ -149,7 +159,9 @@ describe('payments', () => {
       state.capture = (orderId) => completed(orderId, over)
       const c = client(setup({ payments: provider }).app)
       const id = await generatedTrip(c)
-      const { data } = await c.post(`/api/trips/${id}/checkout`, {})
+      const { data } = await c.post(`/api/trips/${id}/checkout`, {
+        acknowledgeImmediateSupply: true,
+      })
       const r = await c.post(`/api/trips/${id}/checkout/capture`, {
         orderId: data.orderId,
       })
@@ -164,7 +176,9 @@ describe('payments', () => {
       state.capture = (orderId) => completed(orderId, { captureStatus })
       const c = client(setup({ payments: provider }).app)
       const id = await generatedTrip(c)
-      const { data } = await c.post(`/api/trips/${id}/checkout`, {})
+      const { data } = await c.post(`/api/trips/${id}/checkout`, {
+        acknowledgeImmediateSupply: true,
+      })
       const r = await c.post(`/api/trips/${id}/checkout/capture`, {
         orderId: data.orderId,
       })
@@ -181,7 +195,9 @@ describe('payments', () => {
     const b = client(app)
     const idA = await generatedTrip(a)
     const idB = await generatedTrip(b)
-    const { data } = await a.post(`/api/trips/${idA}/checkout`, {})
+    const { data } = await a.post(`/api/trips/${idA}/checkout`, {
+      acknowledgeImmediateSupply: true,
+    })
     const r = await b.post(`/api/trips/${idB}/checkout/capture`, {
       orderId: data.orderId,
     })
@@ -196,7 +212,9 @@ describe('payments', () => {
     }
     const c = client(setup({ payments: provider }).app)
     const id = await generatedTrip(c)
-    const r = await c.post(`/api/trips/${id}/checkout`, {})
+    const r = await c.post(`/api/trips/${id}/checkout`, {
+      acknowledgeImmediateSupply: true,
+    })
     expect(r.status).toBe(503)
     expect(r.data.error.message).toMatch(/not been charged/)
   })
@@ -207,7 +225,9 @@ describe('payments', () => {
     let clock = new Date('2026-12-01T10:00:00Z')
     const c = client(setup({ payments: provider, now: () => clock }).app)
     const id = await generatedTrip(c)
-    const { data } = await c.post(`/api/trips/${id}/checkout`, {})
+    const { data } = await c.post(`/api/trips/${id}/checkout`, {
+      acknowledgeImmediateSupply: true,
+    })
     expect(
       (await c.post(`/api/trips/${id}/checkout/capture`, { orderId: data.orderId })).data
         .status,
@@ -255,7 +275,9 @@ describe('payments', () => {
     const { app, store } = setup({ payments: provider })
     const c = client(app)
     const id = await generatedTrip(c)
-    const { data } = await c.post(`/api/trips/${id}/checkout`, {})
+    const { data } = await c.post(`/api/trips/${id}/checkout`, {
+      acknowledgeImmediateSupply: true,
+    })
     await c.post(`/api/trips/${id}/checkout/capture`, { orderId: data.orderId })
     expect((await c.del(`/api/trips/${id}`)).status).toBe(204)
     const kept = await store.getOrderByProviderId('paypal', data.orderId)
@@ -296,7 +318,9 @@ describe('PayPal webhook', () => {
     state.capture = (orderId) => completed(orderId, { captureStatus: 'PENDING' })
     const c = client(app)
     const id = await generatedTrip(c)
-    const { data } = await c.post(`/api/trips/${id}/checkout`, {})
+    const { data } = await c.post(`/api/trips/${id}/checkout`, {
+      acknowledgeImmediateSupply: true,
+    })
     await c.post(`/api/trips/${id}/checkout/capture`, { orderId: data.orderId })
     return { c, id, orderId: data.orderId as string }
   }
@@ -346,7 +370,9 @@ describe('PayPal webhook', () => {
     state.capture = (o) => completed(o)
     const c = client(app)
     const id = await generatedTrip(c)
-    const { data } = await c.post(`/api/trips/${id}/checkout`, {})
+    const { data } = await c.post(`/api/trips/${id}/checkout`, {
+      acknowledgeImmediateSupply: true,
+    })
     await c.post(`/api/trips/${id}/checkout/capture`, { orderId: data.orderId })
     expect((await c.get(`/api/trips/${id}`)).data.entitlement.fullGuide).toBe(true)
     state.order = (o) => completed(o, { captureStatus: 'REFUNDED' })
@@ -366,5 +392,22 @@ describe('PayPal webhook', () => {
     const { app } = setup({ payments: provider, config: { PAYPAL_WEBHOOK_ID: 'WH-1' } })
     const r = await post(app, event('PAYMENT.CAPTURE.COMPLETED', 'UNKNOWN123'))
     expect(await r.json()).toEqual({ handled: false })
+  })
+})
+
+describe('cancellation-right acknowledgement', () => {
+  it('refuses checkout without it and records when it was given', async () => {
+    const { provider } = fakePayments()
+    const { app, store } = setup({ payments: provider })
+    const c = client(app)
+    const id = await generatedTrip(c)
+    const refused = await c.post(`/api/trips/${id}/checkout`, {})
+    expect(refused.status).toBe(400)
+    expect(refused.data.error.code).toBe('acknowledgement_required')
+    const { data } = await c.post(`/api/trips/${id}/checkout`, {
+      acknowledgeImmediateSupply: true,
+    })
+    const order = await store.getOrderByProviderId('paypal', data.orderId)
+    expect(order?.waiverAcknowledgedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/)
   })
 })

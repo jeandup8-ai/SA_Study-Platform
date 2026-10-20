@@ -37,6 +37,7 @@ function toOrder(r: Row): OrderRow {
     currency: String(r.currency),
     status: r.status as OrderStatus,
     captureId: (r.capture_id as string | null) ?? null,
+    waiverAcknowledgedAt: r.waiver_acknowledged_at ? iso(r.waiver_acknowledged_at) : null,
     createdAt: iso(r.created_at),
     updatedAt: iso(r.updated_at),
   }
@@ -148,6 +149,14 @@ export class PostgresStore implements Store {
     await this.pool.query('delete from trips where id = $1', [id])
   }
 
+  async deleteInactiveTrips(before: string) {
+    const { rowCount } = await this.pool.query(
+      'delete from trips where updated_at < $1',
+      [before],
+    )
+    return rowCount ?? 0
+  }
+
   async findTripByShareHash(hash: string) {
     const { rows } = await this.pool.query(
       'select * from trips where share_token_hash = $1',
@@ -225,8 +234,8 @@ export class PostgresStore implements Store {
 
   async createOrder(o: OrderRow) {
     await this.pool.query(
-      `insert into orders (id, trip_id, provider, provider_order_id, amount, currency, status, capture_id, created_at, updated_at)
-       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
+      `insert into orders (id, trip_id, provider, provider_order_id, amount, currency, status, capture_id, created_at, updated_at, waiver_acknowledged_at)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
       [
         o.id,
         o.tripId,
@@ -238,6 +247,7 @@ export class PostgresStore implements Store {
         o.captureId,
         o.createdAt,
         o.updatedAt,
+        o.waiverAcknowledgedAt,
       ],
     )
   }

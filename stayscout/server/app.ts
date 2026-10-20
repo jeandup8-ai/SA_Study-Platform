@@ -50,9 +50,9 @@ export function createApp({ config, service, store, clientIp }: AppOptions) {
     ((c: Context) =>
       config.TRUST_PROXY === 'true' ? (forwardedClientIp(c) ?? 'unknown') : 'local')
   const limiters = {
-    general: new RateLimiter(300, 60_000),
-    search: new RateLimiter(30, 60_000),
-    expensive: new RateLimiter(12, 60_000),
+    general: new RateLimiter(300 * config.RATE_LIMIT_MULTIPLIER, 60_000),
+    search: new RateLimiter(30 * config.RATE_LIMIT_MULTIPLIER, 60_000),
+    expensive: new RateLimiter(12 * config.RATE_LIMIT_MULTIPLIER, 60_000),
   }
   const limit = (c: Context, kind: keyof typeof limiters) => {
     const wait = limiters[kind].check(`${kind}:${ipOf(c)}`)
@@ -331,7 +331,12 @@ export function createApp({ config, service, store, clientIp }: AppOptions) {
 
   app.post('/api/trips/:id/checkout', async (c) => {
     limit(c, 'expensive')
-    return c.json(await service.createCheckout(await ownedTrip(c)))
+    const trip = await ownedTrip(c)
+    const { acknowledgeImmediateSupply } = await body(
+      c,
+      z.object({ acknowledgeImmediateSupply: z.boolean().default(false) }),
+    )
+    return c.json(await service.createCheckout(trip, acknowledgeImmediateSupply))
   })
 
   app.post('/api/trips/:id/checkout/capture', async (c) => {
@@ -399,8 +404,8 @@ export const SECURITY_HEADERS: Record<string, string> = {
     'frame-src https://www.paypal.com https://www.sandbox.paypal.com',
     "connect-src 'self' https://www.paypal.com https://www.sandbox.paypal.com",
     "img-src 'self' data: https://www.paypalobjects.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-    'font-src https://fonts.gstatic.com',
+    "style-src 'self' 'unsafe-inline'",
+    "font-src 'self'",
     "frame-ancestors 'none'",
     "base-uri 'self'",
     "form-action 'self'",

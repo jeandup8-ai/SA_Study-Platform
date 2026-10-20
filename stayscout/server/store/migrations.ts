@@ -77,4 +77,10 @@ alter table orders add constraint orders_status_check
 create index if not exists orders_capture_idx on orders (provider, capture_id);
 `,
   },
+  {
+    // Evidence that the buyer requested immediate supply of the digital guide
+    // and acknowledged losing the 14-day cancellation right.
+    name: '003_order_waiver_acknowledgement',
+    sql: `alter table orders add column if not exists waiver_acknowledged_at timestamptz;`,
+  },
 ]

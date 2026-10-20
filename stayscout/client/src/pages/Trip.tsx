@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import type { PreferencesInput } from '../../../shared/schemas'
 import type {
@@ -12,7 +12,8 @@ import { api, ApiError } from '../api'
 import { AccommodationSearch } from '../components/AccommodationSearch'
 import { GuideView, SafetyPanelView } from '../components/GuideView'
 import { PayPalCheckout } from '../components/PayPalCheckout'
-import { CATEGORY_LABEL, PlaceCard } from '../components/PlaceCard'
+import { PlaceCard } from '../components/PlaceCard'
+import { CATEGORY_LABEL, useNoIndex, usePageTitle, useStatus } from '../lib'
 import { Questionnaire } from '../components/Questionnaire'
 import { RadiusMap } from '../components/RadiusMap'
 import {
@@ -21,9 +22,6 @@ import {
   RadiusNotice,
   SampleBanner,
   Spinner,
-  useNoIndex,
-  usePageTitle,
-  useStatus,
 } from '../components/ui'
 
 type Step = 'stay' | 'prefs' | 'discover' | 'plan'
@@ -53,23 +51,49 @@ export function Trip() {
   usePageTitle(trip?.accommodation?.name ?? 'Your trip')
 
   const load = useCallback(async () => {
-    setLoadError(null)
     try {
       setTrip(await api.getTrip(id))
+      setLoadError(null)
     } catch (err) {
       setLoadError(err)
     }
   }, [id])
   useEffect(() => {
-    void load()
-  }, [load])
+    // Ignore a response for a trip id we've since navigated away from.
+    let current = true
+    api.getTrip(id).then(
+      (t) => {
+        if (!current) return
+        setTrip(t)
+        setLoadError(null)
+      },
+      (err) => current && setLoadError(err),
+    )
+    return () => {
+      current = false
+    }
+  }, [id])
 
   const step: Step =
     (params.get('step') as Step | null) ?? (trip ? defaultStep(trip) : 'stay')
+  // After a step change the control that was focused is gone; once the new
+  // step has rendered, move focus to its heading for keyboard and
+  // screen-reader users.
+  const focusStep = useRef(false)
+  useEffect(() => {
+    if (!focusStep.current) return
+    focusStep.current = false
+    const h = document.querySelector<HTMLElement>('#step-content :is(h1, h2)')
+    if (!h) return
+    h.setAttribute('tabindex', '-1')
+    h.focus({ preventScroll: true })
+  }, [step])
+
   const go = (s: Step) => {
     setParams({ step: s })
     setError(null)
     window.scrollTo({ top: 0 })
+    focusStep.current = true
   }
 
   /** Runs an action, keeping busy/error state; returns the new trip if any. */
@@ -161,7 +185,7 @@ export function Trip() {
         </div>
       ) : null}
 
-      <div className="mt-6 fade-in" key={step}>
+      <div id="step-content" className="mt-6 fade-in" key={step}>
         {step === 'stay' && (
           <StayStep
             trip={trip}
@@ -758,6 +782,7 @@ function PlanStep({
   const navigate = useNavigate()
   const [safety, setSafety] = useState<SafetyPanel | null | undefined>(undefined)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [waiver, setWaiver] = useState(false)
 
   useEffect(() => {
     api.safety(trip.id).then(setSafety, () => setSafety(null))
@@ -870,12 +895,32 @@ function PlanStep({
                 , one-time.
               </p>
               {pay?.clientId ? (
-                <PayPalCheckout
-                  tripId={trip.id}
-                  clientId={pay.clientId}
-                  price={pay.price}
-                  onPaid={refresh}
-                />
+                <>
+                  <label className="flex items-start gap-3 text-sm">
+                    <input
+                      type="checkbox"
+                      className="mt-0.5 h-5 w-5 shrink-0"
+                      checked={waiver}
+                      onChange={(e) => setWaiver(e.target.checked)}
+                    />
+                    <span>
+                      I want my complete guide straight away, and I understand that once
+                      it’s unlocked I lose my right to cancel within 14 days.
+                    </span>
+                  </label>
+                  {waiver ? (
+                    <PayPalCheckout
+                      tripId={trip.id}
+                      clientId={pay.clientId}
+                      price={pay.price}
+                      onPaid={refresh}
+                    />
+                  ) : (
+                    <p className="text-xs text-muted">
+                      Tick the box above to show payment options.
+                    </p>
+                  )}
+                </>
               ) : (
                 <p className="text-sm text-muted">Checkout is unavailable right now.</p>
               )}

@@ -1,6 +1,13 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
+// Fonts are bundled and served from our own origin (SIL Open Font License),
+// so page views don't send visitors' IP addresses to a font CDN.
+import '@fontsource/fraunces/400.css'
+import '@fontsource/fraunces/600.css'
+import '@fontsource/inter/400.css'
+import '@fontsource/inter/500.css'
+import '@fontsource/inter/600.css'
 import './styles.css'
 import { Layout } from './components/Layout'
 import { StatusProvider } from './components/ui'

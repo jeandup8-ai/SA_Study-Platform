@@ -112,6 +112,21 @@ export async function buildServer(config: Config) {
     return c.html(indexHtml)
   })
 
+  // Retention: delete trips nobody has touched for TRIP_RETENTION_DAYS.
+  const purge = async () => {
+    const before = new Date(
+      Date.now() - config.TRIP_RETENTION_DAYS * 86_400_000,
+    ).toISOString()
+    try {
+      const n = await store.deleteInactiveTrips(before)
+      if (n > 0) console.log(`[stayscout] retention: deleted ${n} inactive trip(s)`)
+    } catch (err) {
+      console.error(`[stayscout] retention purge failed: ${(err as Error).message}`)
+    }
+  }
+  void purge()
+  setInterval(purge, 86_400_000).unref()
+
   return { app, store, status: service.status() }
 }
 

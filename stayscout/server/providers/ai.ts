@@ -63,6 +63,11 @@ Rules:
 
 const MAX_CANDIDATES = 60
 
+/**
+ * Only planning facts go to the model. The free-text accessibility and
+ * dietary notes are deliberately excluded: they may be special-category data
+ * and the planner doesn't use them.
+ */
 export function buildUserMessage(input: AiPlanInput): string {
   const p = input.preferences
   const limit = { relaxed: 1, balanced: 2, packed: 3 }[p.pace]
@@ -103,8 +108,6 @@ export function buildUserMessage(input: AiPlanInput): string {
       maxActivitiesPerDay: limit,
       transport: p.transport,
       settingPreference: p.settingPreference,
-      accessibilityNeeds: p.accessibilityNeeds,
-      dietaryPreferences: p.dietaryPreferences,
     },
     candidates,
   })

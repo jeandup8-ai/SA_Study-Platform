@@ -166,6 +166,7 @@ export interface Preferences {
   pace: Pace
   accessibilityNeeds: string | null
   dietaryPreferences: string | null
+  sensitiveNotesConsent: boolean
   settingPreference: 'indoor' | 'outdoor' | 'no_preference'
   language: string
 }

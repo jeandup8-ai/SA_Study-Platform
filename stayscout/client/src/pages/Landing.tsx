@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
-import { RADIUS_NOTICE, RingIcon, useStatus, usePageTitle } from '../components/ui'
+import { RingIcon } from '../components/ui'
+import { RADIUS_NOTICE, usePageTitle, useStatus } from '../lib'
 
 function HeroArt() {
   // Original line art: contour rings around a stay, echoing the 50 km circle.
@@ -142,7 +143,7 @@ export function Landing() {
             ],
           ].map(([t, d], i) => (
             <li key={t} className="card p-5">
-              <p className="font-display text-3xl text-sun">{i + 1}</p>
+              <p className="font-display text-3xl text-coral">{i + 1}</p>
               <h3 className="mt-2 font-semibold">{t}</h3>
               <p className="mt-1 text-sm text-muted">{d}</p>
             </li>

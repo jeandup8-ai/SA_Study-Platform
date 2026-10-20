@@ -9,12 +9,16 @@
   --color-paper: #faf7f2;
   --color-sand: #efe8dc;
   --color-line: #ddd3c3;
+  /* Borders that identify controls must reach 3:1 (WCAG 1.4.11). */
+  --color-line-strong: #8a7f73;
   --color-sea: #0f5e5a;
   --color-sea-deep: #0a4441;
   --color-sea-soft: #dcebe8;
   --color-coral: #a8461f;
   --color-coral-soft: #f7e3d7;
   --color-sun: #e9a27c;
+  /* For text on --color-sea (5.2:1); --color-sun there is only 3.6:1. */
+  --color-sun-light: #f6cfb6;
   --color-amber-soft: #fbf0d9;
   --color-amber-ink: #7a4d00;
 }
@@ -103,7 +107,7 @@ body {
   .field {
     width: 100%;
     min-height: 2.75rem;
-    border: 1.5px solid var(--color-line);
+    border: 1.5px solid var(--color-line-strong);
     background: white;
     border-radius: 0.75rem;
     padding: 0.55rem 0.8rem;
@@ -122,13 +126,12 @@ body {
     min-height: 2.5rem;
     padding: 0.4rem 0.9rem;
     border-radius: 999px;
-    border: 1.5px solid var(--color-line);
+    border: 1.5px solid var(--color-line-strong);
     background: white;
     font-size: 0.9rem;
     cursor: pointer;
   }
-  .chip[aria-pressed='true'],
-  .chip[aria-checked='true'] {
+  .chip[aria-pressed='true'] {
     background: var(--color-sea);
     border-color: var(--color-sea);
     color: var(--color-paper);

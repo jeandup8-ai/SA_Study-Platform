@@ -711,7 +711,19 @@ export class TripService {
 
   // ------------------------------------------------------------ payments
 
-  async createCheckout(trip: TripRow) {
+  /**
+   * `acknowledgedImmediateSupply` must be true: the buyer asked for the guide
+   * now and accepted that this ends the 14-day cancellation right. We record
+   * when, as evidence; checkout is refused without it.
+   */
+  async createCheckout(trip: TripRow, acknowledgedImmediateSupply: boolean) {
+    if (!acknowledgedImmediateSupply) {
+      throw new ServiceError(
+        400,
+        'acknowledgement_required',
+        'Please confirm you want immediate access before paying.',
+      )
+    }
     const payments = this.d.payments
     if (!payments)
       throw new ServiceError(
@@ -756,6 +768,7 @@ export class TripService {
       captureId: null,
       createdAt: now,
       updatedAt: now,
+      waiverAcknowledgedAt: now,
     })
     return { orderId: snap.orderId }
   }

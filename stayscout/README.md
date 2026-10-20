@@ -6,20 +6,22 @@ Accommodation-first holiday planning. A traveller confirms where they're staying
 
 ## Status at a glance
 
-| Area                                 | State                                                                                                                      |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| Full traveller journey in demo mode  | Working, unit- and browser-tested                                                                                          |
-| 50 km rule (server-enforced)         | Working, tested                                                                                                            |
-| Postgres storage + migrations        | Working, tested against Postgres 16                                                                                        |
-| Deterministic itinerary planner      | Working, tested                                                                                                            |
-| PDF export, print view, share links  | Working, tested                                                                                                            |
-| Google Places (New) adapter          | Implemented and fixture-tested; **not live-tested** (no network access to Google from the build environment)               |
-| Anthropic AI planner                 | Implemented and tested with a stub client; **not live-tested** (no API key)                                                |
-| PayPal Orders v2 (sandbox)           | Implemented and fixture-tested; **not live-tested** (no credentials, no network access to PayPal)                          |
-| UK FCDO safety source                | Implemented and fixture-tested; **not live-tested** (no network access to GOV.UK)                                          |
-| Road routing (distance/time by road) | Interface only (`RoutingProvider`); no provider wired, so the UI shows straight-line distance and labelled rough estimates |
-| User accounts                        | Not implemented; trips belong to the browser that created them (see Security)                                              |
-| Deployment                           | Not performed. Dockerfile and instructions below                                                                           |
+| Area                                 | State                                                                                                                         |
+| ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| Full traveller journey in demo mode  | Working, unit- and browser-tested                                                                                             |
+| 50 km rule (server-enforced)         | Working, tested                                                                                                               |
+| Postgres storage + migrations        | Working, tested against Postgres 16                                                                                           |
+| Deterministic itinerary planner      | Working, tested                                                                                                               |
+| PDF export, print view, share links  | Working, tested; PDF embeds DejaVu fonts (Latin, Greek, Cyrillic…)                                                            |
+| Accessibility (WCAG 2.1 AA)          | axe-core scan clean on every page, 320 px reflow and focus checks — all in the e2e suite. Not yet tested with a screen reader |
+| Privacy / consumer-law mechanics     | Consent for sensitive notes, 12-month retention, self-hosted fonts, cancellation-right acknowledgement. Legal text is a draft |
+| Google Places (New) adapter          | Implemented and fixture-tested; **not live-tested** (no network access to Google from the build environment)                  |
+| Anthropic AI planner                 | Implemented and tested with a stub client; **not live-tested** (no API key)                                                   |
+| PayPal Orders v2 + webhook (sandbox) | Implemented and fixture-tested; **not live-tested** (no credentials, no network access to PayPal)                             |
+| UK FCDO safety source                | Implemented and fixture-tested; **not live-tested** (no network access to GOV.UK)                                             |
+| Road routing (distance/time by road) | Interface only (`RoutingProvider`); no provider wired, so the UI shows straight-line distance and labelled rough estimates    |
+| User accounts                        | Not implemented; trips belong to the browser that created them (see Security)                                                 |
+| Deployment                           | Not performed. Dockerfile and instructions below                                                                              |
 
 ## Quick start (demo mode, no credentials)
 
@@ -96,7 +98,12 @@ Verification is per claim (hours, price, suitability, setting), using `VERIFIED_
 
 Pricing hypothesis: a free preview (stay, places, day 1 of the plan) and the complete guide at **USD 9.00, one-time** (every day, PDF and share link). With `PAYMENTS_PROVIDER=none` everything is unlocked and the UI says so.
 
-The server creates the PayPal order (`custom_id` = trip id), captures it after buyer approval, and marks the guide paid **only** when the capture is `COMPLETED` _and_ the amount, currency and `custom_id` match. Visiting a success URL, or any browser claim, changes nothing (tested). Capture is idempotent: a `PayPal-Request-Id` per order, a terminal `paid` state that can't be undone, and a reconcile on HTTP 422 (already captured). Pending, declined, refunded, voided and cancelled checkouts never unlock.
+The server creates the PayPal order (`custom_id` = trip id), captures it after buyer approval, and marks the guide paid **only** when the capture is `COMPLETED` _and_ the amount, currency and `custom_id` match. Visiting a success URL, or any browser claim, changes nothing (tested). Capture is idempotent: a `PayPal-Request-Id` per order, a reconcile on HTTP 422 (already captured), and stored states where `paid` can only move to `refunded` and `refunded` is final. Pending, declined, voided and cancelled checkouts never unlock; a refund re-locks the guide.
+
+- **Cancellation right.** Before the PayPal buttons appear, the buyer ticks that they want immediate access and lose the 14-day EU/UK cancellation right. The server refuses checkout without it and stores the time on the order (`waiver_acknowledged_at`).
+- **Pending captures** are re-checked with PayPal at most once a minute when the trip is viewed.
+- **Webhook** (`POST /api/webhooks/paypal`, enabled by `PAYPAL_WEBHOOK_ID`): the signature is verified by PayPal's `verify-webhook-signature` endpoint, then the order is re-fetched from PayPal and evaluated. The event body itself is never trusted. Subscribe to `PAYMENT.CAPTURE.COMPLETED`, `PAYMENT.CAPTURE.DENIED`, `PAYMENT.CAPTURE.REFUNDED` and `PAYMENT.CAPTURE.REVERSED`.
+- Deleting a trip keeps its order record (detached from the trip) so refunds remain possible.
 
 See **[docs/PAYPAL_SANDBOX.md](docs/PAYPAL_SANDBOX.md)** for sandbox setup and the test script. Live mode is refused unless `PAYPAL_ENV=live` **and** `PAYPAL_LIVE_ENABLED=true`.
 
@@ -105,12 +112,16 @@ See **[docs/PAYPAL_SANDBOX.md](docs/PAYPAL_SANDBOX.md)** for sandbox setup and t
 - **No accounts yet.** Each browser gets a random 256-bit token in an `httpOnly`, `SameSite=Lax` cookie (`Secure` in production). Trips store only its SHA-256. Trip ids are random UUIDs, and any request for a trip that isn't yours returns 404. Clearing cookies loses access to your trips; a later account system can claim trips by token.
 - Share links use a separate random 256-bit token (stored hashed). They are read-only, omit preferences, are `noindex`, and can be revoked.
 - Writes require same-origin `Origin` (when sent) and JSON bodies; bodies are capped at 64 KB.
-- In-process rate limits: 300 requests/min per IP overall, 30/min for search, 12/min for discovery, planning, PDF and checkout. Use a shared limiter when running more than one instance.
+- In-process rate limits: 300 requests/min per IP overall, 30/min for search, 12/min for discovery, planning, PDF and checkout. Use a shared limiter when running more than one instance. Behind a proxy (`TRUST_PROXY=true`) the client IP is the right-most `X-Forwarded-For` entry, which assumes exactly one trusted proxy.
+- Itinerary saves are compare-and-set on the plan version, so two tabs can't overwrite each other.
 - Keys are server-only. The only provider value sent to the browser is the PayPal **client id**, which is public by design.
 - Provider responses are parsed defensively: size-capped, timed out, retried once on 429/5xx, URLs restricted to http(s), text sanitised.
 - Responses send a CSP, `nosniff`, a referrer policy and `frame-ancestors 'none'`.
 - No children's names or birth dates are collected — age ranges only. Users can export trip data as JSON and delete trips.
-- Privacy and Terms pages are **drafts for the operator to edit**; they have not had legal review.
+- The optional accessibility and dietary notes may be special-category data. They are stored only with an explicit consent tick (enforced by the server), never sent to the AI provider, and never included in share links.
+- Trips untouched for `TRIP_RETENTION_DAYS` (default 365, matching the cookie) are deleted automatically, daily.
+- Fonts are bundled and served from StayScout's own origin, so no visitor IPs go to a font CDN. The only third-party script is PayPal's, and it loads only at checkout.
+- Privacy and Terms pages are **drafts for the operator to edit**: placeholders are highlighted and they have not had legal review. See "Before launch: legal" below.
 
 ## Deployment
 
@@ -137,12 +148,23 @@ The app is one Node process that serves the API and the built client, and it nee
 - [ ] `/robots.txt` disallows `/trips`, `/g/`, `/plan` and `/api/`; `/sitemap.xml` uses `PUBLIC_BASE_URL`
 - [ ] PayPal sandbox purchase per `docs/PAYPAL_SANDBOX.md` before considering live mode
 
+## Before launch: legal
+
+These need the operator or counsel; the code can't settle them.
+
+1. Fill in every highlighted placeholder on `/privacy` and `/terms`: entity, address, contacts (ECTA s43), Information Officer, processors and countries, log retention, refund policy, VAT, governing law.
+2. Register the Information Officer with South Africa's Information Regulator (POPIA).
+3. Sign or accept data-processing terms with Google Maps Platform, Anthropic (if the AI planner is on), and your host and database providers. Confirm the transfer safeguards each one offers (POPIA s72; EU SCCs / UK Addendum).
+4. Decide with counsel whether you need EU and UK representatives (GDPR Art. 27) once you are marketing to those travellers.
+5. VAT: South African VAT on electronic services, plus EU/UK VAT on digital sales to consumers (EU OSS). Display prices accordingly.
+6. Check the cancellation and refund rules under ECTA s44 and the Consumer Protection Act. The immediate-supply acknowledgement covers the EU/UK rule; the South African position needs confirming.
+
 ## Known limitations
 
 - Live adapters (Google, PayPal, FCDO, Anthropic) have not been exercised against the real services.
 - There is no road routing; travel times are rough straight-line estimates.
 - There is no weather forecast. Rainy-day alternatives are offered without claiming any forecast.
-- The PDF uses built-in fonts (Windows-1252). Characters outside that set (e.g. Chinese, Arabic, Greek) print as `?`. Embedding a Unicode font is the fix.
+- The PDF covers Latin, Greek, Cyrillic and other scripts DejaVu supports. Chinese, Japanese and Korean characters print as `?`, and Arabic and Hebrew names print the right letters in the wrong order (no right-to-left shaping).
 - The PDF fetches the safety panel live at export time; if the source is down, the PDF says so.
 - Opening-hours checks use the place's local time and do not model public holidays or seasonal hours.
 - English only.

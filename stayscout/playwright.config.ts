@@ -24,7 +24,8 @@ export default defineConfig({
   ],
   webServer: {
     command: `npx vite build && npx tsc -p tsconfig.server.json && node dist-server/server/main.js`,
-    env: { PORT: String(port) },
+    // One server and one client IP for the whole suite: lift the per-IP limits.
+    env: { PORT: String(port), RATE_LIMIT_MULTIPLIER: '50' },
     url: `http://localhost:${port}/api/health`,
     reuseExistingServer: false,
     timeout: 120_000,

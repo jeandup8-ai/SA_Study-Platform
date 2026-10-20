@@ -8,7 +8,7 @@ import type {
   TripPlace,
   TripView,
 } from '../../../shared/types'
-import { directionsUrl, priceText } from './PlaceCard'
+import { directionsUrl, fmtDate, priceText } from '../lib'
 import { RadiusNotice, SampleTag } from './ui'
 
 const SLOT_LABEL: Record<string, string> = {
@@ -96,7 +96,7 @@ export function GuideView({
     <div className="space-y-6">
       <header className="card overflow-hidden">
         <div className="bg-sea px-5 py-6 text-paper sm:px-8">
-          <p className="eyebrow !text-sun">Your StayScout guide</p>
+          <p className="eyebrow !text-sun-light">Your StayScout guide</p>
           <h2 className="mt-1 font-display text-3xl leading-tight sm:text-4xl">
             {a.name}
           </h2>
@@ -417,14 +417,4 @@ const SAFETY_STATUS: Record<string, string> = {
   not_found: 'No matching advice found in the sources checked',
   unavailable: 'Could not be verified',
   not_checked: 'Not checked',
-}
-
-export function fmtDate(iso: string) {
-  return new Date(`${iso}T12:00:00Z`).toLocaleDateString(undefined, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    timeZone: 'UTC',
-  })
 }

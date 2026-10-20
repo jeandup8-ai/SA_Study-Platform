@@ -1,14 +1,9 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import type { ProviderStatus, VerificationStatus } from '../../../shared/types'
 import { api, ApiError } from '../api'
-
-export const RADIUS_NOTICE =
-  'All included attractions are within 50 km straight-line distance of your confirmed stay. Driving distances and travel times may be longer.'
+import { RADIUS_NOTICE, StatusContext } from '../lib'
 
 // ------------------------------------------------------------ status
-
-const StatusContext = createContext<ProviderStatus | null>(null)
-export const useStatus = () => useContext(StatusContext)
 
 export function StatusProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<ProviderStatus | null>(null)
@@ -162,23 +157,4 @@ export function RingIcon({ className = '' }: { className?: string }) {
       <circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none" />
     </svg>
   )
-}
-
-export function usePageTitle(title: string) {
-  useEffect(() => {
-    document.title = title
-      ? `${title} · StayScout`
-      : 'StayScout — plan around where you’re staying'
-  }, [title])
-}
-
-/** Private pages shouldn't be indexed even if a link leaks. */
-export function useNoIndex() {
-  useEffect(() => {
-    const meta = document.createElement('meta')
-    meta.name = 'robots'
-    meta.content = 'noindex, nofollow'
-    document.head.appendChild(meta)
-    return () => meta.remove()
-  }, [])
 }

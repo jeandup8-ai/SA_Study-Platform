@@ -71,6 +71,16 @@ const envSchema = z
       z.enum(['none', 'fcdo']).default('none'),
     ),
 
+    /** Multiplies every rate limit. Raise only for load or end-to-end testing. */
+    RATE_LIMIT_MULTIPLIER: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().min(1).max(1000).default(1),
+    ),
+    /** Trips untouched for this many days are deleted (matches the owner cookie's lifetime). */
+    TRIP_RETENTION_DAYS: z.preprocess(
+      emptyToUndefined,
+      z.coerce.number().int().min(1).max(3650).default(365),
+    ),
     TRUST_PROXY: z.preprocess(
       emptyToUndefined,
       z.enum(['true', 'false']).default('false'),

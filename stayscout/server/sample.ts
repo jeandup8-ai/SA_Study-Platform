@@ -54,6 +54,7 @@ async function build(config: Config): Promise<TripView> {
     pace: 'balanced',
     accessibilityNeeds: null,
     dietaryPreferences: null,
+    sensitiveNotesConsent: false,
     settingPreference: 'no_preference',
     language: 'en',
   })
