@@ -57,6 +57,10 @@ const DEPARTURE_LATEST_END = '11:30'
 const DAY_END = '23:00'
 const WALKING_LIMIT_M = 5_000
 const MEAL_DETOUR_LIMIT_M = 10_000
+/** Same bounds the edit schema enforces, applied to every plan source. */
+const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/
+const MIN_DURATION = 15
+const MAX_DURATION = 600
 
 // ------------------------------------------------------------------ helpers
 
@@ -129,6 +133,15 @@ export function hydratePlan(
     const sorted = [...day.items].sort(
       (a, b) => toMinutes(a.startTime) - toMinutes(b.startTime),
     )
+    // One currency per day: the budget's, else the first priced place's.
+    // Amounts in any other currency are counted as unpriced, never summed.
+    const currency =
+      prefs.budget?.currency ??
+      firstCurrency(
+        sorted.map((pi) => pi.placeId),
+        byId,
+      ) ??
+      'USD'
     const items: ItineraryItem[] = sorted.map((pi) => {
       const place = pi.placeId ? byId.get(pi.placeId) : undefined
       const notes: string[] = []
@@ -158,7 +171,7 @@ export function hydratePlan(
           notes.push('Public transport routes have not been checked by StayScout.')
         }
         const amount = place.price?.value.amount
-        if (amount && (!prefs.budget || amount.currency === prefs.budget.currency)) {
+        if (amount && amount.currency === currency) {
           costMin += amount.min * travellers(prefs)
           costMax += amount.max * travellers(prefs)
           priced++
@@ -180,7 +193,6 @@ export function hydratePlan(
         notes,
       }
     })
-    const currency = prefs.budget?.currency ?? firstCurrency(items, byId) ?? 'USD'
     const index = dates.indexOf(day.date)
     return {
       date: day.date,
@@ -211,9 +223,9 @@ export function hydratePlan(
   }
 }
 
-const firstCurrency = (items: ItineraryItem[], byId: Map<string, TripPlace>) => {
-  for (const i of items) {
-    const c = i.placeId ? byId.get(i.placeId)?.price?.value.amount?.currency : undefined
+const firstCurrency = (placeIds: Array<string | null>, byId: Map<string, TripPlace>) => {
+  for (const id of placeIds) {
+    const c = id ? byId.get(id)?.price?.value.amount?.currency : undefined
     if (c) return c
   }
   return null
@@ -301,12 +313,34 @@ export function validateItinerary(itin: Itinerary, ctx: EngineContext): Itinerar
     const isArrival = day.date === dates[0]
     const isDeparture = day.date === dates[dates.length - 1]
     let cursor = 0
+    let prev = origin
     for (const item of [...day.items].sort(
       (a, b) => toMinutes(a.startTime) - toMinutes(b.startTime),
     )) {
+      // AI proposals reach here without the edit schema's checks; a malformed
+      // time or duration would turn every comparison below into NaN.
+      if (
+        !HHMM.test(item.startTime) ||
+        !Number.isInteger(item.durationMinutes) ||
+        item.durationMinutes < MIN_DURATION ||
+        item.durationMinutes > MAX_DURATION
+      ) {
+        err({
+          code: 'invalid_time',
+          dayIndex,
+          itemId: item.id,
+          message: `"${item.title}" has an invalid start time or duration.`,
+        })
+        continue
+      }
       const start = toMinutes(item.startTime)
       const end = start + item.durationMinutes
-      const travel = item.travelMinutesEstimate ?? 0
+      // Re-derived from the places and current transport, never the stored estimate.
+      const located = item.placeId ? byId.get(item.placeId) : undefined
+      const travel = located
+        ? travelMinutes(distanceMeters(prev, located.location), prefs.transport)
+        : 0
+      if (located) prev = located.location
       if (start - travel < cursor) {
         err({
           code: 'overlap',

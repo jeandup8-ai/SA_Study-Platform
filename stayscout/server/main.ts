@@ -5,7 +5,7 @@ import { serve } from '@hono/node-server'
 import { serveStatic } from '@hono/node-server/serve-static'
 import { getConnInfo } from '@hono/node-server/conninfo'
 import type { Context } from 'hono'
-import { SECURITY_HEADERS, createApp } from './app.js'
+import { SECURITY_HEADERS, createApp, forwardedClientIp } from './app.js'
 import { loadConfig, type Config } from './config.js'
 import { AnthropicAiProvider } from './providers/ai.js'
 import { PayPalProvider } from './providers/payments.js'
@@ -56,7 +56,7 @@ export async function buildServer(config: Config) {
     store,
     clientIp: (c: Context) =>
       config.TRUST_PROXY === 'true'
-        ? (c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown')
+        ? (forwardedClientIp(c) ?? 'unknown')
         : (getConnInfo(c).remote.address ?? 'unknown'),
   })
 
@@ -85,6 +85,13 @@ export async function buildServer(config: Config) {
     )
   })
 
+  // Every non-API response, including "/" and other files serveStatic answers
+  // before the SPA fallback below is reached.
+  app.use('*', async (c, next) => {
+    await next()
+    if (c.req.path.startsWith('/api/')) return
+    for (const [k, v] of Object.entries(SECURITY_HEADERS)) c.header(k, v)
+  })
   // Built client (npm run build). Hashed assets are immutable.
   app.use('/assets/*', async (c, next) => {
     await next()
@@ -99,7 +106,6 @@ export async function buildServer(config: Config) {
         'Client not built. Run `npm run build`, or use `npm run dev` for development.',
         503,
       )
-    for (const [k, v] of Object.entries(SECURITY_HEADERS)) c.header(k, v)
     // Private pages stay out of search engines.
     if (/^\/(trips|g|plan)(\/|$)/.test(c.req.path))
       c.header('X-Robots-Tag', 'noindex, nofollow')

@@ -479,6 +479,19 @@ describe('itinerary generation and editing', () => {
     expect((await c.put(`/api/trips/${id}/itinerary`, day([]))).status).toBe(409)
   })
 
+  it('two simultaneous edits of the same version: one wins, the other gets a conflict', async () => {
+    const c = client(setup().app)
+    const { id } = await readyTrip(c)
+    const gen = await c.post(`/api/trips/${id}/itinerary`, { useAi: false })
+    const itin = gen.data.itinerary
+    const edit = { version: itin.version, days: [{ date: itin.days[1].date, items: [] }] }
+    const results = await Promise.all([
+      c.put(`/api/trips/${id}/itinerary`, edit),
+      c.put(`/api/trips/${id}/itinerary`, edit),
+    ])
+    expect(results.map((r) => r.status).sort()).toEqual([200, 409])
+  })
+
   it('regenerates one day without touching the others', async () => {
     const c = client(setup().app)
     const { id } = await readyTrip(c)

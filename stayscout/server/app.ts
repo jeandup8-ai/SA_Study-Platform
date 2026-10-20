@@ -2,6 +2,7 @@
 // limits, security headers and error mapping. Business rules live in service.ts.
 
 import { Hono, type Context } from 'hono'
+import { bodyLimit } from 'hono/body-limit'
 import { getCookie, setCookie } from 'hono/cookie'
 import { z } from 'zod'
 import {
@@ -33,14 +34,21 @@ export interface AppOptions {
 
 type Env = { Variables: { ownerHash: string | null } }
 
+/**
+ * The client address our (single, trusted) proxy appended to X-Forwarded-For.
+ * The left-most entries are whatever the client sent, so they are never used.
+ */
+export function forwardedClientIp(c: Context): string | null {
+  const last = c.req.header('x-forwarded-for')?.split(',').pop()?.trim()
+  return last || null
+}
+
 export function createApp({ config, service, store, clientIp }: AppOptions) {
   const app = new Hono<Env>()
   const ipOf =
     clientIp ??
     ((c: Context) =>
-      config.TRUST_PROXY === 'true'
-        ? (c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown')
-        : 'local')
+      config.TRUST_PROXY === 'true' ? (forwardedClientIp(c) ?? 'unknown') : 'local')
   const limiters = {
     general: new RateLimiter(300, 60_000),
     search: new RateLimiter(30, 60_000),
@@ -78,10 +86,11 @@ export function createApp({ config, service, store, clientIp }: AppOptions) {
         if (!allowed.has(origin))
           throw new ServiceError(403, 'bad_origin', 'Cross-site request refused.')
       }
-      const len = Number(c.req.header('content-length') ?? '0')
-      if (len > 64_000)
-        throw new ServiceError(413, 'too_large', 'Request body is too large.')
-      if (len > 0 && !c.req.header('content-type')?.startsWith('application/json')) {
+      // A chunked body has no Content-Length, so look for either.
+      const hasBody =
+        Number(c.req.header('content-length') ?? '0') > 0 ||
+        c.req.header('transfer-encoding') !== undefined
+      if (hasBody && !c.req.header('content-type')?.startsWith('application/json')) {
         throw new ServiceError(415, 'json_required', 'Send JSON.')
       }
     }
@@ -89,6 +98,16 @@ export function createApp({ config, service, store, clientIp }: AppOptions) {
     c.set('ownerHash', token && /^[A-Za-z0-9_-]{43}$/.test(token) ? sha256(token) : null)
     await next()
   })
+  // Enforced while streaming, so it also caps chunked bodies with no Content-Length.
+  app.use(
+    '/api/*',
+    bodyLimit({
+      maxSize: 64_000,
+      onError: () => {
+        throw new ServiceError(413, 'too_large', 'Request body is too large.')
+      },
+    }),
+  )
 
   /** Issues the anonymous owner cookie on first write. */
   const ownerHash = (c: Context<Env>): string => {
@@ -320,6 +339,28 @@ export function createApp({ config, service, store, clientIp }: AppOptions) {
     const trip = await ownedTrip(c)
     const { orderId } = await body(c, captureSchema)
     return c.json(await service.captureCheckout(trip, orderId))
+  })
+
+  // PayPal webhook: signature verified with PayPal, then the order is
+  // re-fetched; the event body itself is never trusted.
+  app.post('/api/webhooks/paypal', async (c) => {
+    let event: unknown
+    try {
+      event = JSON.parse(await c.req.text())
+    } catch {
+      throw new ServiceError(400, 'bad_json', 'Malformed JSON.')
+    }
+    const headers: Record<string, string | undefined> = {}
+    for (const k of [
+      'paypal-auth-algo',
+      'paypal-cert-url',
+      'paypal-transmission-id',
+      'paypal-transmission-sig',
+      'paypal-transmission-time',
+    ]) {
+      headers[k] = c.req.header(k)
+    }
+    return c.json(await service.handlePaymentWebhook(headers, event))
   })
 
   app.all('/api/*', () => {

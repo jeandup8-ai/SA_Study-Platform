@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { loadConfig } from '../server/config.js'
+import { webhookOrderId } from '../server/service.js'
 import {
   AnthropicAiProvider,
   AiUnavailableError,
@@ -318,7 +319,7 @@ describe('PayPal order evaluation', () => {
     expect(
       evaluateOrder(parseOrder(order('COMPLETED', { status: 'REFUNDED' })), expected)
         .state,
-    ).toBe('failed')
+    ).toBe('refunded')
     expect(evaluateOrder(parseOrder(order('VOIDED')), expected).state).toBe('failed')
     expect(evaluateOrder(parseOrder(order('CREATED')), expected).state).toBe(
       'awaiting_approval',
@@ -564,5 +565,103 @@ describe('Anthropic AI provider', () => {
       buildUserMessage({ preferences: prefs, dates: ['2026-12-10'], places: [] }),
     )
     expect(Object.keys(msg)).toEqual(['dates', 'traveller', 'candidates'])
+  })
+})
+
+describe('PayPal webhook verification', () => {
+  const hdrs = {
+    'paypal-auth-algo': 'SHA256withRSA',
+    'paypal-cert-url': 'https://api.sandbox.paypal.com/cert',
+    'paypal-transmission-id': 'tid',
+    'paypal-transmission-sig': 'sig',
+    'paypal-transmission-time': '2026-12-01T10:00:00Z',
+  }
+
+  it('asks PayPal to verify, passing our webhook id and the event', async () => {
+    const f = fakeFetch([
+      { body: { access_token: 'T', expires_in: 3600 } },
+      { body: { verification_status: 'SUCCESS' } },
+    ])
+    const p = new PayPalProvider({
+      clientId: 'a',
+      secret: 'b',
+      mode: 'sandbox',
+      fetchImpl: f.impl,
+    })
+    expect(await p.verifyWebhook(hdrs, { event_type: 'X' }, 'WH-1')).toBe(true)
+    const call = f.calls[1]!
+    expect(call.url).toBe(
+      'https://api-m.sandbox.paypal.com/v1/notifications/verify-webhook-signature',
+    )
+    expect(JSON.parse(String(call.init.body))).toMatchObject({
+      webhook_id: 'WH-1',
+      transmission_id: 'tid',
+      webhook_event: { event_type: 'X' },
+    })
+  })
+
+  it('returns false on FAILURE, on errors, and when headers are missing', async () => {
+    const fail = fakeFetch([
+      { body: { access_token: 'T', expires_in: 3600 } },
+      { body: { verification_status: 'FAILURE' } },
+    ])
+    expect(
+      await new PayPalProvider({
+        clientId: 'a',
+        secret: 'b',
+        mode: 'sandbox',
+        fetchImpl: fail.impl,
+      }).verifyWebhook(hdrs, {}, 'WH'),
+    ).toBe(false)
+    const err = fakeFetch([
+      { body: { access_token: 'T', expires_in: 3600 } },
+      { status: 400, body: {} },
+    ])
+    expect(
+      await new PayPalProvider({
+        clientId: 'a',
+        secret: 'b',
+        mode: 'sandbox',
+        fetchImpl: err.impl,
+      }).verifyWebhook(hdrs, {}, 'WH'),
+    ).toBe(false)
+    const none = fakeFetch([])
+    expect(
+      await new PayPalProvider({
+        clientId: 'a',
+        secret: 'b',
+        mode: 'sandbox',
+        fetchImpl: none.impl,
+      }).verifyWebhook({}, {}, 'WH'),
+    ).toBe(false)
+    expect(none.calls).toHaveLength(0)
+  })
+
+  it('finds the order id in order and capture events', () => {
+    expect(
+      webhookOrderId({
+        event_type: 'CHECKOUT.ORDER.APPROVED',
+        resource: { id: 'ORDER123' },
+      }),
+    ).toBe('ORDER123')
+    expect(
+      webhookOrderId({
+        event_type: 'PAYMENT.CAPTURE.COMPLETED',
+        resource: {
+          id: 'CAP',
+          supplementary_data: { related_ids: { order_id: 'ORDER456' } },
+        },
+      }),
+    ).toBe('ORDER456')
+    expect(
+      webhookOrderId({ event_type: 'PAYMENT.CAPTURE.COMPLETED', resource: { id: 'x' } }),
+    ).toBeNull()
+    expect(
+      webhookOrderId({
+        event_type: 'CHECKOUT.ORDER.APPROVED',
+        resource: { id: "'; drop table" },
+      }),
+    ).toBeNull()
+    expect(webhookOrderId(null)).toBeNull()
   })
 })

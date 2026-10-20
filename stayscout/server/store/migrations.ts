@@ -62,4 +62,19 @@ create table if not exists schema_migrations (
 );
 `,
   },
+  {
+    // Keep orders when a trip is deleted (refunds and accounting need the
+    // capture id), and allow a 'refunded' status.
+    name: '002_keep_orders_add_refunded',
+    sql: `
+alter table orders alter column trip_id drop not null;
+alter table orders drop constraint if exists orders_trip_id_fkey;
+alter table orders add constraint orders_trip_id_fkey
+  foreign key (trip_id) references trips (id) on delete set null;
+alter table orders drop constraint if exists orders_status_check;
+alter table orders add constraint orders_status_check
+  check (status in ('created', 'pending', 'paid', 'failed', 'refunded'));
+create index if not exists orders_capture_idx on orders (provider, capture_id);
+`,
+  },
 ]

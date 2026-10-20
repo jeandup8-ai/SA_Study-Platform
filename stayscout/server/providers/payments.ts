@@ -37,6 +37,15 @@ export interface PaymentProvider {
   }): Promise<OrderSnapshot>
   captureOrder(orderId: string, requestId: string): Promise<OrderSnapshot>
   getOrder(orderId: string): Promise<OrderSnapshot>
+  /**
+   * Asks the provider whether a webhook delivery is genuine. Returns false for
+   * anything it can't confirm; never throws for a bad signature.
+   */
+  verifyWebhook(
+    headers: Record<string, string | undefined>,
+    event: unknown,
+    webhookId: string,
+  ): Promise<boolean>
 }
 
 export type PaymentOutcome =
@@ -44,6 +53,7 @@ export type PaymentOutcome =
   | { state: 'pending' }
   | { state: 'awaiting_approval' }
   | { state: 'failed'; reason: string }
+  | { state: 'refunded' }
   | { state: 'mismatch'; reason: string }
 
 /** The single place that decides whether money actually arrived. */
@@ -74,7 +84,7 @@ export function evaluateOrder(
     snap.captureStatus &&
     ['REFUNDED', 'PARTIALLY_REFUNDED'].includes(snap.captureStatus)
   ) {
-    return { state: 'failed', reason: 'Payment was refunded' }
+    return { state: 'refunded' }
   }
   if (snap.orderStatus === 'VOIDED')
     return { state: 'failed', reason: 'Order was voided' }
@@ -210,5 +220,46 @@ export class PayPalProvider implements PaymentProvider {
 
   getOrder(orderId: string) {
     return this.call(`/v2/checkout/orders/${encodeURIComponent(orderId)}`, 'GET')
+  }
+
+  async verifyWebhook(
+    headers: Record<string, string | undefined>,
+    event: unknown,
+    webhookId: string,
+  ) {
+    const h = (k: string) => headers[k]
+    const required = [
+      'paypal-auth-algo',
+      'paypal-cert-url',
+      'paypal-transmission-id',
+      'paypal-transmission-sig',
+      'paypal-transmission-time',
+    ]
+    if (required.some((k) => !h(k))) return false
+    // PayPal's own verification endpoint checks the certificate and signature.
+    // POST /v1/notifications/verify-webhook-signature
+    const token = await this.accessToken()
+    try {
+      const { data } = await requestJson<Json>({
+        provider: 'paypal',
+        url: `${this.base}/v1/notifications/verify-webhook-signature`,
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: {
+          auth_algo: h('paypal-auth-algo'),
+          cert_url: h('paypal-cert-url'),
+          transmission_id: h('paypal-transmission-id'),
+          transmission_sig: h('paypal-transmission-sig'),
+          transmission_time: h('paypal-transmission-time'),
+          webhook_id: webhookId,
+          webhook_event: event,
+        },
+        fetchImpl: this.fetchImpl,
+        timeoutMs: 15_000,
+      })
+      return data.verification_status === 'SUCCESS'
+    } catch {
+      return false
+    }
   }
 }

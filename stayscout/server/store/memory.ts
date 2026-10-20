@@ -1,7 +1,7 @@
 // In-memory store: used when DATABASE_URL is unset and in tests. Trips are
 // lost on restart, and the provider-status panel says so.
 
-import type { PlaceRecord } from '../../shared/types.js'
+import type { Itinerary, PlaceRecord } from '../../shared/types.js'
 import type {
   OrderRow,
   OrderStatus,
@@ -10,6 +10,7 @@ import type {
   TripPatch,
   TripRow,
 } from './types.js'
+import { canMoveOrder } from './types.js'
 
 export class MemoryStore implements Store {
   readonly kind = 'memory' as const
@@ -44,7 +45,7 @@ export class MemoryStore implements Store {
   async deleteTrip(id: string) {
     this.trips.delete(id)
     this.places.delete(id)
-    for (const [k, o] of this.orders) if (o.tripId === id) this.orders.delete(k)
+    for (const o of this.orders.values()) if (o.tripId === id) o.tripId = null
   }
 
   async findTripByShareHash(hash: string) {
@@ -112,7 +113,7 @@ export class MemoryStore implements Store {
   ) {
     const o = this.orders.get(id)
     if (!o) return null
-    if (o.status !== 'paid')
+    if (canMoveOrder(o.status, status))
       Object.assign(o, { status, captureId: captureId ?? o.captureId, updatedAt: now })
     return structuredClone(o)
   }
@@ -121,6 +122,25 @@ export class MemoryStore implements Store {
     return [...this.orders.values()].some(
       (o) => o.tripId === tripId && o.status === 'paid',
     )
+  }
+
+  async listOrdersForTrip(tripId: string) {
+    return [...this.orders.values()]
+      .filter((o) => o.tripId === tripId)
+      .map((o) => structuredClone(o))
+  }
+
+  async saveItinerary(
+    id: string,
+    itinerary: Itinerary,
+    expectedVersion: number,
+    now: string,
+  ) {
+    const t = this.trips.get(id)
+    if (!t || (t.itinerary?.version ?? 0) !== expectedVersion) return null
+    t.itinerary = structuredClone(itinerary)
+    t.updatedAt = now
+    return structuredClone(t)
   }
 
   async close() {}

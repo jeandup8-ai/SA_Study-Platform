@@ -116,8 +116,8 @@ export class AnthropicAiProvider implements AiProvider {
   private readonly model: string
 
   constructor(apiKey: string, model: string, client?: Anthropic) {
-    // Bounded: 45 s per attempt, 2 retries on 408/409/429/5xx.
-    this.client = client ?? new Anthropic({ apiKey, timeout: 45_000, maxRetries: 2 })
+    // Bounded: 90 s per attempt (room for a long trip's plan), 1 retry on 408/409/429/5xx.
+    this.client = client ?? new Anthropic({ apiKey, timeout: 90_000, maxRetries: 1 })
     this.model = model
   }
 

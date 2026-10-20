@@ -9,6 +9,9 @@ function fakePayments() {
     capture: null as null | ((orderId: string) => OrderSnapshot),
     captureCalls: 0,
     tripByOrder: new Map<string, string>(),
+    /** What GET /v2/checkout/orders/{id} returns; defaults to the capture result. */
+    order: null as null | ((orderId: string) => OrderSnapshot),
+    webhookValid: true,
   }
   const provider: PaymentProvider = {
     name: 'paypal',
@@ -31,8 +34,11 @@ function fakePayments() {
       state.captureCalls++
       return state.capture!(orderId)
     },
-    async getOrder() {
-      throw new Error('unused')
+    async getOrder(orderId) {
+      return (state.order ?? state.capture)!(orderId)
+    },
+    async verifyWebhook() {
+      return state.webhookValid
     },
   }
   const completed = (
@@ -193,5 +199,172 @@ describe('payments', () => {
     const r = await c.post(`/api/trips/${id}/checkout`, {})
     expect(r.status).toBe(503)
     expect(r.data.error.message).toMatch(/not been charged/)
+  })
+
+  it('a capture PayPal held as pending unlocks once PayPal completes it', async () => {
+    const { provider, state, completed } = fakePayments()
+    state.capture = (orderId) => completed(orderId, { captureStatus: 'PENDING' })
+    let clock = new Date('2026-12-01T10:00:00Z')
+    const c = client(setup({ payments: provider, now: () => clock }).app)
+    const id = await generatedTrip(c)
+    const { data } = await c.post(`/api/trips/${id}/checkout`, {})
+    expect(
+      (await c.post(`/api/trips/${id}/checkout/capture`, { orderId: data.orderId })).data
+        .status,
+    ).toBe('pending')
+    // PayPal completes it later; within a minute we don't re-ask.
+    state.order = (orderId) => completed(orderId)
+    expect((await c.get(`/api/trips/${id}`)).data.entitlement.fullGuide).toBe(false)
+    clock = new Date(clock.getTime() + 61_000)
+    expect((await c.get(`/api/trips/${id}`)).data.entitlement).toMatchObject({
+      fullGuide: true,
+      reason: 'paid',
+    })
+  })
+
+  it('share links require the complete guide', async () => {
+    const { provider } = fakePayments()
+    const c = client(setup({ payments: provider }).app)
+    const id = await generatedTrip(c)
+    expect((await c.post(`/api/trips/${id}/share`, {})).status).toBe(402)
+  })
+
+  it('editing an unpaid preview keeps the locked days', async () => {
+    const { provider } = fakePayments()
+    const { app, store } = setup({ payments: provider })
+    const c = client(app)
+    const id = await generatedTrip(c)
+    const before = (await store.getTrip(id))!.itinerary!
+    const view = (await c.get(`/api/trips/${id}`)).data
+    expect(view.itinerary.days).toHaveLength(1)
+    const r = await c.put(`/api/trips/${id}/itinerary`, {
+      version: view.itinerary.version,
+      days: [{ date: view.itinerary.days[0].date, items: [] }],
+    })
+    expect(r.status).toBe(200)
+    const after = (await store.getTrip(id))!.itinerary!
+    expect(after.days).toHaveLength(before.days.length)
+    expect(after.days.slice(1).map((d) => d.items.map((i) => i.placeId))).toEqual(
+      before.days.slice(1).map((d) => d.items.map((i) => i.placeId)),
+    )
+  })
+
+  it('deleting a trip keeps its order record (detached) for refunds', async () => {
+    const { provider, state, completed } = fakePayments()
+    state.capture = (orderId) => completed(orderId)
+    const { app, store } = setup({ payments: provider })
+    const c = client(app)
+    const id = await generatedTrip(c)
+    const { data } = await c.post(`/api/trips/${id}/checkout`, {})
+    await c.post(`/api/trips/${id}/checkout/capture`, { orderId: data.orderId })
+    expect((await c.del(`/api/trips/${id}`)).status).toBe(204)
+    const kept = await store.getOrderByProviderId('paypal', data.orderId)
+    expect(kept).toMatchObject({
+      tripId: null,
+      status: 'paid',
+      captureId: `CAP-${data.orderId}`,
+    })
+  })
+})
+
+describe('PayPal webhook', () => {
+  const event = (type: string, orderId: string) => ({
+    event_type: type,
+    resource: type.startsWith('CHECKOUT.ORDER.')
+      ? { id: orderId }
+      : { id: 'CAP1', supplementary_data: { related_ids: { order_id: orderId } } },
+  })
+  const post = (app: ReturnType<typeof setup>['app'], body: unknown) =>
+    app.request('http://localhost/api/webhooks/paypal', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'paypal-auth-algo': 'SHA256withRSA',
+        'paypal-cert-url': 'https://api.sandbox.paypal.com/cert',
+        'paypal-transmission-id': 't1',
+        'paypal-transmission-sig': 'sig',
+        'paypal-transmission-time': '2026-12-01T10:00:00Z',
+      },
+      body: JSON.stringify(body),
+    })
+
+  async function pendingTrip(
+    state: ReturnType<typeof fakePayments>['state'],
+    completed: ReturnType<typeof fakePayments>['completed'],
+    app: ReturnType<typeof setup>['app'],
+  ) {
+    state.capture = (orderId) => completed(orderId, { captureStatus: 'PENDING' })
+    const c = client(app)
+    const id = await generatedTrip(c)
+    const { data } = await c.post(`/api/trips/${id}/checkout`, {})
+    await c.post(`/api/trips/${id}/checkout/capture`, { orderId: data.orderId })
+    return { c, id, orderId: data.orderId as string }
+  }
+
+  it('is off (404) unless PAYPAL_WEBHOOK_ID is configured', async () => {
+    const { provider } = fakePayments()
+    const { app } = setup({ payments: provider })
+    expect(
+      (await post(app, event('PAYMENT.CAPTURE.COMPLETED', 'ORDER1AAAA'))).status,
+    ).toBe(404)
+  })
+
+  it('rejects an event whose signature PayPal does not confirm', async () => {
+    const { provider, state, completed } = fakePayments()
+    const { app } = setup({ payments: provider, config: { PAYPAL_WEBHOOK_ID: 'WH-1' } })
+    const { c, id, orderId } = await pendingTrip(state, completed, app)
+    state.webhookValid = false
+    state.order = (o) => completed(o)
+    expect((await post(app, event('PAYMENT.CAPTURE.COMPLETED', orderId))).status).toBe(
+      400,
+    )
+    expect((await c.get(`/api/trips/${id}`)).data.entitlement.fullGuide).toBe(false)
+  })
+
+  it('unlocks on a verified completion, re-checked with PayPal', async () => {
+    const { provider, state, completed } = fakePayments()
+    const { app } = setup({ payments: provider, config: { PAYPAL_WEBHOOK_ID: 'WH-1' } })
+    const { c, id, orderId } = await pendingTrip(state, completed, app)
+    state.order = (o) => completed(o)
+    const r = await post(app, event('PAYMENT.CAPTURE.COMPLETED', orderId))
+    expect(await r.json()).toEqual({ handled: true, status: 'paid' })
+    expect((await c.get(`/api/trips/${id}`)).data.entitlement.fullGuide).toBe(true)
+  })
+
+  it('ignores what the event claims: a "completed" event for an order PayPal says is pending unlocks nothing', async () => {
+    const { provider, state, completed } = fakePayments()
+    const { app } = setup({ payments: provider, config: { PAYPAL_WEBHOOK_ID: 'WH-1' } })
+    const { c, id, orderId } = await pendingTrip(state, completed, app)
+    const r = await post(app, event('PAYMENT.CAPTURE.COMPLETED', orderId))
+    expect(await r.json()).toEqual({ handled: true, status: 'pending' })
+    expect((await c.get(`/api/trips/${id}`)).data.entitlement.fullGuide).toBe(false)
+  })
+
+  it('a verified refund re-locks the guide', async () => {
+    const { provider, state, completed } = fakePayments()
+    const { app } = setup({ payments: provider, config: { PAYPAL_WEBHOOK_ID: 'WH-1' } })
+    state.capture = (o) => completed(o)
+    const c = client(app)
+    const id = await generatedTrip(c)
+    const { data } = await c.post(`/api/trips/${id}/checkout`, {})
+    await c.post(`/api/trips/${id}/checkout/capture`, { orderId: data.orderId })
+    expect((await c.get(`/api/trips/${id}`)).data.entitlement.fullGuide).toBe(true)
+    state.order = (o) => completed(o, { captureStatus: 'REFUNDED' })
+    await post(app, event('PAYMENT.CAPTURE.REFUNDED', data.orderId))
+    expect((await c.get(`/api/trips/${id}`)).data.entitlement.fullGuide).toBe(false)
+    // A late duplicate "completed" capture callback cannot undo the refund.
+    state.capture = (o) => completed(o)
+    const late = await c.post(`/api/trips/${id}/checkout/capture`, {
+      orderId: data.orderId,
+    })
+    expect(late.data.status).toBe('failed')
+    expect((await c.get(`/api/trips/${id}`)).data.entitlement.fullGuide).toBe(false)
+  })
+
+  it('ignores events for orders we do not know', async () => {
+    const { provider } = fakePayments()
+    const { app } = setup({ payments: provider, config: { PAYPAL_WEBHOOK_ID: 'WH-1' } })
+    const r = await post(app, event('PAYMENT.CAPTURE.COMPLETED', 'UNKNOWN123'))
+    expect(await r.json()).toEqual({ handled: false })
   })
 })

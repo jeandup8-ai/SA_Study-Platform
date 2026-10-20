@@ -1,5 +1,5 @@
 import pg from 'pg'
-import type { PlaceRecord } from '../../shared/types.js'
+import type { Itinerary, PlaceRecord } from '../../shared/types.js'
 import { MIGRATIONS } from './migrations.js'
 import type {
   OrderRow,
@@ -30,7 +30,7 @@ function toTrip(r: Row): TripRow {
 function toOrder(r: Row): OrderRow {
   return {
     id: String(r.id),
-    tripId: String(r.trip_id),
+    tripId: r.trip_id === null ? null : String(r.trip_id),
     provider: String(r.provider),
     providerOrderId: String(r.provider_order_id),
     amount: String(r.amount),
@@ -177,12 +177,20 @@ export class PostgresStore implements Store {
         'delete from trip_places where trip_id = $1 and not (place_id = any($2::text[]))',
         [tripId, ids],
       )
-      for (const r of records) {
+      if (records.length > 0) {
+        // One statement for the whole batch.
         await client.query(
           `insert into trip_places (trip_id, place_id, provider, provider_place_id, record, expires_at)
-           values ($1, $2, $3, $4, $5, $6)
+           select $1, * from unnest($2::text[], $3::text[], $4::text[], $5::jsonb[], $6::timestamptz[])
            on conflict (trip_id, place_id) do update set record = excluded.record, expires_at = excluded.expires_at`,
-          [tripId, r.id, r.provider, r.providerPlaceId, JSON.stringify(r), r.expiresAt],
+          [
+            tripId,
+            records.map((r) => r.id),
+            records.map((r) => r.provider),
+            records.map((r) => r.providerPlaceId),
+            records.map((r) => JSON.stringify(r)),
+            records.map((r) => r.expiresAt),
+          ],
         )
       }
       await client.query('commit')
@@ -248,10 +256,10 @@ export class PostgresStore implements Store {
     captureId: string | null,
     now: string,
   ) {
-    // A paid order is terminal; the where-clause makes duplicate callbacks harmless.
+    // Mirrors canMoveOrder in SQL, so duplicate or late callbacks can't undo a payment.
     await this.pool.query(
       `update orders set status = $2, capture_id = coalesce($3, capture_id), updated_at = $4
-       where id = $1 and status <> 'paid'`,
+       where id = $1 and status <> 'refunded' and (status <> 'paid' or $2 = 'refunded')`,
       [id, status, captureId, now],
     )
     const { rows } = await this.pool.query('select * from orders where id = $1', [id])
@@ -264,6 +272,30 @@ export class PostgresStore implements Store {
       [tripId],
     )
     return rows.length > 0
+  }
+
+  async listOrdersForTrip(tripId: string) {
+    const { rows } = await this.pool.query(
+      'select * from orders where trip_id = $1 order by created_at',
+      [tripId],
+    )
+    return rows.map(toOrder)
+  }
+
+  async saveItinerary(
+    id: string,
+    itinerary: Itinerary,
+    expectedVersion: number,
+    now: string,
+  ) {
+    // Compare-and-set on the stored version, so concurrent edits can't both win.
+    const { rows } = await this.pool.query(
+      `update trips set itinerary = $2, updated_at = $3
+       where id = $1 and coalesce((itinerary->>'version')::int, 0) = $4
+       returning *`,
+      [id, JSON.stringify(itinerary), now, expectedVersion],
+    )
+    return rows[0] ? toTrip(rows[0]) : null
   }
 
   async close() {

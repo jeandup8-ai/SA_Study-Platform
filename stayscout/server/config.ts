@@ -44,6 +44,8 @@ const envSchema = z
     ),
     PAYPAL_CLIENT_ID: optional,
     PAYPAL_CLIENT_SECRET: optional,
+    /** From the PayPal app's Webhooks section; enables POST /api/webhooks/paypal. */
+    PAYPAL_WEBHOOK_ID: optional,
     /** Live PayPal stays off unless this is explicitly "true", even with live credentials. */
     PAYPAL_LIVE_ENABLED: z.preprocess(
       emptyToUndefined,

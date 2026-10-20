@@ -19,6 +19,7 @@ export function setup(
     safety?: SafetyProvider
     store?: Store
     config?: Partial<Config>
+    now?: () => Date
   } = {},
 ) {
   const config = { ...loadConfig({ NODE_ENV: 'test' }), ...over.config }
@@ -30,6 +31,7 @@ export function setup(
     ai: over.ai ?? null,
     payments: over.payments ?? null,
     safety: over.safety ?? new NoSafetyProvider(),
+    now: over.now,
   })
   const app = createApp({ config, service, store, clientIp: () => 'test' })
   return { app, store, service, config }

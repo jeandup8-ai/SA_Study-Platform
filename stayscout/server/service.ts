@@ -36,10 +36,14 @@ import {
   type PlanDay,
 } from './itinerary/engine.js'
 import type { AiProvider } from './providers/ai.js'
-import { evaluateOrder, type PaymentProvider } from './providers/payments.js'
+import {
+  evaluateOrder,
+  type OrderSnapshot,
+  type PaymentProvider,
+} from './providers/payments.js'
 import type { PlaceCandidate, PlacesProvider } from './providers/places/types.js'
 import { buildSafetyPanel, type SafetyProvider } from './providers/safety.js'
-import type { Store, TripRow } from './store/types.js'
+import type { OrderRow, Store, TripRow } from './store/types.js'
 
 export class ServiceError extends Error {
   readonly status: number
@@ -397,6 +401,10 @@ export class TripService {
       return { fullGuide: true, reason: 'payments_not_configured' as const }
     if (await this.d.store.hasPaidOrder(trip.id))
       return { fullGuide: true, reason: 'paid' as const }
+    // A capture PayPal held as PENDING may have completed since; ask again
+    // (the webhook normally does this, this covers a missed delivery).
+    if (await this.reconcilePending(trip.id))
+      return { fullGuide: true, reason: 'paid' as const }
     return { fullGuide: false, reason: 'preview' as const }
   }
 
@@ -418,6 +426,15 @@ export class TripService {
     if (itinerary && !ent.fullGuide && itinerary.days.length > 1) {
       lockedDays = itinerary.days.length - 1
       itinerary = { ...itinerary, days: itinerary.days.slice(0, 1) }
+      // Issues about locked days name their places and items; don't leak them.
+      const visiblePlaces = new Set(
+        itinerary.days.flatMap((d) => d.items.map((i) => i.placeId)),
+      )
+      issues = issues.filter((i) =>
+        i.dayIndex !== undefined
+          ? i.dayIndex === 0
+          : i.placeId === undefined || visiblePlaces.has(i.placeId),
+      )
     }
     return {
       id: trip.id,
@@ -475,6 +492,7 @@ export class TripService {
     trip: TripRow,
     itin: Itinerary,
     ctx: EngineContext,
+    expectedVersion: number,
   ): Promise<{ trip: TripRow; issues: ItineraryIssue[] }> {
     const issues = validateItinerary(itin, ctx)
     if (hasErrors(issues)) {
@@ -485,12 +503,20 @@ export class TripService {
         issues,
       )
     }
-    const saved = await this.d.store.updateTrip(
+    const saved = await this.d.store.saveItinerary(
       trip.id,
-      { itinerary: itin },
+      itin,
+      expectedVersion,
       this.now().toISOString(),
     )
-    return { trip: saved!, issues }
+    if (!saved) {
+      throw new ServiceError(
+        409,
+        'version_conflict',
+        'This plan changed in another tab. Reload to see the latest version.',
+      )
+    }
+    return { trip: saved, issues }
   }
 
   async generate(trip: TripRow, opts: { useAi: boolean }) {
@@ -515,7 +541,7 @@ export class TripService {
             ctx,
           )
           const issues = validateItinerary(itin, ctx)
-          if (!hasErrors(issues)) return this.save(trip, itin, ctx)
+          if (!hasErrors(issues)) return this.save(trip, itin, ctx, version - 1)
           warnings.push(
             `The AI draft broke ${issues.filter((i) => i.severity === 'error').length} planning rule(s), so StayScout's built-in planner was used instead.`,
           )
@@ -540,7 +566,7 @@ export class TripService {
       }),
       ctx,
     )
-    return this.save(trip, itin, ctx)
+    return this.save(trip, itin, ctx, version - 1)
   }
 
   /** Rebuilds one day, leaving every other day exactly as it was. */
@@ -580,7 +606,7 @@ export class TripService {
     itin.days = itin.days.map((d, i) =>
       i === dayIndex ? d : { ...d, notes: current.days[i]!.notes },
     )
-    return this.save(trip, itin, ctx)
+    return this.save(trip, itin, ctx, current.version)
   }
 
   async editItinerary(trip: TripRow, edit: ItineraryEdit) {
@@ -594,7 +620,17 @@ export class TripService {
         'This plan changed in another tab. Reload to see the latest version.',
       )
     }
-    const itin = hydratePlan(edit.days, ctx, {
+    // A preview only shows (and so only submits) the unlocked first day; keep
+    // the locked days as they are instead of treating them as deleted.
+    let days: PlanDay[] = edit.days
+    if (!(await this.entitlement(trip)).fullGuide) {
+      const visible = new Set(current.days.slice(0, 1).map((d) => d.date))
+      days = [
+        ...edit.days.filter((d) => visible.has(d.date)),
+        ...current.days.slice(1).map((d) => ({ date: d.date, items: d.items })),
+      ]
+    }
+    const itin = hydratePlan(days, ctx, {
       generatedBy: current.generatedBy,
       version: current.version + 1,
       warnings: [],
@@ -603,7 +639,7 @@ export class TripService {
       ...d,
       notes: current.days.find((c) => c.date === d.date)?.notes ?? d.notes,
     }))
-    return this.save(trip, itin, ctx)
+    return this.save(trip, itin, ctx, current.version)
   }
 
   async exportableView(trip: TripRow): Promise<TripView> {
@@ -649,6 +685,13 @@ export class TripService {
   // ------------------------------------------------------------- sharing
 
   async enableShare(trip: TripRow): Promise<string> {
+    if (!(await this.entitlement(trip)).fullGuide) {
+      throw new ServiceError(
+        402,
+        'payment_required',
+        'Share links come with the complete guide.',
+      )
+    }
     const token = newToken()
     await this.d.store.updateTrip(
       trip.id,
@@ -741,21 +784,39 @@ export class TripService {
         'We could not confirm the payment yet. If you were charged, it will be applied once confirmed — try again in a moment.',
       )
     }
+    return this.applyOutcome(order, snap)
+  }
+
+  /** Records what PayPal says about an order. The only place an order becomes paid. */
+  private async applyOutcome(order: OrderRow, snap: OrderSnapshot) {
     const outcome = evaluateOrder(snap, {
-      tripId: trip.id,
+      tripId: order.tripId ?? '',
       amount: order.amount,
       currency: order.currency,
     })
     const now = this.now().toISOString()
     switch (outcome.state) {
-      case 'paid':
-        await this.d.store.updateOrder(order.id, 'paid', outcome.captureId, now)
-        return { status: 'paid' as const }
+      case 'paid': {
+        // Report what was stored: a refunded order stays refunded even if a
+        // late callback says "completed".
+        const stored = await this.d.store.updateOrder(
+          order.id,
+          'paid',
+          outcome.captureId,
+          now,
+        )
+        if (stored?.status === 'paid') return { status: 'paid' as const }
+        return { status: 'failed' as const, reason: 'This payment was refunded.' }
+      }
       case 'pending':
         await this.d.store.updateOrder(order.id, 'pending', null, now)
         return { status: 'pending' as const }
       case 'awaiting_approval':
         return { status: 'awaiting_approval' as const }
+      case 'refunded':
+        // Paid → refunded is the one move away from paid; it re-locks the guide.
+        await this.d.store.updateOrder(order.id, 'refunded', null, now)
+        return { status: 'failed' as const, reason: 'This payment was refunded.' }
       case 'failed':
         await this.d.store.updateOrder(order.id, 'failed', null, now)
         return { status: 'failed' as const, reason: outcome.reason }
@@ -769,4 +830,84 @@ export class TripService {
         }
     }
   }
+
+  /** Re-asks PayPal about this trip's pending orders. True if one is now paid. */
+  private async reconcilePending(tripId: string): Promise<boolean> {
+    const payments = this.d.payments
+    if (!payments) return false
+    const now = this.now().getTime()
+    const pending = (await this.d.store.listOrdersForTrip(tripId)).filter(
+      // Don't hammer PayPal on every page load: at most once a minute per order.
+      (o) => o.status === 'pending' && now - Date.parse(o.updatedAt) > 60_000,
+    )
+    for (const order of pending) {
+      try {
+        const r = await this.applyOutcome(
+          order,
+          await payments.getOrder(order.providerOrderId),
+        )
+        if (r.status === 'paid') return true
+        // Touch the order so the next check waits another minute.
+        if (r.status === 'pending' || r.status === 'awaiting_approval') {
+          await this.d.store.updateOrder(
+            order.id,
+            'pending',
+            null,
+            this.now().toISOString(),
+          )
+        }
+      } catch {
+        // PayPal unreachable: leave it pending and try on a later visit.
+      }
+    }
+    return false
+  }
+
+  /**
+   * PayPal webhook. The event body is used only to find our order; its
+   * status is then fetched from PayPal and evaluated like a capture, so a
+   * forged or replayed event can't unlock anything.
+   */
+  async handlePaymentWebhook(
+    headers: Record<string, string | undefined>,
+    event: unknown,
+  ) {
+    const payments = this.d.payments
+    const webhookId = this.d.config.PAYPAL_WEBHOOK_ID
+    if (!payments || !webhookId) throw new ServiceError(404, 'not_found', 'Not found.')
+    if (!(await payments.verifyWebhook(headers, event, webhookId))) {
+      throw new ServiceError(
+        400,
+        'bad_signature',
+        'Webhook signature could not be verified.',
+      )
+    }
+    const orderId = webhookOrderId(event)
+    if (!orderId) return { handled: false }
+    const order = await this.d.store.getOrderByProviderId(payments.name, orderId)
+    if (!order || !order.tripId) return { handled: false }
+    let snap
+    try {
+      snap = await payments.getOrder(orderId)
+    } catch {
+      // A non-2xx makes PayPal retry the delivery later.
+      throw new ServiceError(503, 'payments_unavailable', 'Payment service unavailable.')
+    }
+    const r = await this.applyOutcome(order, snap)
+    return { handled: true, status: r.status }
+  }
+}
+
+/** Finds the PayPal order id in a webhook event (order or capture resource). */
+export function webhookOrderId(event: unknown): string | null {
+  const e = (typeof event === 'object' && event !== null ? event : {}) as Record<
+    string,
+    any
+  >
+  const type = typeof e.event_type === 'string' ? e.event_type : ''
+  const resource = e.resource ?? {}
+  const id = type.startsWith('CHECKOUT.ORDER.')
+    ? resource.id
+    : resource.supplementary_data?.related_ids?.order_id
+  return typeof id === 'string' && /^[A-Z0-9]{5,40}$/.test(id) ? id : null
 }

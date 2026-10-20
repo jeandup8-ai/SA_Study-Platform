@@ -13,7 +13,7 @@ describe.skipIf(!url)('PostgresStore', () => {
     await store.pool.query(
       'drop table if exists orders, trip_places, trips, schema_migrations cascade',
     )
-    expect(await store.migrate()).toEqual(['001_init'])
+    expect(await store.migrate()).toEqual(['001_init', '002_keep_orders_add_refunded'])
     expect(await store.migrate()).toEqual([]) // idempotent
   })
   afterAll(async () => {
@@ -77,5 +77,30 @@ describe.skipIf(!url)('PostgresStore', () => {
     expect((await store.updateOrder(row.id, 'paid', 'CAPX', now))!.status).toBe('paid')
     expect((await store.updateOrder(row.id, 'failed', null, now))!.status).toBe('paid')
     expect(await store.hasPaidOrder(id)).toBe(true)
+    // paid → refunded is allowed, and refunded is final.
+    expect((await store.updateOrder(row.id, 'refunded', null, now))!.status).toBe(
+      'refunded',
+    )
+    expect((await store.updateOrder(row.id, 'paid', null, now))!.status).toBe('refunded')
+    expect(await store.hasPaidOrder(id)).toBe(false)
+    // Deleting the trip keeps the order, detached.
+    await store.deleteTrip(id)
+    expect(await store.getOrderByProviderId('paypal', 'PGTEST1')).toMatchObject({
+      tripId: null,
+      captureId: 'CAPX',
+    })
+  })
+
+  it('saves an itinerary only when the stored version matches', async () => {
+    const { app } = setup({ store })
+    const c = client(app)
+    const { id } = await readyTrip(c)
+    const gen = await c.post(`/api/trips/${id}/itinerary`, { useAi: false })
+    const v = gen.data.itinerary.version
+    const trip = (await store.getTrip(id))!
+    const now = new Date().toISOString()
+    const next = { ...trip.itinerary!, version: v + 1 }
+    expect(await store.saveItinerary(id, next, v, now)).not.toBeNull()
+    expect(await store.saveItinerary(id, { ...next, version: v + 2 }, v, now)).toBeNull()
   })
 })

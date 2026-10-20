@@ -26,11 +26,12 @@ export interface PlaceRow {
   favourite: boolean
 }
 
-export type OrderStatus = 'created' | 'pending' | 'paid' | 'failed'
+export type OrderStatus = 'created' | 'pending' | 'paid' | 'failed' | 'refunded'
 
 export interface OrderRow {
   id: string
-  tripId: string
+  /** null once the trip is deleted; the order is kept for refunds and accounting. */
+  tripId: string | null
   provider: string
   providerOrderId: string
   amount: string
@@ -54,6 +55,7 @@ export interface Store {
   getTrip(id: string): Promise<TripRow | null>
   listTripsByOwner(ownerHash: string): Promise<TripRow[]>
   updateTrip(id: string, patch: TripPatch, now: string): Promise<TripRow | null>
+  /** Deletes the trip and its places; its orders are kept, detached from it. */
   deleteTrip(id: string): Promise<void>
   findTripByShareHash(hash: string): Promise<TripRow | null>
 
@@ -72,7 +74,10 @@ export interface Store {
     provider: string,
     providerOrderId: string,
   ): Promise<OrderRow | null>
-  /** Moves an order to a new status; a paid order is never moved again. Returns the stored row. */
+  /**
+   * Moves an order to a new status. A paid order only ever moves to
+   * 'refunded'; a refunded order never moves. Returns the stored row.
+   */
   updateOrder(
     id: string,
     status: OrderStatus,
@@ -80,6 +85,25 @@ export interface Store {
     now: string,
   ): Promise<OrderRow | null>
   hasPaidOrder(tripId: string): Promise<boolean>
+  listOrdersForTrip(tripId: string): Promise<OrderRow[]>
+
+  /**
+   * Saves an itinerary only if the stored one still has `expectedVersion`
+   * (0 = none). Returns null on a version conflict.
+   */
+  saveItinerary(
+    id: string,
+    itinerary: Itinerary,
+    expectedVersion: number,
+    now: string,
+  ): Promise<TripRow | null>
 
   close(): Promise<void>
+}
+
+/** Allowed order transitions: anything unpaid can move; paid → refunded only. */
+export function canMoveOrder(from: OrderStatus, to: OrderStatus): boolean {
+  if (from === 'refunded') return false
+  if (from === 'paid') return to === 'refunded'
+  return true
 }
