@@ -232,7 +232,10 @@ const SPECS: Spec[] = [
     priceLevel: 'moderate',
     amount: [45, 60],
     hours: everyDay('08:00', '15:00'),
-    suitability: ['Minimum age 8 (sample claim)', 'Advance booking required (sample claim)'],
+    suitability: [
+      'Minimum age 8 (sample claim)',
+      'Advance booking required (sample claim)',
+    ],
     address: 'South Pier, Kestrel Bay',
   },
   {
@@ -438,7 +441,9 @@ const SPECS: Spec[] = [
 ]
 
 function toCandidate(spec: Spec): PlaceCandidate {
-  const location = spec.at ? destinationPoint(spec.from ?? RESORT_LOCATION, spec.at[0], spec.at[1]) : undefined
+  const location = spec.at
+    ? destinationPoint(spec.from ?? RESORT_LOCATION, spec.at[0], spec.at[1])
+    : undefined
   return {
     provider: 'demo',
     providerPlaceId: `demo-${spec.key}`,
@@ -453,18 +458,28 @@ function toCandidate(spec: Spec): PlaceCandidate {
     websiteUrl: null,
     bookingUrl: null,
     mapsUrl: null,
-    setting: { value: spec.setting, status: 'PROVIDER_LISTED', source: sampleSource('Indoor/outdoor setting') },
+    setting: {
+      value: spec.setting,
+      status: 'PROVIDER_LISTED',
+      source: sampleSource('Indoor/outdoor setting'),
+    },
     durationMinutes: { value: spec.duration, status: 'ESTIMATED', source: null },
     price: {
       value: {
         level: spec.priceLevel,
-        amount: spec.amount ? { min: spec.amount[0], max: spec.amount[1], currency: 'USD' } : null,
+        amount: spec.amount
+          ? { min: spec.amount[0], max: spec.amount[1], currency: 'USD' }
+          : null,
       },
       status: 'PROVIDER_LISTED',
       source: sampleSource('Price per person'),
     },
     openingHours: spec.hours
-      ? { value: spec.hours, status: 'PROVIDER_LISTED', source: sampleSource('Opening hours') }
+      ? {
+          value: spec.hours,
+          status: 'PROVIDER_LISTED',
+          source: sampleSource('Opening hours'),
+        }
       : null,
     suitability: (spec.suitability ?? []).map((note) => ({
       note,

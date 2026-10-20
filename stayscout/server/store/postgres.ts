@@ -1,7 +1,14 @@
 import pg from 'pg'
 import type { PlaceRecord } from '../../shared/types.js'
 import { MIGRATIONS } from './migrations.js'
-import type { OrderRow, OrderStatus, PlaceRow, Store, TripPatch, TripRow } from './types.js'
+import type {
+  OrderRow,
+  OrderStatus,
+  PlaceRow,
+  Store,
+  TripPatch,
+  TripRow,
+} from './types.js'
 
 type Row = Record<string, unknown>
 const iso = (v: unknown) => (v instanceof Date ? v.toISOString() : String(v))
@@ -35,7 +42,13 @@ function toOrder(r: Row): OrderRow {
   }
 }
 
-const TRIP_COLUMNS = { accommodation: 'accommodation', preferences: 'preferences', itinerary: 'itinerary', discovery: 'discovery', shareTokenHash: 'share_token_hash' } as const
+const TRIP_COLUMNS = {
+  accommodation: 'accommodation',
+  preferences: 'preferences',
+  itinerary: 'itinerary',
+  discovery: 'discovery',
+  shareTokenHash: 'share_token_hash',
+} as const
 
 export class PostgresStore implements Store {
   readonly kind = 'postgres' as const
@@ -56,8 +69,14 @@ export class PostgresStore implements Store {
     const applied: string[] = []
     try {
       await client.query('select pg_advisory_lock(472911)')
-      await client.query('create table if not exists schema_migrations (name text primary key, applied_at timestamptz not null default now())')
-      const done = new Set((await client.query('select name from schema_migrations')).rows.map((r) => r.name as string))
+      await client.query(
+        'create table if not exists schema_migrations (name text primary key, applied_at timestamptz not null default now())',
+      )
+      const done = new Set(
+        (await client.query('select name from schema_migrations')).rows.map(
+          (r) => r.name as string,
+        ),
+      )
       for (const m of MIGRATIONS) {
         if (done.has(m.name)) continue
         await client.query('begin')
@@ -82,7 +101,17 @@ export class PostgresStore implements Store {
     await this.pool.query(
       `insert into trips (id, owner_hash, created_at, updated_at, accommodation, preferences, itinerary, discovery, share_token_hash)
        values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-      [t.id, t.ownerHash, t.createdAt, t.updatedAt, json(t.accommodation), json(t.preferences), json(t.itinerary), json(t.discovery), t.shareTokenHash],
+      [
+        t.id,
+        t.ownerHash,
+        t.createdAt,
+        t.updatedAt,
+        json(t.accommodation),
+        json(t.preferences),
+        json(t.itinerary),
+        json(t.discovery),
+        t.shareTokenHash,
+      ],
     )
   }
 
@@ -92,7 +121,10 @@ export class PostgresStore implements Store {
   }
 
   async listTripsByOwner(ownerHash: string) {
-    const { rows } = await this.pool.query('select * from trips where owner_hash = $1 order by updated_at desc limit 50', [ownerHash])
+    const { rows } = await this.pool.query(
+      'select * from trips where owner_hash = $1 order by updated_at desc limit 50',
+      [ownerHash],
+    )
     return rows.map(toTrip)
   }
 
@@ -117,13 +149,23 @@ export class PostgresStore implements Store {
   }
 
   async findTripByShareHash(hash: string) {
-    const { rows } = await this.pool.query('select * from trips where share_token_hash = $1', [hash])
+    const { rows } = await this.pool.query(
+      'select * from trips where share_token_hash = $1',
+      [hash],
+    )
     return rows[0] ? toTrip(rows[0]) : null
   }
 
   async getPlaces(tripId: string): Promise<PlaceRow[]> {
-    const { rows } = await this.pool.query('select record, selected, favourite from trip_places where trip_id = $1', [tripId])
-    return rows.map((r) => ({ record: r.record as PlaceRecord, selected: r.selected as boolean, favourite: r.favourite as boolean }))
+    const { rows } = await this.pool.query(
+      'select record, selected, favourite from trip_places where trip_id = $1',
+      [tripId],
+    )
+    return rows.map((r) => ({
+      record: r.record as PlaceRecord,
+      selected: r.selected as boolean,
+      favourite: r.favourite as boolean,
+    }))
   }
 
   async replacePlaces(tripId: string, records: PlaceRecord[]) {
@@ -131,7 +173,10 @@ export class PostgresStore implements Store {
     try {
       await client.query('begin')
       const ids = records.map((r) => r.id)
-      await client.query('delete from trip_places where trip_id = $1 and not (place_id = any($2::text[]))', [tripId, ids])
+      await client.query(
+        'delete from trip_places where trip_id = $1 and not (place_id = any($2::text[]))',
+        [tripId, ids],
+      )
       for (const r of records) {
         await client.query(
           `insert into trip_places (trip_id, place_id, provider, provider_place_id, record, expires_at)
@@ -151,10 +196,17 @@ export class PostgresStore implements Store {
 
   async deletePlaces(tripId: string, placeIds: string[]) {
     if (placeIds.length === 0) return
-    await this.pool.query('delete from trip_places where trip_id = $1 and place_id = any($2::text[])', [tripId, placeIds])
+    await this.pool.query(
+      'delete from trip_places where trip_id = $1 and place_id = any($2::text[])',
+      [tripId, placeIds],
+    )
   }
 
-  async setSelection(tripId: string, placeId: string, sel: { selected?: boolean; favourite?: boolean }) {
+  async setSelection(
+    tripId: string,
+    placeId: string,
+    sel: { selected?: boolean; favourite?: boolean },
+  ) {
     const { rowCount } = await this.pool.query(
       `update trip_places set selected = coalesce($3, selected), favourite = coalesce($4, favourite)
        where trip_id = $1 and place_id = $2`,
@@ -167,16 +219,35 @@ export class PostgresStore implements Store {
     await this.pool.query(
       `insert into orders (id, trip_id, provider, provider_order_id, amount, currency, status, capture_id, created_at, updated_at)
        values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-      [o.id, o.tripId, o.provider, o.providerOrderId, o.amount, o.currency, o.status, o.captureId, o.createdAt, o.updatedAt],
+      [
+        o.id,
+        o.tripId,
+        o.provider,
+        o.providerOrderId,
+        o.amount,
+        o.currency,
+        o.status,
+        o.captureId,
+        o.createdAt,
+        o.updatedAt,
+      ],
     )
   }
 
   async getOrderByProviderId(provider: string, providerOrderId: string) {
-    const { rows } = await this.pool.query('select * from orders where provider = $1 and provider_order_id = $2', [provider, providerOrderId])
+    const { rows } = await this.pool.query(
+      'select * from orders where provider = $1 and provider_order_id = $2',
+      [provider, providerOrderId],
+    )
     return rows[0] ? toOrder(rows[0]) : null
   }
 
-  async updateOrder(id: string, status: OrderStatus, captureId: string | null, now: string) {
+  async updateOrder(
+    id: string,
+    status: OrderStatus,
+    captureId: string | null,
+    now: string,
+  ) {
     // A paid order is terminal; the where-clause makes duplicate callbacks harmless.
     await this.pool.query(
       `update orders set status = $2, capture_id = coalesce($3, capture_id), updated_at = $4
@@ -188,7 +259,10 @@ export class PostgresStore implements Store {
   }
 
   async hasPaidOrder(tripId: string) {
-    const { rows } = await this.pool.query(`select 1 from orders where trip_id = $1 and status = 'paid' limit 1`, [tripId])
+    const { rows } = await this.pool.query(
+      `select 1 from orders where trip_id = $1 and status = 'paid' limit 1`,
+      [tripId],
+    )
     return rows.length > 0
   }
 

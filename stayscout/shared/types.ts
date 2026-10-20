@@ -98,7 +98,11 @@ export interface PlaceRecord {
   durationMinutes: Claim<number> // usually ESTIMATED
   price: Claim<PriceInfo> | null
   openingHours: Claim<OpeningPeriod[]> | null
-  suitability: Array<{ note: string; status: VerificationStatus; source: SourceRecord | null }>
+  suitability: Array<{
+    note: string
+    status: VerificationStatus
+    source: SourceRecord | null
+  }>
   warnings: string[]
   limitations: string[]
   checkedAt: string
@@ -115,13 +119,7 @@ export interface TripPlace extends PlaceRecord {
 }
 
 export type AccommodationKind =
-  | 'hotel'
-  | 'resort'
-  | 'lodge'
-  | 'guesthouse'
-  | 'apartment'
-  | 'other'
-  | 'destination'
+  'hotel' | 'resort' | 'lodge' | 'guesthouse' | 'apartment' | 'other' | 'destination'
 
 export interface AccommodationCandidate {
   provider: ProviderName
@@ -147,15 +145,10 @@ export interface Accommodation extends AccommodationCandidate {
 }
 
 export type TripType =
-  | 'honeymoon'
-  | 'family'
-  | 'solo'
-  | 'group'
-  | 'adventure'
-  | 'relaxation'
-  | 'general'
+  'honeymoon' | 'family' | 'solo' | 'group' | 'adventure' | 'relaxation' | 'general'
 
-export type TransportMode = 'walking' | 'public' | 'rental_car' | 'taxi' | 'guided' | 'undecided'
+export type TransportMode =
+  'walking' | 'public' | 'rental_car' | 'taxi' | 'guided' | 'undecided'
 
 export type Pace = 'relaxed' | 'balanced' | 'packed'
 

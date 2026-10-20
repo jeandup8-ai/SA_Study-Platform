@@ -6,22 +6,28 @@
 // (https://www.gov.uk/api/content/foreign-travel-advice/<country-slug>).
 // NOT LIVE-TESTED: the build environment could not reach www.gov.uk.
 
-import type { Accommodation, PlaceCategory, SafetyEntry, SafetyPanel } from '../../shared/types.js'
-import { ProviderError, cleanText, requestJson, safeExternalUrl, type FetchLike } from './http.js'
-
-export const OFFICIAL_ADVISORY_LINKS = [
-  { title: 'UK Foreign, Commonwealth & Development Office — foreign travel advice', url: 'https://www.gov.uk/foreign-travel-advice' },
-  { title: 'US Department of State — travel advisories', url: 'https://travel.state.gov/content/travel/en/traveladvisories/traveladvisories.html' },
-  { title: 'Australian Government — Smartraveller', url: 'https://www.smartraveller.gov.au/destinations' },
-]
-
-export const SAFETY_DISCLAIMER =
-  'StayScout does not rate or guarantee safety. The absence of a warning here is not evidence that a place or activity is safe. Check official sources and local conditions before you travel and on each day of your trip.'
+import type {
+  Accommodation,
+  PlaceCategory,
+  SafetyEntry,
+  SafetyPanel,
+} from '../../shared/types.js'
+import { OFFICIAL_ADVISORY_LINKS, SAFETY_DISCLAIMER } from '../../shared/safety-copy.js'
+import {
+  ProviderError,
+  cleanText,
+  requestJson,
+  safeExternalUrl,
+  type FetchLike,
+} from './http.js'
 
 export interface SafetyProvider {
   readonly name: string
   readonly live: boolean
-  getSafetySources(accommodation: Accommodation, categories: PlaceCategory[]): Promise<SafetyEntry[]>
+  getSafetySources(
+    accommodation: Accommodation,
+    categories: PlaceCategory[],
+  ): Promise<SafetyEntry[]>
 }
 
 export class NoSafetyProvider implements SafetyProvider {
@@ -31,7 +37,9 @@ export class NoSafetyProvider implements SafetyProvider {
     return [
       {
         status: 'not_checked',
-        title: accommodation.isSample ? 'Sample destination — no advisory exists' : 'Travel advice not checked',
+        title: accommodation.isSample
+          ? 'Sample destination — no advisory exists'
+          : 'Travel advice not checked',
         summary: accommodation.isSample
           ? 'Kestrel Bay is fictional, so there is no official advice to show. In a live guide this panel lists the official sources StayScout retrieved.'
           : 'No safety-information source is configured, so StayScout has not checked official advice for this destination. Use the official sources below.',
@@ -63,8 +71,12 @@ const SLUG_OVERRIDES: Record<string, string> = {
   VE: 'venezuela',
 }
 
-export function fcdoSlug(countryCode: string | null, country: string | null): string | null {
-  if (countryCode && countryCode in SLUG_OVERRIDES) return SLUG_OVERRIDES[countryCode] || null
+export function fcdoSlug(
+  countryCode: string | null,
+  country: string | null,
+): string | null {
+  if (countryCode && countryCode in SLUG_OVERRIDES)
+    return SLUG_OVERRIDES[countryCode] || null
   if (!country) return null
   const slug = country
     .toLowerCase()
@@ -94,7 +106,8 @@ export class FcdoSafetyProvider implements SafetyProvider {
         {
           status: 'not_found',
           title: 'FCDO advice covers travel outside the UK',
-          summary: 'The FCDO does not publish foreign travel advice for the United Kingdom itself. Check local authority notices.',
+          summary:
+            'The FCDO does not publish foreign travel advice for the United Kingdom itself. Check local authority notices.',
           source: null,
           limitations: ['Country-level source only.'],
         },
@@ -102,7 +115,12 @@ export class FcdoSafetyProvider implements SafetyProvider {
     }
     const slug = fcdoSlug(accommodation.countryCode, accommodation.country)
     if (!slug) {
-      return [unavailable('The destination country could not be determined from the accommodation record.', checkedAt)]
+      return [
+        unavailable(
+          'The destination country could not be determined from the accommodation record.',
+          checkedAt,
+        ),
+      ]
     }
     const pageUrl = `https://www.gov.uk/foreign-travel-advice/${slug}`
     try {
@@ -113,7 +131,8 @@ export class FcdoSafetyProvider implements SafetyProvider {
         timeoutMs: 6000,
       })
       const title = cleanText(data.title, 200) ?? `${accommodation.country} travel advice`
-      const publishedAt = typeof data.public_updated_at === 'string' ? data.public_updated_at : null
+      const publishedAt =
+        typeof data.public_updated_at === 'string' ? data.public_updated_at : null
       return [
         {
           status: 'source_retrieved',
@@ -141,13 +160,16 @@ export class FcdoSafetyProvider implements SafetyProvider {
           {
             status: 'not_found',
             title: 'No FCDO advice page found for this country name',
-            summary: 'StayScout could not match the destination to an FCDO advice page. This does not mean there is no advice — search the FCDO list directly.',
+            summary:
+              'StayScout could not match the destination to an FCDO advice page. This does not mean there is no advice — search the FCDO list directly.',
             source: null,
             limitations: ['Matching is by country name and may miss some territories.'],
           },
         ]
       }
-      return [unavailable('The GOV.UK travel-advice service could not be reached.', checkedAt)]
+      return [
+        unavailable('The GOV.UK travel-advice service could not be reached.', checkedAt),
+      ]
     }
   }
 }
@@ -184,3 +206,5 @@ export async function buildSafetyPanel(
     disclaimer: SAFETY_DISCLAIMER,
   }
 }
+
+export { OFFICIAL_ADVISORY_LINKS, SAFETY_DISCLAIMER }

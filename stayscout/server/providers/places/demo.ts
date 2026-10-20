@@ -20,7 +20,10 @@ export class DemoPlacesProvider implements PlacesProvider {
   readonly name = 'demo' as const
   readonly isSample = true
 
-  async searchAccommodation(query: string, kind: string): Promise<AccommodationCandidate[]> {
+  async searchAccommodation(
+    query: string,
+    kind: string,
+  ): Promise<AccommodationCandidate[]> {
     const words = normalise(query).split(' ').filter(Boolean)
     if (words.length === 0) return []
     return DEMO_ACCOMMODATIONS.filter((a) => {
@@ -31,7 +34,9 @@ export class DemoPlacesProvider implements PlacesProvider {
     })
   }
 
-  async resolveAccommodation(providerPlaceId: string): Promise<AccommodationCandidate | null> {
+  async resolveAccommodation(
+    providerPlaceId: string,
+  ): Promise<AccommodationCandidate | null> {
     return DEMO_ACCOMMODATIONS.find((a) => a.providerPlaceId === providerPlaceId) ?? null
   }
 

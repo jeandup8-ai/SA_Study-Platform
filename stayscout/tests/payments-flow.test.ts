@@ -5,7 +5,11 @@ import { client, readyTrip, setup } from './helpers.js'
 /** A scripted payment provider; captureOrder returns whatever the test sets. */
 function fakePayments() {
   let n = 0
-  const state = { capture: null as null | ((orderId: string) => OrderSnapshot), captureCalls: 0, tripByOrder: new Map<string, string>() }
+  const state = {
+    capture: null as null | ((orderId: string) => OrderSnapshot),
+    captureCalls: 0,
+    tripByOrder: new Map<string, string>(),
+  }
   const provider: PaymentProvider = {
     name: 'paypal',
     mode: 'sandbox',
@@ -13,7 +17,15 @@ function fakePayments() {
     async createOrder({ tripId }) {
       const orderId = `ORDER${++n}AAAA`
       state.tripByOrder.set(orderId, tripId)
-      return { orderId, orderStatus: 'CREATED', captureId: null, captureStatus: null, amount: '9.00', currency: 'USD', customId: tripId }
+      return {
+        orderId,
+        orderStatus: 'CREATED',
+        captureId: null,
+        captureStatus: null,
+        amount: '9.00',
+        currency: 'USD',
+        customId: tripId,
+      }
     },
     async captureOrder(orderId) {
       state.captureCalls++
@@ -23,7 +35,19 @@ function fakePayments() {
       throw new Error('unused')
     },
   }
-  const completed = (orderId: string, over: Partial<OrderSnapshot> = {}): OrderSnapshot => ({ orderId, orderStatus: 'COMPLETED', captureId: `CAP-${orderId}`, captureStatus: 'COMPLETED', amount: '9.00', currency: 'USD', customId: state.tripByOrder.get(orderId)!, ...over })
+  const completed = (
+    orderId: string,
+    over: Partial<OrderSnapshot> = {},
+  ): OrderSnapshot => ({
+    orderId,
+    orderStatus: 'COMPLETED',
+    captureId: `CAP-${orderId}`,
+    captureStatus: 'COMPLETED',
+    amount: '9.00',
+    currency: 'USD',
+    customId: state.tripByOrder.get(orderId)!,
+    ...over,
+  })
   return { provider, state, completed }
 }
 
@@ -38,7 +62,11 @@ describe('payments', () => {
     const c = client(setup().app)
     const id = await generatedTrip(c)
     const v = await c.get(`/api/trips/${id}`)
-    expect(v.data.entitlement).toEqual({ fullGuide: true, reason: 'payments_not_configured', lockedDays: 0 })
+    expect(v.data.entitlement).toEqual({
+      fullGuide: true,
+      reason: 'payments_not_configured',
+      lockedDays: 0,
+    })
     expect((await c.post(`/api/trips/${id}/checkout`, {})).status).toBe(409)
   })
 
@@ -64,7 +92,15 @@ describe('payments', () => {
 
   it('cancelled checkout (never approved) leaves the guide locked', async () => {
     const { provider, state } = fakePayments()
-    state.capture = (orderId) => ({ orderId, orderStatus: 'CREATED', captureId: null, captureStatus: null, amount: '9.00', currency: 'USD', customId: null })
+    state.capture = (orderId) => ({
+      orderId,
+      orderStatus: 'CREATED',
+      captureId: null,
+      captureStatus: null,
+      amount: '9.00',
+      currency: 'USD',
+      customId: null,
+    })
     const c = client(setup({ payments: provider }).app)
     const id = await generatedTrip(c)
     const { data } = await c.post(`/api/trips/${id}/checkout`, {})
@@ -79,9 +115,15 @@ describe('payments', () => {
     const c = client(setup({ payments: provider }).app)
     const id = await generatedTrip(c)
     const { data } = await c.post(`/api/trips/${id}/checkout`, {})
-    const results = await Promise.all([1, 2, 3].map(() => c.post(`/api/trips/${id}/checkout/capture`, { orderId: data.orderId })))
+    const results = await Promise.all(
+      [1, 2, 3].map(() =>
+        c.post(`/api/trips/${id}/checkout/capture`, { orderId: data.orderId }),
+      ),
+    )
     expect(results.map((r) => r.data.status)).toEqual(['paid', 'paid', 'paid'])
-    const again = await c.post(`/api/trips/${id}/checkout/capture`, { orderId: data.orderId })
+    const again = await c.post(`/api/trips/${id}/checkout/capture`, {
+      orderId: data.orderId,
+    })
     expect(again.data.status).toBe('paid')
     expect(state.captureCalls).toBeLessThanOrEqual(3) // later calls short-circuit on our own record
     const v = await c.get(`/api/trips/${id}`)
@@ -92,13 +134,19 @@ describe('payments', () => {
   })
 
   it('a wrong amount, currency or guide id does not unlock', async () => {
-    for (const over of [{ amount: '0.01' }, { currency: 'EUR' }, { customId: 'someone-else' }]) {
+    for (const over of [
+      { amount: '0.01' },
+      { currency: 'EUR' },
+      { customId: 'someone-else' },
+    ]) {
       const { provider, state, completed } = fakePayments()
       state.capture = (orderId) => completed(orderId, over)
       const c = client(setup({ payments: provider }).app)
       const id = await generatedTrip(c)
       const { data } = await c.post(`/api/trips/${id}/checkout`, {})
-      const r = await c.post(`/api/trips/${id}/checkout/capture`, { orderId: data.orderId })
+      const r = await c.post(`/api/trips/${id}/checkout/capture`, {
+        orderId: data.orderId,
+      })
       expect(r.data.status).toBe('failed')
       expect((await c.get(`/api/trips/${id}`)).data.entitlement.fullGuide).toBe(false)
     }
@@ -111,7 +159,9 @@ describe('payments', () => {
       const c = client(setup({ payments: provider }).app)
       const id = await generatedTrip(c)
       const { data } = await c.post(`/api/trips/${id}/checkout`, {})
-      const r = await c.post(`/api/trips/${id}/checkout/capture`, { orderId: data.orderId })
+      const r = await c.post(`/api/trips/${id}/checkout/capture`, {
+        orderId: data.orderId,
+      })
       expect(r.data.status).toBe(captureStatus === 'PENDING' ? 'pending' : 'failed')
       expect((await c.get(`/api/trips/${id}`)).data.entitlement.fullGuide).toBe(false)
     }
@@ -126,7 +176,9 @@ describe('payments', () => {
     const idA = await generatedTrip(a)
     const idB = await generatedTrip(b)
     const { data } = await a.post(`/api/trips/${idA}/checkout`, {})
-    const r = await b.post(`/api/trips/${idB}/checkout/capture`, { orderId: data.orderId })
+    const r = await b.post(`/api/trips/${idB}/checkout/capture`, {
+      orderId: data.orderId,
+    })
     expect(r.status).toBe(404)
     expect(state.captureCalls).toBe(0)
   })

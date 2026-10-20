@@ -68,7 +68,11 @@ export function buildUserMessage(input: AiPlanInput): string {
   const limit = { relaxed: 1, balanced: 2, packed: 3 }[p.pace]
   const candidates = [...input.places]
     .filter((x) => x.category !== 'practical')
-    .sort((a, b) => Number(b.selected || b.favourite) - Number(a.selected || a.favourite) || a.distanceMeters - b.distanceMeters)
+    .sort(
+      (a, b) =>
+        Number(b.selected || b.favourite) - Number(a.selected || a.favourite) ||
+        a.distanceMeters - b.distanceMeters,
+    )
     .slice(0, MAX_CANDIDATES)
     .map((x) => ({
       placeId: x.id,
@@ -79,7 +83,12 @@ export function buildUserMessage(input: AiPlanInput): string {
       setting: x.setting.value,
       typicalVisitMinutes: x.durationMinutes.value,
       openingHours: x.openingHours
-        ? x.openingHours.value.map((h) => `${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][h.day]} ${h.open}-${h.close}`).join('; ')
+        ? x.openingHours.value
+            .map(
+              (h) =>
+                `${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][h.day]} ${h.open}-${h.close}`,
+            )
+            .join('; ')
         : 'unknown',
       suitability: x.suitability.map((s) => s.note),
     }))
@@ -125,16 +134,21 @@ export class AnthropicAiProvider implements AiProvider {
         output_config: { format: betaZodOutputFormat(proposalSchema) },
       })
     } catch (err) {
-      if (err instanceof Anthropic.RateLimitError) throw new AiUnavailableError('AI rate limited')
-      if (err instanceof Anthropic.APIError) throw new AiUnavailableError(`AI request failed (${err.status ?? 'network'})`)
+      if (err instanceof Anthropic.RateLimitError)
+        throw new AiUnavailableError('AI rate limited')
+      if (err instanceof Anthropic.APIError)
+        throw new AiUnavailableError(`AI request failed (${err.status ?? 'network'})`)
       throw new AiUnavailableError('AI request failed')
     }
-    if (response.stop_reason === 'refusal') throw new AiUnavailableError('AI declined the request')
-    if (response.stop_reason === 'max_tokens') throw new AiUnavailableError('AI response was truncated')
+    if (response.stop_reason === 'refusal')
+      throw new AiUnavailableError('AI declined the request')
+    if (response.stop_reason === 'max_tokens')
+      throw new AiUnavailableError('AI response was truncated')
     const parsed = response.parsed_output
     if (!parsed) throw new AiUnavailableError('AI response did not match the schema')
     const checked = proposalSchema.safeParse(parsed)
-    if (!checked.success) throw new AiUnavailableError('AI response did not match the schema')
+    if (!checked.success)
+      throw new AiUnavailableError('AI response did not match the schema')
     return checked.data.days
   }
 }

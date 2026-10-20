@@ -18,14 +18,18 @@ describe('accommodation search', () => {
     const r = await c.post('/api/accommodation/search', { query: 'kestrel resort' })
     expect(r.status).toBe(200)
     expect(r.data.isSample).toBe(true)
-    expect(r.data.candidates.map((x: { name: string }) => x.name)).toEqual(['Kestrel Bay Beach Resort'])
+    expect(r.data.candidates.map((x: { name: string }) => x.name)).toEqual([
+      'Kestrel Bay Beach Resort',
+    ])
   })
 
   it('disambiguates properties that share a name', async () => {
     const c = client(setup().app)
     const r = await c.post('/api/accommodation/search', { query: 'Harbour View Lodge' })
     expect(r.data.candidates).toHaveLength(2)
-    const lines = r.data.candidates.map((x: { disambiguation: string }) => x.disambiguation)
+    const lines = r.data.candidates.map(
+      (x: { disambiguation: string }) => x.disambiguation,
+    )
     expect(new Set(lines).size).toBe(2)
     expect(lines.every(Boolean)).toBe(true)
   })
@@ -46,7 +50,11 @@ describe('accommodation search', () => {
 describe('trip creation and confirmation', () => {
   it('takes coordinates from the provider, not the browser', async () => {
     const c = client(setup().app)
-    const r = await c.post('/api/trips', { provider: 'demo', providerPlaceId: 'demo-acc-kestrel-resort', location: { lat: 0, lng: 0 } })
+    const r = await c.post('/api/trips', {
+      provider: 'demo',
+      providerPlaceId: 'demo-acc-kestrel-resort',
+      location: { lat: 0, lng: 0 },
+    })
     expect(r.status).toBe(201)
     expect(r.data.accommodation.location).toEqual(DEMO_ACCOMMODATIONS[0]!.location)
     expect(r.data.accommodation.confirmed).toBe(false)
@@ -54,7 +62,10 @@ describe('trip creation and confirmation', () => {
 
   it('refuses discovery before the location is confirmed', async () => {
     const c = client(setup().app)
-    const { data } = await c.post('/api/trips', { provider: 'demo', providerPlaceId: 'demo-acc-kestrel-resort' })
+    const { data } = await c.post('/api/trips', {
+      provider: 'demo',
+      providerPlaceId: 'demo-acc-kestrel-resort',
+    })
     const r = await c.post(`/api/trips/${data.id}/discover`, {})
     expect(r.status).toBe(409)
     expect(r.data.error.code).toBe('accommodation_unconfirmed')
@@ -62,17 +73,24 @@ describe('trip creation and confirmation', () => {
 
   it('requires explicit acknowledgement for a town-centre location', async () => {
     const c = client(setup().app)
-    const { data } = await c.post('/api/trips', { provider: 'demo', providerPlaceId: 'demo-area-kestrel' })
+    const { data } = await c.post('/api/trips', {
+      provider: 'demo',
+      providerPlaceId: 'demo-area-kestrel',
+    })
     const refused = await c.post(`/api/trips/${data.id}/accommodation/confirm`, {})
     expect(refused.status).toBe(422)
     expect(refused.data.error.code).toBe('area_centre_unacknowledged')
-    const ok = await c.post(`/api/trips/${data.id}/accommodation/confirm`, { acknowledgeAreaCentre: true })
+    const ok = await c.post(`/api/trips/${data.id}/accommodation/confirm`, {
+      acknowledgeAreaCentre: true,
+    })
     expect(ok.data.accommodation.confirmed).toBe(true)
   })
 
   it('rejects an unknown property id', async () => {
     const c = client(setup().app)
-    expect((await c.post('/api/trips', { provider: 'demo', providerPlaceId: 'nope' })).status).toBe(404)
+    expect(
+      (await c.post('/api/trips', { provider: 'demo', providerPlaceId: 'nope' })).status,
+    ).toBe(404)
   })
 })
 
@@ -84,7 +102,10 @@ describe('access control', () => {
     const stranger = client(app)
     await stranger.post('/api/accommodation/search', { query: 'kestrel' }) // has no cookie yet
     expect((await stranger.get(`/api/trips/${id}`)).status).toBe(404)
-    await stranger.post('/api/trips', { provider: 'demo', providerPlaceId: 'demo-acc-kestrel-resort' }) // now has its own cookie
+    await stranger.post('/api/trips', {
+      provider: 'demo',
+      providerPlaceId: 'demo-acc-kestrel-resort',
+    }) // now has its own cookie
     for (const r of [
       await stranger.get(`/api/trips/${id}`),
       await stranger.put(`/api/trips/${id}/preferences`, PREFS),
@@ -102,7 +123,9 @@ describe('access control', () => {
   it('rejects a forged owner cookie and malformed ids', async () => {
     const { app } = setup()
     const { id } = await readyTrip(client(app))
-    const res = await app.request(`http://localhost/api/trips/${id}`, { headers: { Cookie: 'ss_owner=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' } })
+    const res = await app.request(`http://localhost/api/trips/${id}`, {
+      headers: { Cookie: 'ss_owner=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' },
+    })
     expect(res.status).toBe(404)
     const c = client(app)
     expect((await c.get('/api/trips/not-a-uuid')).status).toBe(404)
@@ -110,7 +133,11 @@ describe('access control', () => {
 
   it('refuses cross-site writes', async () => {
     const c = client(setup().app)
-    const r = await c.post('/api/accommodation/search', { query: 'kestrel' }, { Origin: 'https://evil.example' })
+    const r = await c.post(
+      '/api/accommodation/search',
+      { query: 'kestrel' },
+      { Origin: 'https://evil.example' },
+    )
     expect(r.status).toBe(403)
   })
 })
@@ -118,7 +145,10 @@ describe('access control', () => {
 describe('preferences validation', () => {
   it('rejects check-out before check-in, zero nights and over-long trips', async () => {
     const c = client(setup().app)
-    const { data } = await c.post('/api/trips', { provider: 'demo', providerPlaceId: 'demo-acc-kestrel-resort' })
+    const { data } = await c.post('/api/trips', {
+      provider: 'demo',
+      providerPlaceId: 'demo-acc-kestrel-resort',
+    })
     for (const bad of [
       { ...PREFS, checkOut: '2026-12-09' },
       { ...PREFS, checkOut: PREFS.checkIn },
@@ -155,21 +185,34 @@ describe('50 km radius enforcement', () => {
   it('ignores a radius sent by the client', async () => {
     const c = client(setup().app)
     const { id } = await readyTrip(c)
-    const r = await c.post(`/api/trips/${id}/discover`, { radiusMeters: 500_000, radius: 500_000 })
+    const r = await c.post(`/api/trips/${id}/discover`, {
+      radiusMeters: 500_000,
+      radius: 500_000,
+    })
     expect(r.status).toBe(200)
-    expect(r.data.places.every((p: { distanceMeters: number }) => p.distanceMeters <= MAX_RADIUS_M)).toBe(true)
+    expect(
+      r.data.places.every(
+        (p: { distanceMeters: number }) => p.distanceMeters <= MAX_RADIUS_M,
+      ),
+    ).toBe(true)
   })
 
   it('applies the rule after merging results from a provider that returns duplicates and junk', async () => {
     const out = DEMO_PLACES.find((p) => p.providerPlaceId === 'demo-glass-lake')!
     const messy: PlacesProvider = Object.assign(new DemoPlacesProvider(), {
-      searchNearby: async () => [...structuredClone(DEMO_PLACES), ...structuredClone(DEMO_PLACES), { ...out, providerPlaceId: 'dup-out', location: { lat: 'x', lng: 1 } }, { ...out, providerPlaceId: 'evil', location: { lat: -32.4, lng: -19 } }],
+      searchNearby: async () => [
+        ...structuredClone(DEMO_PLACES),
+        ...structuredClone(DEMO_PLACES),
+        { ...out, providerPlaceId: 'dup-out', location: { lat: 'x', lng: 1 } },
+        { ...out, providerPlaceId: 'evil', location: { lat: -32.4, lng: -19 } },
+      ],
     })
     const c = client(setup({ places: messy }).app)
     const { view } = await readyTrip(c)
     const ids = view.places.map((p: { id: string }) => p.id)
     expect(new Set(ids).size).toBe(ids.length)
-    for (const p of view.places) expect(isWithinRadius(view.accommodation.location, p.location)).toBe(true)
+    for (const p of view.places)
+      expect(isWithinRadius(view.accommodation.location, p.location)).toBe(true)
   })
 
   it('explains honestly when few places are in range, without widening the radius', async () => {
@@ -183,12 +226,18 @@ describe('50 km radius enforcement', () => {
   it('removes out-of-range activities when the accommodation changes', async () => {
     const c = client(setup().app)
     const { id, view } = await readyTrip(c)
-    for (const p of view.places.slice(0, 8)) await c.put(`/api/trips/${id}/selections`, { placeId: p.id, selected: true })
+    for (const p of view.places.slice(0, 8))
+      await c.put(`/api/trips/${id}/selections`, { placeId: p.id, selected: true })
     const gen = await c.post(`/api/trips/${id}/itinerary`, { useAi: false })
     expect(gen.status).toBe(200)
-    expect(gen.data.itinerary.days.flatMap((d: { items: unknown[] }) => d.items).length).toBeGreaterThan(0)
+    expect(
+      gen.data.itinerary.days.flatMap((d: { items: unknown[] }) => d.items).length,
+    ).toBeGreaterThan(0)
 
-    const moved = await c.put(`/api/trips/${id}/accommodation`, { provider: 'demo', providerPlaceId: 'demo-acc-harbour-marrow' })
+    const moved = await c.put(`/api/trips/${id}/accommodation`, {
+      provider: 'demo',
+      providerPlaceId: 'demo-acc-harbour-marrow',
+    })
     expect(moved.status).toBe(200)
     expect(moved.data.removedPlaces.length).toBeGreaterThan(5)
     expect(moved.data.removedFromPlan).toBeGreaterThan(0)
@@ -197,7 +246,9 @@ describe('50 km radius enforcement', () => {
     const origin = t.accommodation.location
     for (const p of t.places) expect(isWithinRadius(origin, p.location)).toBe(true)
     const placeIds = new Set(t.places.map((p: { id: string }) => p.id))
-    for (const item of t.itinerary.days.flatMap((d: { items: Array<{ placeId: string | null }> }) => d.items)) {
+    for (const item of t.itinerary.days.flatMap(
+      (d: { items: Array<{ placeId: string | null }> }) => d.items,
+    )) {
       if (item.placeId) expect(placeIds.has(item.placeId)).toBe(true)
     }
     expect(t.itinerary.warnings.join(' ')).toMatch(/more than 50 km away/)
@@ -210,43 +261,92 @@ describe('itinerary generation and editing', () => {
   it('builds a valid day-by-day plan from selected places', async () => {
     const c = client(setup().app)
     const { id, view } = await readyTrip(c)
-    const museum = view.places.find((p: { name: string }) => p.name === 'Kestrel Bay Maritime Museum')
-    await c.put(`/api/trips/${id}/selections`, { placeId: museum.id, selected: true, favourite: true })
+    const museum = view.places.find(
+      (p: { name: string }) => p.name === 'Kestrel Bay Maritime Museum',
+    )
+    await c.put(`/api/trips/${id}/selections`, {
+      placeId: museum.id,
+      selected: true,
+      favourite: true,
+    })
     const r = await c.post(`/api/trips/${id}/itinerary`, { useAi: false })
     expect(r.status).toBe(200)
     const itin = r.data.itinerary
-    expect(itin.days.map((d: { date: string }) => d.date)).toEqual(['2026-12-10', '2026-12-11', '2026-12-12', '2026-12-13', '2026-12-14'])
-    expect(r.data.issues.filter((i: { severity: string }) => i.severity === 'error')).toEqual([])
-    const all = itin.days.flatMap((d: { items: Array<{ placeId: string; kind: string }> }) => d.items)
+    expect(itin.days.map((d: { date: string }) => d.date)).toEqual([
+      '2026-12-10',
+      '2026-12-11',
+      '2026-12-12',
+      '2026-12-13',
+      '2026-12-14',
+    ])
+    expect(
+      r.data.issues.filter((i: { severity: string }) => i.severity === 'error'),
+    ).toEqual([])
+    const all = itin.days.flatMap(
+      (d: { items: Array<{ placeId: string; kind: string }> }) => d.items,
+    )
     expect(all.some((i: { placeId: string }) => i.placeId === museum.id)).toBe(true)
-    const activities = all.filter((i: { kind: string }) => i.kind === 'activity').map((i: { placeId: string }) => i.placeId)
+    const activities = all
+      .filter((i: { kind: string }) => i.kind === 'activity')
+      .map((i: { placeId: string }) => i.placeId)
     expect(new Set(activities).size).toBe(activities.length)
-    for (const d of itin.days) expect(d.items.filter((i: { kind: string }) => i.kind === 'activity').length).toBeLessThanOrEqual(2)
+    for (const d of itin.days)
+      expect(
+        d.items.filter((i: { kind: string }) => i.kind === 'activity').length,
+      ).toBeLessThanOrEqual(2)
     // Arrival day starts no earlier than mid-afternoon.
-    expect(itin.days[0].items.every((i: { startTime: string }) => i.startTime >= '15:00')).toBe(true)
+    expect(
+      itin.days[0].items.every((i: { startTime: string }) => i.startTime >= '15:00'),
+    ).toBe(true)
   })
 
   it('does not schedule the museum on Monday, when it is listed as closed', async () => {
     const c = client(setup().app)
     // 2026-12-14 is a Monday.
-    const { id, view } = await readyTrip(c, 'demo-acc-kestrel-resort', { ...PREFS, checkIn: '2026-12-13', checkOut: '2026-12-16' })
-    const museum = view.places.find((p: { name: string }) => p.name === 'Kestrel Bay Maritime Museum')
+    const { id, view } = await readyTrip(c, 'demo-acc-kestrel-resort', {
+      ...PREFS,
+      checkIn: '2026-12-13',
+      checkOut: '2026-12-16',
+    })
+    const museum = view.places.find(
+      (p: { name: string }) => p.name === 'Kestrel Bay Maritime Museum',
+    )
     await c.put(`/api/trips/${id}/selections`, { placeId: museum.id, selected: true })
     const r = await c.post(`/api/trips/${id}/itinerary`, { useAi: false })
-    const monday = r.data.itinerary.days.find((d: { date: string }) => d.date === '2026-12-14')
-    expect(monday.items.some((i: { placeId: string }) => i.placeId === museum.id)).toBe(false)
+    const monday = r.data.itinerary.days.find(
+      (d: { date: string }) => d.date === '2026-12-14',
+    )
+    expect(monday.items.some((i: { placeId: string }) => i.placeId === museum.id)).toBe(
+      false,
+    )
 
     // Forcing it onto Monday by edit is refused.
     const edit = {
       version: r.data.itinerary.version,
       days: r.data.itinerary.days.map((d: { date: string; items: unknown[] }) => ({
         date: d.date,
-        items: d.date === '2026-12-14' ? [{ id: 'x1', slot: 'morning', kind: 'activity', placeId: museum.id, startTime: '10:00', durationMinutes: 120 }] : (d.items as Array<Record<string, unknown>>).filter((i) => i.placeId !== museum.id),
+        items:
+          d.date === '2026-12-14'
+            ? [
+                {
+                  id: 'x1',
+                  slot: 'morning',
+                  kind: 'activity',
+                  placeId: museum.id,
+                  startTime: '10:00',
+                  durationMinutes: 120,
+                },
+              ]
+            : (d.items as Array<Record<string, unknown>>).filter(
+                (i) => i.placeId !== museum.id,
+              ),
       })),
     }
     const refused = await c.put(`/api/trips/${id}/itinerary`, edit)
     expect(refused.status).toBe(422)
-    expect(refused.data.error.details.map((i: { code: string }) => i.code)).toContain('closed')
+    expect(refused.data.error.details.map((i: { code: string }) => i.code)).toContain(
+      'closed',
+    )
   })
 
   it('refuses to save an edit that references an out-of-radius or invented place', async () => {
@@ -260,12 +360,26 @@ describe('itinerary generation and editing', () => {
         version: itin.version,
         days: itin.days.map((d: { date: string; items: unknown[] }, i: number) => ({
           date: d.date,
-          items: i === 1 ? [{ id: 'z', slot: 'morning', kind: 'activity', placeId, startTime: '09:30', durationMinutes: 120 }] : d.items,
+          items:
+            i === 1
+              ? [
+                  {
+                    id: 'z',
+                    slot: 'morning',
+                    kind: 'activity',
+                    placeId,
+                    startTime: '09:30',
+                    durationMinutes: 120,
+                  },
+                ]
+              : d.items,
         })),
       }
       const r = await c.put(`/api/trips/${id}/itinerary`, edit)
       expect(r.status).toBe(422)
-      expect(r.data.error.details.map((x: { code: string }) => x.code)).toContain('unknown_place')
+      expect(r.data.error.details.map((x: { code: string }) => x.code)).toContain(
+        'unknown_place',
+      )
     }
     const after = await c.get(`/api/trips/${id}`)
     expect(after.data.itinerary.version).toBe(itin.version)
@@ -276,25 +390,89 @@ describe('itinerary generation and editing', () => {
     const { id, view } = await readyTrip(c)
     const gen = await c.post(`/api/trips/${id}/itinerary`, { useAi: false })
     const itin = gen.data.itinerary
-    const [a, b] = view.places.filter((p: { category: string }) => p.category === 'beach' || p.category === 'nature')
-    const day = (items: unknown[], date = itin.days[1].date) => ({ version: itin.version, days: [{ date, items }] })
-    const overlap = await c.put(`/api/trips/${id}/itinerary`, day([
-      { id: '1', slot: 'morning', kind: 'activity', placeId: a.id, startTime: '10:00', durationMinutes: 120 },
-      { id: '2', slot: 'morning', kind: 'activity', placeId: b.id, startTime: '10:30', durationMinutes: 60 },
-    ]))
-    expect(overlap.data.error.details.map((x: { code: string }) => x.code)).toContain('overlap')
+    const [a, b] = view.places.filter(
+      (p: { category: string }) => p.category === 'beach' || p.category === 'nature',
+    )
+    const day = (items: unknown[], date = itin.days[1].date) => ({
+      version: itin.version,
+      days: [{ date, items }],
+    })
+    const overlap = await c.put(
+      `/api/trips/${id}/itinerary`,
+      day([
+        {
+          id: '1',
+          slot: 'morning',
+          kind: 'activity',
+          placeId: a.id,
+          startTime: '10:00',
+          durationMinutes: 120,
+        },
+        {
+          id: '2',
+          slot: 'morning',
+          kind: 'activity',
+          placeId: b.id,
+          startTime: '10:30',
+          durationMinutes: 60,
+        },
+      ]),
+    )
+    expect(overlap.data.error.details.map((x: { code: string }) => x.code)).toContain(
+      'overlap',
+    )
     const dup = await c.put(`/api/trips/${id}/itinerary`, {
       version: itin.version,
       days: [
-        { date: itin.days[1].date, items: [{ id: '1', slot: 'morning', kind: 'activity', placeId: a.id, startTime: '10:00', durationMinutes: 60 }] },
-        { date: itin.days[2].date, items: [{ id: '2', slot: 'morning', kind: 'activity', placeId: a.id, startTime: '10:00', durationMinutes: 60 }] },
+        {
+          date: itin.days[1].date,
+          items: [
+            {
+              id: '1',
+              slot: 'morning',
+              kind: 'activity',
+              placeId: a.id,
+              startTime: '10:00',
+              durationMinutes: 60,
+            },
+          ],
+        },
+        {
+          date: itin.days[2].date,
+          items: [
+            {
+              id: '2',
+              slot: 'morning',
+              kind: 'activity',
+              placeId: a.id,
+              startTime: '10:00',
+              durationMinutes: 60,
+            },
+          ],
+        },
       ],
     })
-    expect(dup.data.error.details.map((x: { code: string }) => x.code)).toContain('duplicate_activity')
+    expect(dup.data.error.details.map((x: { code: string }) => x.code)).toContain(
+      'duplicate_activity',
+    )
     const badDate = await c.put(`/api/trips/${id}/itinerary`, day([], '2027-01-01'))
-    expect(badDate.data.error.details.map((x: { code: string }) => x.code)).toContain('date_out_of_range')
+    expect(badDate.data.error.details.map((x: { code: string }) => x.code)).toContain(
+      'date_out_of_range',
+    )
 
-    const ok = await c.put(`/api/trips/${id}/itinerary`, day([{ id: '1', slot: 'afternoon', kind: 'activity', placeId: a.id, startTime: '14:00', durationMinutes: 90 }]))
+    const ok = await c.put(
+      `/api/trips/${id}/itinerary`,
+      day([
+        {
+          id: '1',
+          slot: 'afternoon',
+          kind: 'activity',
+          placeId: a.id,
+          startTime: '14:00',
+          durationMinutes: 90,
+        },
+      ]),
+    )
     expect(ok.status).toBe(200)
     expect(ok.data.itinerary.version).toBe(itin.version + 1)
     // Stale version → conflict.
@@ -310,26 +488,56 @@ describe('itinerary generation and editing', () => {
     expect(r.status).toBe(200)
     const after = r.data.itinerary.days
     for (const i of [0, 1, 3, 4]) expect(after[i].items).toEqual(before[i].items)
-    const used = after.flatMap((d: { items: Array<{ kind: string; placeId: string }> }) => d.items.filter((x) => x.kind === 'activity').map((x) => x.placeId))
+    const used = after.flatMap((d: { items: Array<{ kind: string; placeId: string }> }) =>
+      d.items.filter((x) => x.kind === 'activity').map((x) => x.placeId),
+    )
     expect(new Set(used).size).toBe(used.length)
   })
 
   it('labels missing opening hours as unconfirmed rather than inventing them', async () => {
     const c = client(setup().app)
     const { id, view } = await readyTrip(c)
-    const beach = view.places.find((p: { name: string }) => p.name === 'Kestrel Bay Main Beach')
+    const beach = view.places.find(
+      (p: { name: string }) => p.name === 'Kestrel Bay Main Beach',
+    )
     expect(beach.openingHours).toBeNull()
-    await c.put(`/api/trips/${id}/selections`, { placeId: beach.id, selected: true, favourite: true })
+    await c.put(`/api/trips/${id}/selections`, {
+      placeId: beach.id,
+      selected: true,
+      favourite: true,
+    })
     const r = await c.post(`/api/trips/${id}/itinerary`, { useAi: false })
-    const item = r.data.itinerary.days.flatMap((d: { items: unknown[] }) => d.items).find((i: { placeId: string }) => i.placeId === beach.id)
+    const item = r.data.itinerary.days
+      .flatMap((d: { items: unknown[] }) => d.items)
+      .find((i: { placeId: string }) => i.placeId === beach.id)
     expect(item.notes.join(' ')).toMatch(/Opening hours not confirmed/)
-    expect(r.data.issues.some((i: { code: string; placeId: string }) => i.code === 'hours_unknown' && i.placeId === beach.id)).toBe(true)
+    expect(
+      r.data.issues.some(
+        (i: { code: string; placeId: string }) =>
+          i.code === 'hours_unknown' && i.placeId === beach.id,
+      ),
+    ).toBe(true)
   })
 })
 
 describe('AI provider handling', () => {
   it('discards an AI plan with invented ids and falls back to the deterministic planner', async () => {
-    const ai = { name: 'fake', proposePlan: async ({ dates }: { dates: string[] }) => dates.map((date) => ({ date, items: [{ slot: 'morning' as const, kind: 'activity' as const, placeId: 'p_invented', startTime: '10:00', durationMinutes: 60 }] })) }
+    const ai = {
+      name: 'fake',
+      proposePlan: async ({ dates }: { dates: string[] }) =>
+        dates.map((date) => ({
+          date,
+          items: [
+            {
+              slot: 'morning' as const,
+              kind: 'activity' as const,
+              placeId: 'p_invented',
+              startTime: '10:00',
+              durationMinutes: 60,
+            },
+          ],
+        })),
+    }
     const c = client(setup({ ai }).app)
     const { id } = await readyTrip(c)
     const r = await c.post(`/api/trips/${id}/itinerary`, { useAi: true })
@@ -340,12 +548,30 @@ describe('AI provider handling', () => {
 
   it('cannot persist an AI plan that uses an out-of-radius place, even with a real id', async () => {
     const outside = placeIdFor('demo', 'demo-glass-lake')
-    const ai = { name: 'fake', proposePlan: async ({ dates }: { dates: string[] }) => [{ date: dates[1]!, items: [{ slot: 'morning' as const, kind: 'activity' as const, placeId: outside, startTime: '10:00', durationMinutes: 60 }] }] }
+    const ai = {
+      name: 'fake',
+      proposePlan: async ({ dates }: { dates: string[] }) => [
+        {
+          date: dates[1]!,
+          items: [
+            {
+              slot: 'morning' as const,
+              kind: 'activity' as const,
+              placeId: outside,
+              startTime: '10:00',
+              durationMinutes: 60,
+            },
+          ],
+        },
+      ],
+    }
     const c = client(setup({ ai }).app)
     const { id } = await readyTrip(c)
     const r = await c.post(`/api/trips/${id}/itinerary`, { useAi: true })
     expect(r.data.itinerary.generatedBy).toBe('deterministic')
-    const ids = r.data.itinerary.days.flatMap((d: { items: Array<{ placeId: string }> }) => d.items.map((i) => i.placeId))
+    const ids = r.data.itinerary.days.flatMap(
+      (d: { items: Array<{ placeId: string }> }) => d.items.map((i) => i.placeId),
+    )
     expect(ids).not.toContain(outside)
   })
 
@@ -353,10 +579,27 @@ describe('AI provider handling', () => {
     let captured: { places: Array<{ id: string; name: string }> } | null = null
     const ai = {
       name: 'fake',
-      proposePlan: async (input: { dates: string[]; places: Array<{ id: string; name: string }> }) => {
+      proposePlan: async (input: {
+        dates: string[]
+        places: Array<{ id: string; name: string }>
+      }) => {
         captured = input
         const beach = input.places.find((p) => p.name === 'Kestrel Bay Main Beach')!
-        return input.dates.map((date, i) => ({ date, items: i === 1 ? [{ slot: 'morning' as const, kind: 'activity' as const, placeId: beach.id, startTime: '10:00', durationMinutes: 120 }] : [] }))
+        return input.dates.map((date, i) => ({
+          date,
+          items:
+            i === 1
+              ? [
+                  {
+                    slot: 'morning' as const,
+                    kind: 'activity' as const,
+                    placeId: beach.id,
+                    startTime: '10:00',
+                    durationMinutes: 120,
+                  },
+                ]
+              : [],
+        }))
       },
     }
     const c = client(setup({ ai }).app)
@@ -364,11 +607,21 @@ describe('AI provider handling', () => {
     const r = await c.post(`/api/trips/${id}/itinerary`, { useAi: true })
     expect(r.data.itinerary.generatedBy).toBe('ai')
     // Only validated, in-range places were offered to the model.
-    expect(captured!.places.every((p) => !['Glass Lake National Reserve', 'Cape Farewell Lighthouse'].includes(p.name))).toBe(true)
+    expect(
+      captured!.places.every(
+        (p) =>
+          !['Glass Lake National Reserve', 'Cape Farewell Lighthouse'].includes(p.name),
+      ),
+    ).toBe(true)
   })
 
   it('falls back when the AI provider throws (timeout, rate limit, outage)', async () => {
-    const ai = { name: 'fake', proposePlan: async () => { throw new Error('timeout') } }
+    const ai = {
+      name: 'fake',
+      proposePlan: async () => {
+        throw new Error('timeout')
+      },
+    }
     const c = client(setup({ ai }).app)
     const { id } = await readyTrip(c)
     const r = await c.post(`/api/trips/${id}/itinerary`, { useAi: true })
@@ -433,6 +686,8 @@ describe('sample guide', () => {
     expect(r.data.accommodation.isSample).toBe(true)
     expect(r.data.places.every((p: { isSample: boolean }) => p.isSample)).toBe(true)
     expect(r.data.itinerary.days.length).toBe(4)
-    expect(r.data.issues.filter((i: { severity: string }) => i.severity === 'error')).toEqual([])
+    expect(
+      r.data.issues.filter((i: { severity: string }) => i.severity === 'error'),
+    ).toEqual([])
   })
 })

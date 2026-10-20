@@ -10,7 +10,9 @@ describe.skipIf(!url)('PostgresStore', () => {
 
   beforeAll(async () => {
     store = new PostgresStore(url!, false)
-    await store.pool.query('drop table if exists orders, trip_places, trips, schema_migrations cascade')
+    await store.pool.query(
+      'drop table if exists orders, trip_places, trips, schema_migrations cascade',
+    )
     expect(await store.migrate()).toEqual(['001_init'])
     expect(await store.migrate()).toEqual([]) // idempotent
   })
@@ -24,18 +26,30 @@ describe.skipIf(!url)('PostgresStore', () => {
     const { id, view } = await readyTrip(c)
     expect(view.places.length).toBeGreaterThan(10)
     const target = view.places[0]
-    await c.put(`/api/trips/${id}/selections`, { placeId: target.id, selected: true, favourite: true })
+    await c.put(`/api/trips/${id}/selections`, {
+      placeId: target.id,
+      selected: true,
+      favourite: true,
+    })
     // Re-running discovery keeps the selection for places that remain.
     const again = await c.post(`/api/trips/${id}/discover`, {})
-    expect(again.data.places.find((p: { id: string }) => p.id === target.id)).toMatchObject({ selected: true, favourite: true })
+    expect(
+      again.data.places.find((p: { id: string }) => p.id === target.id),
+    ).toMatchObject({ selected: true, favourite: true })
     const gen = await c.post(`/api/trips/${id}/itinerary`, { useAi: false })
     expect(gen.status).toBe(200)
     const share = await c.post(`/api/trips/${id}/share`, {})
     expect((await client(app).get(`/api/shared/${share.data.token}`)).status).toBe(200)
 
-    const moved = await c.put(`/api/trips/${id}/accommodation`, { provider: 'demo', providerPlaceId: 'demo-acc-harbour-marrow' })
+    const moved = await c.put(`/api/trips/${id}/accommodation`, {
+      provider: 'demo',
+      providerPlaceId: 'demo-acc-harbour-marrow',
+    })
     expect(moved.data.trip.places).toHaveLength(0) // nothing from Kestrel Bay is within 50 km of Marrow Point
-    const { rows } = await store.pool.query('select count(*)::int as n from trip_places where trip_id = $1', [id])
+    const { rows } = await store.pool.query(
+      'select count(*)::int as n from trip_places where trip_id = $1',
+      [id],
+    )
     expect(rows[0].n).toBe(0)
 
     expect((await c.del(`/api/trips/${id}`)).status).toBe(204)
@@ -46,7 +60,18 @@ describe.skipIf(!url)('PostgresStore', () => {
     const { app } = setup({ store })
     const { id } = await readyTrip(client(app))
     const now = new Date().toISOString()
-    const row = { id: crypto.randomUUID(), tripId: id, provider: 'paypal', providerOrderId: 'PGTEST1', amount: '9.00', currency: 'USD', status: 'created' as const, captureId: null, createdAt: now, updatedAt: now }
+    const row = {
+      id: crypto.randomUUID(),
+      tripId: id,
+      provider: 'paypal',
+      providerOrderId: 'PGTEST1',
+      amount: '9.00',
+      currency: 'USD',
+      status: 'created' as const,
+      captureId: null,
+      createdAt: now,
+      updatedAt: now,
+    }
     await store.createOrder(row)
     await expect(store.createOrder({ ...row, id: crypto.randomUUID() })).rejects.toThrow()
     expect((await store.updateOrder(row.id, 'paid', 'CAPX', now))!.status).toBe('paid')

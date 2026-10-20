@@ -3,7 +3,8 @@
 
 import { z } from 'zod'
 
-const emptyToUndefined = (v: unknown) => (typeof v === 'string' && v.trim() === '' ? undefined : v)
+const emptyToUndefined = (v: unknown) =>
+  typeof v === 'string' && v.trim() === '' ? undefined : v
 const optional = z.preprocess(emptyToUndefined, z.string().optional())
 
 const envSchema = z
@@ -12,21 +13,42 @@ const envSchema = z
     PORT: z.coerce.number().int().min(1).max(65535).default(8787),
     PUBLIC_BASE_URL: z.preprocess(emptyToUndefined, z.url().optional()),
     DATABASE_URL: optional,
-    DATABASE_SSL: z.preprocess(emptyToUndefined, z.enum(['true', 'false']).default('false')),
+    DATABASE_SSL: z.preprocess(
+      emptyToUndefined,
+      z.enum(['true', 'false']).default('false'),
+    ),
 
-    PLACES_PROVIDER: z.preprocess(emptyToUndefined, z.enum(['demo', 'google']).default('demo')),
+    PLACES_PROVIDER: z.preprocess(
+      emptyToUndefined,
+      z.enum(['demo', 'google']).default('demo'),
+    ),
     GOOGLE_MAPS_API_KEY: optional,
 
-    AI_PROVIDER: z.preprocess(emptyToUndefined, z.enum(['none', 'anthropic']).default('none')),
+    AI_PROVIDER: z.preprocess(
+      emptyToUndefined,
+      z.enum(['none', 'anthropic']).default('none'),
+    ),
     ANTHROPIC_API_KEY: optional,
-    ANTHROPIC_MODEL: z.preprocess(emptyToUndefined, z.string().default('claude-opus-5-5')),
+    ANTHROPIC_MODEL: z.preprocess(
+      emptyToUndefined,
+      z.string().default('claude-opus-5-5'),
+    ),
 
-    PAYMENTS_PROVIDER: z.preprocess(emptyToUndefined, z.enum(['none', 'paypal']).default('none')),
-    PAYPAL_ENV: z.preprocess(emptyToUndefined, z.enum(['sandbox', 'live']).default('sandbox')),
+    PAYMENTS_PROVIDER: z.preprocess(
+      emptyToUndefined,
+      z.enum(['none', 'paypal']).default('none'),
+    ),
+    PAYPAL_ENV: z.preprocess(
+      emptyToUndefined,
+      z.enum(['sandbox', 'live']).default('sandbox'),
+    ),
     PAYPAL_CLIENT_ID: optional,
     PAYPAL_CLIENT_SECRET: optional,
     /** Live PayPal stays off unless this is explicitly "true", even with live credentials. */
-    PAYPAL_LIVE_ENABLED: z.preprocess(emptyToUndefined, z.enum(['true', 'false']).default('false')),
+    PAYPAL_LIVE_ENABLED: z.preprocess(
+      emptyToUndefined,
+      z.enum(['true', 'false']).default('false'),
+    ),
     GUIDE_PRICE: z.preprocess(
       emptyToUndefined,
       z
@@ -42,9 +64,15 @@ const envSchema = z
         .default('USD'),
     ),
 
-    SAFETY_PROVIDER: z.preprocess(emptyToUndefined, z.enum(['none', 'fcdo']).default('none')),
+    SAFETY_PROVIDER: z.preprocess(
+      emptyToUndefined,
+      z.enum(['none', 'fcdo']).default('none'),
+    ),
 
-    TRUST_PROXY: z.preprocess(emptyToUndefined, z.enum(['true', 'false']).default('false')),
+    TRUST_PROXY: z.preprocess(
+      emptyToUndefined,
+      z.enum(['true', 'false']).default('false'),
+    ),
   })
   .superRefine((env, ctx) => {
     if (env.PLACES_PROVIDER === 'google' && !env.GOOGLE_MAPS_API_KEY) {
@@ -64,29 +92,42 @@ const envSchema = z
     if (env.PAYMENTS_PROVIDER === 'paypal') {
       for (const key of ['PAYPAL_CLIENT_ID', 'PAYPAL_CLIENT_SECRET'] as const) {
         if (!env[key]) {
-          ctx.addIssue({ code: 'custom', path: [key], message: 'Required when PAYMENTS_PROVIDER=paypal' })
+          ctx.addIssue({
+            code: 'custom',
+            path: [key],
+            message: 'Required when PAYMENTS_PROVIDER=paypal',
+          })
         }
       }
       if (env.PAYPAL_ENV === 'live' && env.PAYPAL_LIVE_ENABLED !== 'true') {
         ctx.addIssue({
           code: 'custom',
           path: ['PAYPAL_LIVE_ENABLED'],
-          message: 'PAYPAL_ENV=live also requires PAYPAL_LIVE_ENABLED=true (see README before enabling)',
+          message:
+            'PAYPAL_ENV=live also requires PAYPAL_LIVE_ENABLED=true (see README before enabling)',
         })
       }
     }
     if (env.NODE_ENV === 'production' && !env.PUBLIC_BASE_URL) {
-      ctx.addIssue({ code: 'custom', path: ['PUBLIC_BASE_URL'], message: 'Required in production' })
+      ctx.addIssue({
+        code: 'custom',
+        path: ['PUBLIC_BASE_URL'],
+        message: 'Required in production',
+      })
     }
   })
 
 export type Config = z.infer<typeof envSchema>
 
-export function loadConfig(source: Record<string, string | undefined> = process.env): Config {
+export function loadConfig(
+  source: Record<string, string | undefined> = process.env,
+): Config {
   const parsed = envSchema.safeParse(source)
   if (!parsed.success) {
     // Name the variables, never print their values.
-    const problems = parsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`)
+    const problems = parsed.error.issues.map(
+      (i) => `  - ${i.path.join('.')}: ${i.message}`,
+    )
     throw new Error(`Invalid StayScout configuration:\n${problems.join('\n')}`)
   }
   return parsed.data

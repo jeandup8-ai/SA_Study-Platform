@@ -18,7 +18,10 @@ export type PlaceCandidate = Omit<PlaceRecord, 'id' | 'location'> & { location: 
 export interface PlacesProvider {
   readonly name: ProviderName
   readonly isSample: boolean
-  searchAccommodation(query: string, kind: AccommodationKind | 'any'): Promise<AccommodationCandidate[]>
+  searchAccommodation(
+    query: string,
+    kind: AccommodationKind | 'any',
+  ): Promise<AccommodationCandidate[]>
   resolveAccommodation(providerPlaceId: string): Promise<AccommodationCandidate | null>
   /**
    * `radiusMeters` is passed by the server from MAX_RADIUS_M. Providers may

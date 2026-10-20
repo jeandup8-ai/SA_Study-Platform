@@ -1,4 +1,10 @@
-import type { Accommodation, Itinerary, PlaceRecord, Preferences, TripView } from '../../shared/types.js'
+import type {
+  Accommodation,
+  Itinerary,
+  PlaceRecord,
+  Preferences,
+  TripView,
+} from '../../shared/types.js'
 
 export interface TripRow {
   id: string
@@ -35,7 +41,12 @@ export interface OrderRow {
   updatedAt: string
 }
 
-export type TripPatch = Partial<Pick<TripRow, 'accommodation' | 'preferences' | 'itinerary' | 'discovery' | 'shareTokenHash'>>
+export type TripPatch = Partial<
+  Pick<
+    TripRow,
+    'accommodation' | 'preferences' | 'itinerary' | 'discovery' | 'shareTokenHash'
+  >
+>
 
 export interface Store {
   readonly kind: 'memory' | 'postgres'
@@ -50,12 +61,24 @@ export interface Store {
   /** Replaces the trip's place records; selections survive for ids that remain. */
   replacePlaces(tripId: string, records: PlaceRecord[]): Promise<void>
   deletePlaces(tripId: string, placeIds: string[]): Promise<void>
-  setSelection(tripId: string, placeId: string, sel: { selected?: boolean; favourite?: boolean }): Promise<boolean>
+  setSelection(
+    tripId: string,
+    placeId: string,
+    sel: { selected?: boolean; favourite?: boolean },
+  ): Promise<boolean>
 
   createOrder(row: OrderRow): Promise<void>
-  getOrderByProviderId(provider: string, providerOrderId: string): Promise<OrderRow | null>
+  getOrderByProviderId(
+    provider: string,
+    providerOrderId: string,
+  ): Promise<OrderRow | null>
   /** Moves an order to a new status; a paid order is never moved again. Returns the stored row. */
-  updateOrder(id: string, status: OrderStatus, captureId: string | null, now: string): Promise<OrderRow | null>
+  updateOrder(
+    id: string,
+    status: OrderStatus,
+    captureId: string | null,
+    now: string,
+  ): Promise<OrderRow | null>
   hasPaidOrder(tripId: string): Promise<boolean>
 
   close(): Promise<void>

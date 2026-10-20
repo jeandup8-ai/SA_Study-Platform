@@ -90,7 +90,11 @@ describe('isWithinRadius (50 km)', () => {
 describe('partitionByRadius', () => {
   it('splits candidates, recomputes distance and gives reasons', () => {
     const items = [
-      { id: 'in', location: destinationPoint(origin, 0, 10_000), distanceMeters: 999_999 },
+      {
+        id: 'in',
+        location: destinationPoint(origin, 0, 10_000),
+        distanceMeters: 999_999,
+      },
       { id: 'out', location: destinationPoint(origin, 0, 50_500) },
       { id: 'nocoords', location: undefined },
       { id: 'bad', location: { lat: 200, lng: 0 } },
@@ -107,7 +111,9 @@ describe('partitionByRadius', () => {
   })
 
   it('refuses an invalid origin', () => {
-    expect(() => partitionByRadius({ lat: 100, lng: 0 }, [])).toThrow(InvalidCoordinatesError)
+    expect(() => partitionByRadius({ lat: 100, lng: 0 }, [])).toThrow(
+      InvalidCoordinatesError,
+    )
   })
 })
 

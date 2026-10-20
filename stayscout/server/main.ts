@@ -25,16 +25,29 @@ export async function buildServer(config: Config) {
     store = pg
   } else {
     store = new MemoryStore()
-    console.warn('[stayscout] DATABASE_URL not set: using in-memory storage. Trips are lost on restart.')
+    console.warn(
+      '[stayscout] DATABASE_URL not set: using in-memory storage. Trips are lost on restart.',
+    )
   }
 
-  const places = config.PLACES_PROVIDER === 'google' ? new GooglePlacesProvider(config.GOOGLE_MAPS_API_KEY!) : new DemoPlacesProvider()
-  const ai = config.AI_PROVIDER === 'anthropic' ? new AnthropicAiProvider(config.ANTHROPIC_API_KEY!, config.ANTHROPIC_MODEL) : null
+  const places =
+    config.PLACES_PROVIDER === 'google'
+      ? new GooglePlacesProvider(config.GOOGLE_MAPS_API_KEY!)
+      : new DemoPlacesProvider()
+  const ai =
+    config.AI_PROVIDER === 'anthropic'
+      ? new AnthropicAiProvider(config.ANTHROPIC_API_KEY!, config.ANTHROPIC_MODEL)
+      : null
   const payments =
     config.PAYMENTS_PROVIDER === 'paypal'
-      ? new PayPalProvider({ clientId: config.PAYPAL_CLIENT_ID!, secret: config.PAYPAL_CLIENT_SECRET!, mode: config.PAYPAL_ENV })
+      ? new PayPalProvider({
+          clientId: config.PAYPAL_CLIENT_ID!,
+          secret: config.PAYPAL_CLIENT_SECRET!,
+          mode: config.PAYPAL_ENV,
+        })
       : null
-  const safety = config.SAFETY_PROVIDER === 'fcdo' ? new FcdoSafetyProvider() : new NoSafetyProvider()
+  const safety =
+    config.SAFETY_PROVIDER === 'fcdo' ? new FcdoSafetyProvider() : new NoSafetyProvider()
   const service = new TripService({ config, store, places, ai, payments, safety })
 
   const app = createApp({
@@ -47,6 +60,31 @@ export async function buildServer(config: Config) {
         : (getConnInfo(c).remote.address ?? 'unknown'),
   })
 
+  app.get('/robots.txt', (c) =>
+    c.text(
+      [
+        'User-agent: *',
+        'Disallow: /api/',
+        'Disallow: /trips',
+        'Disallow: /g/',
+        'Disallow: /plan',
+        config.PUBLIC_BASE_URL
+          ? `Sitemap: ${new URL('/sitemap.xml', config.PUBLIC_BASE_URL)}`
+          : '',
+      ].join('\n'),
+    ),
+  )
+  app.get('/sitemap.xml', (c) => {
+    const base = config.PUBLIC_BASE_URL ?? new URL(c.req.url).origin
+    const urls = ['/', '/sample', '/privacy', '/terms'].map(
+      (p) => `  <url><loc>${new URL(p, base)}</loc></url>`,
+    )
+    c.header('Content-Type', 'application/xml')
+    return c.body(
+      `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join('\n')}\n</urlset>\n`,
+    )
+  })
+
   // Built client (npm run build). Hashed assets are immutable.
   app.use('/assets/*', async (c, next) => {
     await next()
@@ -56,10 +94,15 @@ export async function buildServer(config: Config) {
   let indexHtml: string | null = null
   app.get('*', async (c) => {
     indexHtml ??= await readFile('./dist/index.html', 'utf8').catch(() => null)
-    if (!indexHtml) return c.text('Client not built. Run `npm run build`, or use `npm run dev` for development.', 503)
+    if (!indexHtml)
+      return c.text(
+        'Client not built. Run `npm run build`, or use `npm run dev` for development.',
+        503,
+      )
     for (const [k, v] of Object.entries(SECURITY_HEADERS)) c.header(k, v)
     // Private pages stay out of search engines.
-    if (/^\/(trips|g|plan)(\/|$)/.test(c.req.path)) c.header('X-Robots-Tag', 'noindex, nofollow')
+    if (/^\/(trips|g|plan)(\/|$)/.test(c.req.path))
+      c.header('X-Robots-Tag', 'noindex, nofollow')
     return c.html(indexHtml)
   })
 
@@ -72,7 +115,9 @@ if (isMain) {
   const { app, store, status } = await buildServer(config)
   const server = serve({ fetch: app.fetch, port: config.PORT }, (info) => {
     console.log(`[stayscout] listening on http://localhost:${info.port}`)
-    console.log(`[stayscout] places=${status.places.provider}(${status.places.mode}) ai=${status.ai.mode} payments=${status.payments.mode} safety=${status.safety.mode} storage=${status.storage}`)
+    console.log(
+      `[stayscout] places=${status.places.provider}(${status.places.mode}) ai=${status.ai.mode} payments=${status.payments.mode} safety=${status.safety.mode} storage=${status.storage}`,
+    )
   })
   const shutdown = () => {
     server.close()

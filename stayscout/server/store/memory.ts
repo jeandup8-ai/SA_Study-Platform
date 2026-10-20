@@ -2,7 +2,14 @@
 // lost on restart, and the provider-status panel says so.
 
 import type { PlaceRecord } from '../../shared/types.js'
-import type { OrderRow, OrderStatus, PlaceRow, Store, TripPatch, TripRow } from './types.js'
+import type {
+  OrderRow,
+  OrderStatus,
+  PlaceRow,
+  Store,
+  TripPatch,
+  TripRow,
+} from './types.js'
 
 export class MemoryStore implements Store {
   readonly kind = 'memory' as const
@@ -41,7 +48,8 @@ export class MemoryStore implements Store {
   }
 
   async findTripByShareHash(hash: string) {
-    for (const t of this.trips.values()) if (t.shareTokenHash === hash) return structuredClone(t)
+    for (const t of this.trips.values())
+      if (t.shareTokenHash === hash) return structuredClone(t)
     return null
   }
 
@@ -54,7 +62,11 @@ export class MemoryStore implements Store {
     const next = new Map<string, PlaceRow>()
     for (const r of records) {
       const prev = old.get(r.id)
-      next.set(r.id, { record: structuredClone(r), selected: prev?.selected ?? false, favourite: prev?.favourite ?? false })
+      next.set(r.id, {
+        record: structuredClone(r),
+        selected: prev?.selected ?? false,
+        favourite: prev?.favourite ?? false,
+      })
     }
     this.places.set(tripId, next)
   }
@@ -64,7 +76,11 @@ export class MemoryStore implements Store {
     for (const id of placeIds) m?.delete(id)
   }
 
-  async setSelection(tripId: string, placeId: string, sel: { selected?: boolean; favourite?: boolean }) {
+  async setSelection(
+    tripId: string,
+    placeId: string,
+    sel: { selected?: boolean; favourite?: boolean },
+  ) {
     const row = this.places.get(tripId)?.get(placeId)
     if (!row) return false
     if (sel.selected !== undefined) row.selected = sel.selected
@@ -74,27 +90,37 @@ export class MemoryStore implements Store {
 
   async createOrder(row: OrderRow) {
     for (const o of this.orders.values()) {
-      if (o.provider === row.provider && o.providerOrderId === row.providerOrderId) throw new Error('duplicate order')
+      if (o.provider === row.provider && o.providerOrderId === row.providerOrderId)
+        throw new Error('duplicate order')
     }
     this.orders.set(row.id, structuredClone(row))
   }
 
   async getOrderByProviderId(provider: string, providerOrderId: string) {
     for (const o of this.orders.values()) {
-      if (o.provider === provider && o.providerOrderId === providerOrderId) return structuredClone(o)
+      if (o.provider === provider && o.providerOrderId === providerOrderId)
+        return structuredClone(o)
     }
     return null
   }
 
-  async updateOrder(id: string, status: OrderStatus, captureId: string | null, now: string) {
+  async updateOrder(
+    id: string,
+    status: OrderStatus,
+    captureId: string | null,
+    now: string,
+  ) {
     const o = this.orders.get(id)
     if (!o) return null
-    if (o.status !== 'paid') Object.assign(o, { status, captureId: captureId ?? o.captureId, updatedAt: now })
+    if (o.status !== 'paid')
+      Object.assign(o, { status, captureId: captureId ?? o.captureId, updatedAt: now })
     return structuredClone(o)
   }
 
   async hasPaidOrder(tripId: string) {
-    return [...this.orders.values()].some((o) => o.tripId === tripId && o.status === 'paid')
+    return [...this.orders.values()].some(
+      (o) => o.tripId === tripId && o.status === 'paid',
+    )
   }
 
   async close() {}

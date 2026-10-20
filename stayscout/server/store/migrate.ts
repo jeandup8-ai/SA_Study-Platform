@@ -4,13 +4,17 @@ import { PostgresStore } from './postgres.js'
 
 const config = loadConfig()
 if (!config.DATABASE_URL) {
-  console.error('DATABASE_URL is not set; nothing to migrate (the app will use in-memory storage).')
+  console.error(
+    'DATABASE_URL is not set; nothing to migrate (the app will use in-memory storage).',
+  )
   process.exit(1)
 }
 const store = new PostgresStore(config.DATABASE_URL, config.DATABASE_SSL === 'true')
 try {
   const applied = await store.migrate()
-  console.log(applied.length ? `Applied: ${applied.join(', ')}` : 'Database is up to date.')
+  console.log(
+    applied.length ? `Applied: ${applied.join(', ')}` : 'Database is up to date.',
+  )
 } finally {
   await store.close()
 }

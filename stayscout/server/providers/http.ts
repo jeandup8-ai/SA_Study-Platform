@@ -8,7 +8,12 @@ export class ProviderError extends Error {
   readonly status: number | null
   readonly retryable: boolean
 
-  constructor(provider: string, message: string, status: number | null, retryable: boolean) {
+  constructor(
+    provider: string,
+    message: string,
+    status: number | null,
+    retryable: boolean,
+  ) {
     super(`${provider}: ${message}`)
     this.name = 'ProviderError'
     this.provider = provider
@@ -33,7 +38,9 @@ export interface RequestOptions {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
-export async function requestJson<T = unknown>(opts: RequestOptions): Promise<{ status: number; data: T }> {
+export async function requestJson<T = unknown>(
+  opts: RequestOptions,
+): Promise<{ status: number; data: T }> {
   const {
     provider,
     url,
@@ -59,12 +66,20 @@ export async function requestJson<T = unknown>(opts: RequestOptions): Promise<{ 
             : {}),
           ...headers,
         },
-        body: opts.rawBody ?? (opts.body === undefined ? undefined : JSON.stringify(opts.body)),
+        body:
+          opts.rawBody ??
+          (opts.body === undefined ? undefined : JSON.stringify(opts.body)),
         signal: AbortSignal.timeout(timeoutMs),
       })
     } catch (err) {
-      const timedOut = err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError')
-      lastError = new ProviderError(provider, timedOut ? 'request timed out' : 'network error', null, true)
+      const timedOut =
+        err instanceof Error && (err.name === 'TimeoutError' || err.name === 'AbortError')
+      lastError = new ProviderError(
+        provider,
+        timedOut ? 'request timed out' : 'network error',
+        null,
+        true,
+      )
       continue
     }
 
@@ -74,7 +89,12 @@ export async function requestJson<T = unknown>(opts: RequestOptions): Promise<{ 
       try {
         data = JSON.parse(text)
       } catch {
-        throw new ProviderError(provider, `malformed JSON response (HTTP ${res.status})`, res.status, false)
+        throw new ProviderError(
+          provider,
+          `malformed JSON response (HTTP ${res.status})`,
+          res.status,
+          false,
+        )
       }
     }
 
@@ -91,11 +111,17 @@ export async function requestJson<T = unknown>(opts: RequestOptions): Promise<{ 
   throw lastError ?? new ProviderError(provider, 'request failed', null, true)
 }
 
-async function readCapped(res: Response, maxBytes: number, provider: string): Promise<string> {
+async function readCapped(
+  res: Response,
+  maxBytes: number,
+  provider: string,
+): Promise<string> {
   const declared = Number(res.headers.get('content-length') ?? '0')
-  if (declared > maxBytes) throw new ProviderError(provider, 'response too large', res.status, false)
+  if (declared > maxBytes)
+    throw new ProviderError(provider, 'response too large', res.status, false)
   const buf = await res.arrayBuffer()
-  if (buf.byteLength > maxBytes) throw new ProviderError(provider, 'response too large', res.status, false)
+  if (buf.byteLength > maxBytes)
+    throw new ProviderError(provider, 'response too large', res.status, false)
   return new TextDecoder().decode(buf)
 }
 
@@ -114,6 +140,9 @@ export function safeExternalUrl(value: unknown): string | null {
 export function cleanText(value: unknown, max = 200): string | null {
   if (typeof value !== 'string') return null
   // oxlint-disable-next-line no-control-regex
-  const s = value.replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/\s+/g, ' ').trim()
+  const s = value
+    .replace(/[\u0000-\u001f\u007f]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
   return s === '' ? null : s.slice(0, max)
 }

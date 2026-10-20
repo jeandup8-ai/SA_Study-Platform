@@ -6,7 +6,10 @@ const isoDate = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'Use YYYY-MM-DD')
   .refine((s) => !Number.isNaN(Date.parse(`${s}T00:00:00Z`)), 'Not a real date')
-  .refine((s) => new Date(`${s}T00:00:00Z`).toISOString().startsWith(s), 'Not a real date')
+  .refine(
+    (s) => new Date(`${s}T00:00:00Z`).toISOString().startsWith(s),
+    'Not a real date',
+  )
 
 export const MAX_TRIP_NIGHTS = 30
 
@@ -38,9 +41,20 @@ export const preferencesSchema = z
     checkIn: isoDate,
     checkOut: isoDate,
     adults: z.number().int().min(1).max(20),
-    childAgeRanges: z.array(z.enum(['0-2', '3-5', '6-12', '13-17'])).max(10).default([]),
+    childAgeRanges: z
+      .array(z.enum(['0-2', '3-5', '6-12', '13-17']))
+      .max(10)
+      .default([]),
     tripType: z
-      .enum(['honeymoon', 'family', 'solo', 'group', 'adventure', 'relaxation', 'general'])
+      .enum([
+        'honeymoon',
+        'family',
+        'solo',
+        'group',
+        'adventure',
+        'relaxation',
+        'general',
+      ])
       .default('general'),
     budget: z
       .object({
@@ -59,7 +73,9 @@ export const preferencesSchema = z
     pace: z.enum(['relaxed', 'balanced', 'packed']).default('balanced'),
     accessibilityNeeds: optionalText,
     dietaryPreferences: optionalText,
-    settingPreference: z.enum(['indoor', 'outdoor', 'no_preference']).default('no_preference'),
+    settingPreference: z
+      .enum(['indoor', 'outdoor', 'no_preference'])
+      .default('no_preference'),
     language: z
       .string()
       .regex(/^[a-z]{2}(-[A-Z]{2})?$/)
@@ -68,7 +84,11 @@ export const preferencesSchema = z
   .superRefine((p, ctx) => {
     const nights = nightsBetween(p.checkIn, p.checkOut)
     if (nights < 1) {
-      ctx.addIssue({ code: 'custom', path: ['checkOut'], message: 'Check-out must be after check-in' })
+      ctx.addIssue({
+        code: 'custom',
+        path: ['checkOut'],
+        message: 'Check-out must be after check-in',
+      })
     } else if (nights > MAX_TRIP_NIGHTS) {
       ctx.addIssue({
         code: 'custom',
@@ -89,7 +109,16 @@ export function nightsBetween(checkIn: string, checkOut: string): number {
 export const accommodationSearchSchema = z.object({
   query: z.string().trim().min(2, 'Type at least 2 characters').max(120),
   kind: z
-    .enum(['hotel', 'resort', 'lodge', 'guesthouse', 'apartment', 'other', 'destination', 'any'])
+    .enum([
+      'hotel',
+      'resort',
+      'lodge',
+      'guesthouse',
+      'apartment',
+      'other',
+      'destination',
+      'any',
+    ])
     .default('any'),
 })
 

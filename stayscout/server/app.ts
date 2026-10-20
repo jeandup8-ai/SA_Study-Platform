@@ -35,7 +35,12 @@ type Env = { Variables: { ownerHash: string | null } }
 
 export function createApp({ config, service, store, clientIp }: AppOptions) {
   const app = new Hono<Env>()
-  const ipOf = clientIp ?? ((c: Context) => (config.TRUST_PROXY === 'true' ? (c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown') : 'local'))
+  const ipOf =
+    clientIp ??
+    ((c: Context) =>
+      config.TRUST_PROXY === 'true'
+        ? (c.req.header('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown')
+        : 'local')
   const limiters = {
     general: new RateLimiter(300, 60_000),
     search: new RateLimiter(30, 60_000),
@@ -45,7 +50,11 @@ export function createApp({ config, service, store, clientIp }: AppOptions) {
     const wait = limiters[kind].check(`${kind}:${ipOf(c)}`)
     if (wait > 0) {
       c.header('Retry-After', String(wait))
-      throw new ServiceError(429, 'rate_limited', 'Too many requests. Please wait a moment and try again.')
+      throw new ServiceError(
+        429,
+        'rate_limited',
+        'Too many requests. Please wait a moment and try again.',
+      )
     }
   }
 
@@ -60,11 +69,18 @@ export function createApp({ config, service, store, clientIp }: AppOptions) {
       // CSRF: SameSite=Lax cookie + same-origin check + JSON bodies only.
       const origin = c.req.header('origin')
       if (origin) {
-        const allowed = new Set([new URL(c.req.url).origin, config.PUBLIC_BASE_URL && new URL(config.PUBLIC_BASE_URL).origin].filter(Boolean))
-        if (!allowed.has(origin)) throw new ServiceError(403, 'bad_origin', 'Cross-site request refused.')
+        const allowed = new Set(
+          [
+            new URL(c.req.url).origin,
+            config.PUBLIC_BASE_URL && new URL(config.PUBLIC_BASE_URL).origin,
+          ].filter(Boolean),
+        )
+        if (!allowed.has(origin))
+          throw new ServiceError(403, 'bad_origin', 'Cross-site request refused.')
       }
       const len = Number(c.req.header('content-length') ?? '0')
-      if (len > 64_000) throw new ServiceError(413, 'too_large', 'Request body is too large.')
+      if (len > 64_000)
+        throw new ServiceError(413, 'too_large', 'Request body is too large.')
       if (len > 0 && !c.req.header('content-type')?.startsWith('application/json')) {
         throw new ServiceError(415, 'json_required', 'Send JSON.')
       }
@@ -102,7 +118,10 @@ export function createApp({ config, service, store, clientIp }: AppOptions) {
   }
   const notFound = () => new ServiceError(404, 'not_found', 'Trip not found.')
 
-  const body = async <T extends z.ZodType>(c: Context, schema: T): Promise<z.infer<T>> => {
+  const body = async <T extends z.ZodType>(
+    c: Context,
+    schema: T,
+  ): Promise<z.infer<T>> => {
     let raw: unknown = {}
     const text = await c.req.text()
     if (text) {
@@ -114,7 +133,12 @@ export function createApp({ config, service, store, clientIp }: AppOptions) {
     }
     const parsed = schema.safeParse(raw)
     if (!parsed.success) {
-      throw new ServiceError(400, 'invalid_input', 'Some fields need attention.', parsed.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message })))
+      throw new ServiceError(
+        400,
+        'invalid_input',
+        'Some fields need attention.',
+        parsed.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message })),
+      )
     }
     return parsed.data
   }
@@ -132,7 +156,11 @@ export function createApp({ config, service, store, clientIp }: AppOptions) {
       return c.json(await service.searchAccommodation(query, kind))
     } catch (err) {
       if (err instanceof ServiceError) throw err
-      throw new ServiceError(503, 'places_unavailable', 'Accommodation search is unavailable right now. Please try again shortly.')
+      throw new ServiceError(
+        503,
+        'places_unavailable',
+        'Accommodation search is unavailable right now. Please try again shortly.',
+      )
     }
   })
 
@@ -141,7 +169,14 @@ export function createApp({ config, service, store, clientIp }: AppOptions) {
     if (!hash) return c.json({ trips: [] })
     const trips = await store.listTripsByOwner(hash)
     return c.json({
-      trips: trips.map((t) => ({ id: t.id, updatedAt: t.updatedAt, name: t.accommodation?.name ?? 'Untitled trip', checkIn: t.preferences?.checkIn ?? null, checkOut: t.preferences?.checkOut ?? null, isSample: t.accommodation?.isSample ?? false })),
+      trips: trips.map((t) => ({
+        id: t.id,
+        updatedAt: t.updatedAt,
+        name: t.accommodation?.name ?? 'Untitled trip',
+        checkIn: t.preferences?.checkIn ?? null,
+        checkOut: t.preferences?.checkOut ?? null,
+        isSample: t.accommodation?.isSample ?? false,
+      })),
     })
   })
 
@@ -162,20 +197,29 @@ export function createApp({ config, service, store, clientIp }: AppOptions) {
   app.get('/api/trips/:id/export.json', async (c) => {
     const trip = await ownedTrip(c)
     c.header('Content-Disposition', 'attachment; filename="stayscout-trip.json"')
-    return c.json({ exportedAt: new Date().toISOString(), trip: await service.view(trip) })
+    return c.json({
+      exportedAt: new Date().toISOString(),
+      trip: await service.view(trip),
+    })
   })
 
   app.put('/api/trips/:id/accommodation', async (c) => {
     const trip = await ownedTrip(c)
     const sel = await body(c, accommodationSelectSchema)
     const r = await service.changeAccommodation(trip, sel)
-    return c.json({ trip: await service.view(r.trip), removedPlaces: r.removedPlaces, removedFromPlan: r.removedFromPlan })
+    return c.json({
+      trip: await service.view(r.trip),
+      removedPlaces: r.removedPlaces,
+      removedFromPlan: r.removedFromPlan,
+    })
   })
 
   app.post('/api/trips/:id/accommodation/confirm', async (c) => {
     const trip = await ownedTrip(c)
     const { acknowledgeAreaCentre } = await body(c, confirmAccommodationSchema)
-    return c.json(await service.view(await service.confirmAccommodation(trip, acknowledgeAreaCentre)))
+    return c.json(
+      await service.view(await service.confirmAccommodation(trip, acknowledgeAreaCentre)),
+    )
   })
 
   app.put('/api/trips/:id/preferences', async (c) => {
@@ -222,7 +266,9 @@ export function createApp({ config, service, store, clientIp }: AppOptions) {
     return c.json(await service.view(r.trip))
   })
 
-  app.get('/api/trips/:id/safety', async (c) => c.json(await service.safety(await ownedTrip(c))))
+  app.get('/api/trips/:id/safety', async (c) =>
+    c.json(await service.safety(await ownedTrip(c))),
+  )
 
   app.get('/api/trips/:id/guide.pdf', async (c) => {
     limit(c, 'expensive')
@@ -248,9 +294,19 @@ export function createApp({ config, service, store, clientIp }: AppOptions) {
 
   app.get('/api/shared/:token', async (c) => {
     const token = c.req.param('token')
-    if (!/^[A-Za-z0-9_-]{43}$/.test(token)) throw new ServiceError(404, 'not_found', 'This link is not valid or was turned off.')
+    if (!/^[A-Za-z0-9_-]{43}$/.test(token))
+      throw new ServiceError(
+        404,
+        'not_found',
+        'This link is not valid or was turned off.',
+      )
     const trip = await store.findTripByShareHash(sha256(token))
-    if (!trip) throw new ServiceError(404, 'not_found', 'This link is not valid or was turned off.')
+    if (!trip)
+      throw new ServiceError(
+        404,
+        'not_found',
+        'This link is not valid or was turned off.',
+      )
     return c.json(await service.view(trip, { readOnly: true }))
   })
 
@@ -272,11 +328,24 @@ export function createApp({ config, service, store, clientIp }: AppOptions) {
 
   app.onError((err, c) => {
     if (err instanceof ServiceError) {
-      return c.json({ error: { code: err.code, message: err.message, details: err.details } }, err.status as 400)
+      return c.json(
+        { error: { code: err.code, message: err.message, details: err.details } },
+        err.status as 400,
+      )
     }
     // Log the type and message only; never request bodies or provider payloads.
-    console.error(`[error] ${c.req.method} ${c.req.routePath}: ${err.name}: ${err.message}`)
-    return c.json({ error: { code: 'internal', message: 'Something went wrong on our side. Please try again.' } }, 500)
+    console.error(
+      `[error] ${c.req.method} ${c.req.routePath}: ${err.name}: ${err.message}`,
+    )
+    return c.json(
+      {
+        error: {
+          code: 'internal',
+          message: 'Something went wrong on our side. Please try again.',
+        },
+      },
+      500,
+    )
   })
 
   return app
@@ -286,7 +355,7 @@ export const SECURITY_HEADERS: Record<string, string> = {
   'Content-Security-Policy': [
     "default-src 'self'",
     "script-src 'self' https://www.paypal.com",
-    "frame-src https://www.paypal.com https://www.sandbox.paypal.com",
+    'frame-src https://www.paypal.com https://www.sandbox.paypal.com',
     "connect-src 'self' https://www.paypal.com https://www.sandbox.paypal.com",
     "img-src 'self' data: https://www.paypalobjects.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",

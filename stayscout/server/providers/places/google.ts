@@ -27,7 +27,11 @@ import type {
   SourceRecord,
 } from '../../../shared/types.js'
 import { cleanText, requestJson, safeExternalUrl, type FetchLike } from '../http.js'
-import { DEFAULT_DURATION_MIN, type PlaceCandidate, type PlacesProvider } from './types.js'
+import {
+  DEFAULT_DURATION_MIN,
+  type PlaceCandidate,
+  type PlacesProvider,
+} from './types.js'
 
 const BASE = 'https://places.googleapis.com/v1'
 const CACHE_DAYS = 30
@@ -62,9 +66,20 @@ const NEARBY_FIELDS = PLACE_FIELDS.map((f) => `places.${f}`).join(',')
 const TYPE_GROUPS: Array<{ categories: PlaceCategory[]; types: string[] }> = [
   {
     categories: ['culture', 'family', 'rainy_day', 'tour'],
-    types: ['tourist_attraction', 'museum', 'art_gallery', 'historical_landmark', 'aquarium', 'zoo', 'amusement_park'],
+    types: [
+      'tourist_attraction',
+      'museum',
+      'art_gallery',
+      'historical_landmark',
+      'aquarium',
+      'zoo',
+      'amusement_park',
+    ],
   },
-  { categories: ['nature', 'park', 'beach', 'wildlife', 'adventure'], types: ['park', 'national_park', 'hiking_area'] },
+  {
+    categories: ['nature', 'park', 'beach', 'wildlife', 'adventure'],
+    types: ['park', 'national_park', 'hiking_area'],
+  },
   { categories: ['food'], types: ['restaurant', 'cafe'] },
   { categories: ['shopping', 'wellness'], types: ['shopping_mall', 'spa'] },
 ]
@@ -127,9 +142,11 @@ const AREA_TYPES = new Set([
 ])
 
 type Json = Record<string, unknown>
-const obj = (v: unknown): Json => (typeof v === 'object' && v !== null && !Array.isArray(v) ? (v as Json) : {})
+const obj = (v: unknown): Json =>
+  typeof v === 'object' && v !== null && !Array.isArray(v) ? (v as Json) : {}
 const arr = (v: unknown): unknown[] => (Array.isArray(v) ? v : [])
-const strs = (v: unknown): string[] => arr(v).filter((x): x is string => typeof x === 'string')
+const strs = (v: unknown): string[] =>
+  arr(v).filter((x): x is string => typeof x === 'string')
 
 function parseLocation(v: unknown): unknown {
   const o = obj(v)
@@ -138,7 +155,9 @@ function parseLocation(v: unknown): unknown {
 }
 
 function pad(n: unknown): string {
-  return typeof n === 'number' && Number.isInteger(n) && n >= 0 && n < 60 ? String(n).padStart(2, '0') : '00'
+  return typeof n === 'number' && Number.isInteger(n) && n >= 0 && n < 60
+    ? String(n).padStart(2, '0')
+    : '00'
 }
 
 /** regularOpeningHours.periods → our periods. Overnight closes are capped at 24:00. */
@@ -150,7 +169,8 @@ export function parseOpeningHours(v: unknown): OpeningPeriod[] | null {
     const open = obj(obj(p).open)
     const close = obj(obj(p).close)
     const day = open.day
-    if (typeof day !== 'number' || day < 0 || day > 6 || typeof open.hour !== 'number') continue
+    if (typeof day !== 'number' || day < 0 || day > 6 || typeof open.hour !== 'number')
+      continue
     const openStr = `${pad(open.hour)}:${pad(open.minute)}`
     // No close at all means open 24 hours.
     if (Object.keys(close).length === 0) {
@@ -158,7 +178,9 @@ export function parseOpeningHours(v: unknown): OpeningPeriod[] | null {
       break
     }
     const closeStr =
-      close.day !== day || typeof close.hour !== 'number' ? '24:00' : `${pad(close.hour)}:${pad(close.minute)}`
+      close.day !== day || typeof close.hour !== 'number'
+        ? '24:00'
+        : `${pad(close.hour)}:${pad(close.minute)}`
     out.push({ day, open: openStr, close: closeStr })
   }
   return out.length > 0 ? out : null
@@ -171,7 +193,11 @@ export class GooglePlacesProvider implements PlacesProvider {
   private readonly fetchImpl: FetchLike
   private readonly now: () => Date
 
-  constructor(apiKey: string, fetchImpl: FetchLike = fetch, now: () => Date = () => new Date()) {
+  constructor(
+    apiKey: string,
+    fetchImpl: FetchLike = fetch,
+    now: () => Date = () => new Date(),
+  ) {
     this.apiKey = apiKey
     this.fetchImpl = fetchImpl
     this.now = now
@@ -181,7 +207,10 @@ export class GooglePlacesProvider implements PlacesProvider {
     return { 'X-Goog-Api-Key': this.apiKey, 'X-Goog-FieldMask': fieldMask }
   }
 
-  async searchAccommodation(query: string, kind: AccommodationKind | 'any'): Promise<AccommodationCandidate[]> {
+  async searchAccommodation(
+    query: string,
+    kind: AccommodationKind | 'any',
+  ): Promise<AccommodationCandidate[]> {
     const body: Json = { textQuery: query, pageSize: 10, languageCode: 'en' }
     if (kind !== 'destination') body.includedType = 'lodging'
     const { data } = await requestJson<Json>({
@@ -200,7 +229,9 @@ export class GooglePlacesProvider implements PlacesProvider {
     return disambiguate(out)
   }
 
-  async resolveAccommodation(providerPlaceId: string): Promise<AccommodationCandidate | null> {
+  async resolveAccommodation(
+    providerPlaceId: string,
+  ): Promise<AccommodationCandidate | null> {
     if (!/^[A-Za-z0-9_-]{10,300}$/.test(providerPlaceId)) return null
     const { data } = await requestJson<Json>({
       provider: 'google-places',
@@ -211,11 +242,17 @@ export class GooglePlacesProvider implements PlacesProvider {
     return this.toAccommodation(data)
   }
 
-  async searchNearby(origin: LatLng, radiusMeters: number, categories: PlaceCategory[]): Promise<PlaceCandidate[]> {
+  async searchNearby(
+    origin: LatLng,
+    radiusMeters: number,
+    categories: PlaceCategory[],
+  ): Promise<PlaceCandidate[]> {
     // Google caps a circle restriction at 50 000 m; never ask for more.
     const radius = Math.min(radiusMeters, 50_000)
     const wanted = new Set(categories)
-    const groups = TYPE_GROUPS.filter((g) => wanted.size === 0 || g.categories.some((c) => wanted.has(c)))
+    const groups = TYPE_GROUPS.filter(
+      (g) => wanted.size === 0 || g.categories.some((c) => wanted.has(c)),
+    )
     const seen = new Map<string, PlaceCandidate>()
     const results = await Promise.allSettled(
       groups.map((g) =>
@@ -283,13 +320,16 @@ export class GooglePlacesProvider implements PlacesProvider {
     const find = (t: string) => components.find((c) => strs(c.types).includes(t))
     const country = find('country')
     const locality = find('locality') ?? find('postal_town')
-    const isAreaCentre = types.some((t) => AREA_TYPES.has(t)) && !types.includes('lodging')
+    const isAreaCentre =
+      types.some((t) => AREA_TYPES.has(t)) && !types.includes('lodging')
     return {
       provider: 'google',
       providerPlaceId: id,
       isSample: false,
       name,
-      kind: isAreaCentre ? 'destination' : (LODGING_KIND.find(([t]) => types.includes(t))?.[1] ?? 'other'),
+      kind: isAreaCentre
+        ? 'destination'
+        : (LODGING_KIND.find(([t]) => types.includes(t))?.[1] ?? 'other'),
       address: cleanText(p.formattedAddress, 300),
       locality: cleanText(locality?.longText),
       country: cleanText(country?.longText),
@@ -311,7 +351,8 @@ export class GooglePlacesProvider implements PlacesProvider {
     if (!match) return null
     const [matchedType, category, interests] = match
     const hours = parseOpeningHours(p.regularOpeningHours)
-    const priceLevel = typeof p.priceLevel === 'string' ? (PRICE_LEVELS[p.priceLevel] ?? null) : null
+    const priceLevel =
+      typeof p.priceLevel === 'string' ? (PRICE_LEVELS[p.priceLevel] ?? null) : null
     const now = this.now()
     const setting = INDOOR_HINT[category] ?? 'unknown'
     return {
@@ -327,13 +368,29 @@ export class GooglePlacesProvider implements PlacesProvider {
       websiteUrl: safeExternalUrl(p.websiteUri),
       bookingUrl: null,
       mapsUrl: safeExternalUrl(p.googleMapsUri),
-      setting: { value: setting, status: setting === 'unknown' ? 'UNVERIFIED' : 'ESTIMATED', source: null },
-      durationMinutes: { value: DEFAULT_DURATION_MIN[category], status: 'ESTIMATED', source: null },
+      setting: {
+        value: setting,
+        status: setting === 'unknown' ? 'UNVERIFIED' : 'ESTIMATED',
+        source: null,
+      },
+      durationMinutes: {
+        value: DEFAULT_DURATION_MIN[category],
+        status: 'ESTIMATED',
+        source: null,
+      },
       price: priceLevel
-        ? { value: { level: priceLevel, amount: null }, status: 'PROVIDER_LISTED', source: this.source('Price level') }
+        ? {
+            value: { level: priceLevel, amount: null },
+            status: 'PROVIDER_LISTED',
+            source: this.source('Price level'),
+          }
         : null,
       openingHours: hours
-        ? { value: hours, status: 'PROVIDER_LISTED', source: this.source('Regular opening hours') }
+        ? {
+            value: hours,
+            status: 'PROVIDER_LISTED',
+            source: this.source('Regular opening hours'),
+          }
         : null,
       suitability: [],
       warnings: [],
@@ -350,10 +407,14 @@ export class GooglePlacesProvider implements PlacesProvider {
 /** Adds a distinguishing line when two candidates share a name. */
 export function disambiguate(list: AccommodationCandidate[]): AccommodationCandidate[] {
   const counts = new Map<string, number>()
-  for (const c of list) counts.set(c.name.toLowerCase(), (counts.get(c.name.toLowerCase()) ?? 0) + 1)
+  for (const c of list)
+    counts.set(c.name.toLowerCase(), (counts.get(c.name.toLowerCase()) ?? 0) + 1)
   return list.map((c) =>
     (counts.get(c.name.toLowerCase()) ?? 0) > 1 && !c.disambiguation
-      ? { ...c, disambiguation: [c.locality, c.country].filter(Boolean).join(', ') || c.address }
+      ? {
+          ...c,
+          disambiguation: [c.locality, c.country].filter(Boolean).join(', ') || c.address,
+        }
       : c,
   )
 }

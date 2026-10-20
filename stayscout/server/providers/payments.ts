@@ -28,7 +28,13 @@ export interface PaymentProvider {
   readonly name: string
   readonly mode: 'sandbox' | 'live'
   readonly clientId: string
-  createOrder(input: { tripId: string; amount: string; currency: string; requestId: string; description: string }): Promise<OrderSnapshot>
+  createOrder(input: {
+    tripId: string
+    amount: string
+    currency: string
+    requestId: string
+    description: string
+  }): Promise<OrderSnapshot>
   captureOrder(orderId: string, requestId: string): Promise<OrderSnapshot>
   getOrder(orderId: string): Promise<OrderSnapshot>
 }
@@ -50,9 +56,13 @@ export function evaluateOrder(
   }
   if (snap.captureStatus === 'COMPLETED') {
     if (!snap.captureId) return { state: 'failed', reason: 'Capture has no id' }
-    if (snap.customId !== expected.tripId) return { state: 'mismatch', reason: 'Order is not linked to this guide' }
+    if (snap.customId !== expected.tripId)
+      return { state: 'mismatch', reason: 'Order is not linked to this guide' }
     if (snap.currency !== expected.currency || snap.amount !== expected.amount) {
-      return { state: 'mismatch', reason: 'Captured amount or currency does not match the price' }
+      return {
+        state: 'mismatch',
+        reason: 'Captured amount or currency does not match the price',
+      }
     }
     return { state: 'paid', captureId: snap.captureId }
   }
@@ -60,17 +70,23 @@ export function evaluateOrder(
   if (snap.captureStatus && ['DECLINED', 'FAILED'].includes(snap.captureStatus)) {
     return { state: 'failed', reason: `Payment ${snap.captureStatus.toLowerCase()}` }
   }
-  if (snap.captureStatus && ['REFUNDED', 'PARTIALLY_REFUNDED'].includes(snap.captureStatus)) {
+  if (
+    snap.captureStatus &&
+    ['REFUNDED', 'PARTIALLY_REFUNDED'].includes(snap.captureStatus)
+  ) {
     return { state: 'failed', reason: 'Payment was refunded' }
   }
-  if (snap.orderStatus === 'VOIDED') return { state: 'failed', reason: 'Order was voided' }
+  if (snap.orderStatus === 'VOIDED')
+    return { state: 'failed', reason: 'Order was voided' }
   return { state: 'awaiting_approval' }
 }
 
 type Json = Record<string, unknown>
-const obj = (v: unknown): Json => (typeof v === 'object' && v !== null && !Array.isArray(v) ? (v as Json) : {})
+const obj = (v: unknown): Json =>
+  typeof v === 'object' && v !== null && !Array.isArray(v) ? (v as Json) : {}
 const first = (v: unknown): Json => obj(Array.isArray(v) ? v[0] : undefined)
-const str = (v: unknown): string | null => (typeof v === 'string' && v.length <= 200 ? v : null)
+const str = (v: unknown): string | null =>
+  typeof v === 'string' && v.length <= 200 ? v : null
 
 export function parseOrder(data: unknown): OrderSnapshot {
   const o = obj(data)
@@ -97,11 +113,19 @@ export class PayPalProvider implements PaymentProvider {
   private readonly fetchImpl: FetchLike
   private token: { value: string; expiresAt: number } | null = null
 
-  constructor(opts: { clientId: string; secret: string; mode: 'sandbox' | 'live'; fetchImpl?: FetchLike }) {
+  constructor(opts: {
+    clientId: string
+    secret: string
+    mode: 'sandbox' | 'live'
+    fetchImpl?: FetchLike
+  }) {
     this.clientId = opts.clientId
     this.secret = opts.secret
     this.mode = opts.mode
-    this.base = opts.mode === 'live' ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com'
+    this.base =
+      opts.mode === 'live'
+        ? 'https://api-m.paypal.com'
+        : 'https://api-m.sandbox.paypal.com'
     this.fetchImpl = opts.fetchImpl ?? fetch
   }
 
@@ -120,12 +144,18 @@ export class PayPalProvider implements PaymentProvider {
     })
     const value = str(data.access_token)
     const ttl = typeof data.expires_in === 'number' ? data.expires_in : 300
-    if (!value) throw new ProviderError('paypal', 'no access token in response', null, false)
+    if (!value)
+      throw new ProviderError('paypal', 'no access token in response', null, false)
     this.token = { value, expiresAt: Date.now() + ttl * 1000 }
     return value
   }
 
-  private async call(path: string, method: 'GET' | 'POST', requestId?: string, body?: unknown) {
+  private async call(
+    path: string,
+    method: 'GET' | 'POST',
+    requestId?: string,
+    body?: unknown,
+  ) {
     const token = await this.accessToken()
     const { data } = await requestJson<Json>({
       provider: 'paypal',
@@ -143,7 +173,13 @@ export class PayPalProvider implements PaymentProvider {
     return parseOrder(data)
   }
 
-  createOrder(input: { tripId: string; amount: string; currency: string; requestId: string; description: string }) {
+  createOrder(input: {
+    tripId: string
+    amount: string
+    currency: string
+    requestId: string
+    description: string
+  }) {
     return this.call('/v2/checkout/orders', 'POST', input.requestId, {
       intent: 'CAPTURE',
       purchase_units: [
@@ -159,10 +195,15 @@ export class PayPalProvider implements PaymentProvider {
 
   async captureOrder(orderId: string, requestId: string) {
     try {
-      return await this.call(`/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`, 'POST', requestId)
+      return await this.call(
+        `/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`,
+        'POST',
+        requestId,
+      )
     } catch (err) {
       // 422 ORDER_ALREADY_CAPTURED and similar: reconcile from the order itself.
-      if (err instanceof ProviderError && err.status === 422) return this.getOrder(orderId)
+      if (err instanceof ProviderError && err.status === 422)
+        return this.getOrder(orderId)
       throw err
     }
   }

@@ -8,7 +8,14 @@ import { NoSafetyProvider } from './providers/safety.js'
 import { TripService } from './service.js'
 import { MemoryStore } from './store/memory.js'
 
-const SAMPLE_PICKS = ['Kestrel Bay Maritime Museum', 'Kelp Forest Snorkel Tours', 'Saltmarsh Boardwalk Reserve', 'Gannet Point Lighthouse Viewpoint', 'Old Customs House Restaurant', 'Tidepool Discovery Centre']
+const SAMPLE_PICKS = [
+  'Kestrel Bay Maritime Museum',
+  'Kelp Forest Snorkel Tours',
+  'Saltmarsh Boardwalk Reserve',
+  'Gannet Point Lighthouse Viewpoint',
+  'Old Customs House Restaurant',
+  'Tidepool Discovery Centre',
+]
 
 let cached: Promise<TripView> | null = null
 
@@ -30,7 +37,10 @@ async function build(config: Config): Promise<TripView> {
     safety: new NoSafetyProvider(),
     now: () => new Date('2026-10-01T09:00:00Z'),
   })
-  let trip = await service.createTrip('0'.repeat(64), { provider: 'demo', providerPlaceId: 'demo-acc-kestrel-resort' })
+  let trip = await service.createTrip('0'.repeat(64), {
+    provider: 'demo',
+    providerPlaceId: 'demo-acc-kestrel-resort',
+  })
   trip = await service.confirmAccommodation(trip, false)
   trip = await service.setPreferences(trip, {
     checkIn: '2026-12-10',
@@ -50,9 +60,14 @@ async function build(config: Config): Promise<TripView> {
   trip = await service.discover(trip)
   const view = await service.view(trip)
   for (const p of view.places) {
-    if (SAMPLE_PICKS.includes(p.name)) await service.setSelection(trip, p.id, { selected: true })
+    if (SAMPLE_PICKS.includes(p.name))
+      await service.setSelection(trip, p.id, { selected: true })
   }
   const { trip: planned } = await service.generate(trip, { useAi: false })
   const full = await service.view(planned)
-  return { ...full, readOnly: true, entitlement: { fullGuide: true, reason: 'sample', lockedDays: 0 } }
+  return {
+    ...full,
+    readOnly: true,
+    entitlement: { fullGuide: true, reason: 'sample', lockedDays: 0 },
+  }
 }

@@ -1,7 +1,13 @@
 // Trip business logic. Routes authenticate and parse; this file decides.
 
 import { createHash, randomBytes, randomUUID } from 'node:crypto'
-import { MAX_RADIUS_M, isValidLatLng, isWithinRadius, distanceMeters, partitionByRadius } from '../shared/geo.js'
+import {
+  MAX_RADIUS_M,
+  isValidLatLng,
+  isWithinRadius,
+  distanceMeters,
+  partitionByRadius,
+} from '../shared/geo.js'
 import type { ItineraryEdit } from '../shared/schemas.js'
 import type {
   Accommodation,
@@ -102,7 +108,10 @@ export class TripService {
         clientId: payments?.clientId ?? null, // a PayPal client id is public by design
         price: { amount: config.GUIDE_PRICE, currency: config.GUIDE_CURRENCY },
       },
-      safety: { mode: safety.live ? 'live' : 'off', provider: safety.live ? safety.name : null },
+      safety: {
+        mode: safety.live ? 'live' : 'off',
+        provider: safety.live ? safety.name : null,
+      },
       storage: store.kind,
     }
   }
@@ -116,20 +125,44 @@ export class TripService {
     return { candidates, isSample: this.d.places.isSample, provider: this.d.places.name }
   }
 
-  private async resolve(provider: string, providerPlaceId: string): Promise<Accommodation> {
+  private async resolve(
+    provider: string,
+    providerPlaceId: string,
+  ): Promise<Accommodation> {
     if (provider !== this.d.places.name) {
-      throw new ServiceError(400, 'provider_mismatch', 'That result came from a different data provider. Search again.')
+      throw new ServiceError(
+        400,
+        'provider_mismatch',
+        'That result came from a different data provider. Search again.',
+      )
     }
     const c = await this.d.places.resolveAccommodation(providerPlaceId)
-    if (!c) throw new ServiceError(404, 'accommodation_not_found', 'We could not find that property. Search again.')
+    if (!c)
+      throw new ServiceError(
+        404,
+        'accommodation_not_found',
+        'We could not find that property. Search again.',
+      )
     if (!isValidLatLng(c.location)) {
-      throw new ServiceError(422, 'accommodation_location_invalid', 'That property has no usable location, so we cannot measure distances from it.')
+      throw new ServiceError(
+        422,
+        'accommodation_location_invalid',
+        'That property has no usable location, so we cannot measure distances from it.',
+      )
     }
     // Coordinates always come from the provider, never from the browser.
-    return { ...c, confirmed: false, confirmedAt: null, resolvedAt: this.now().toISOString() }
+    return {
+      ...c,
+      confirmed: false,
+      confirmedAt: null,
+      resolvedAt: this.now().toISOString(),
+    }
   }
 
-  async createTrip(ownerHash: string, sel: { provider: string; providerPlaceId: string }): Promise<TripRow> {
+  async createTrip(
+    ownerHash: string,
+    sel: { provider: string; providerPlaceId: string },
+  ): Promise<TripRow> {
     const accommodation = await this.resolve(sel.provider, sel.providerPlaceId)
     const now = this.now().toISOString()
     const row: TripRow = {
@@ -151,11 +184,19 @@ export class TripService {
    * Changing the stay re-measures every saved place from the new location and
    * removes anything now outside 50 km — from places, selections and the plan.
    */
-  async changeAccommodation(trip: TripRow, sel: { provider: string; providerPlaceId: string }) {
+  async changeAccommodation(
+    trip: TripRow,
+    sel: { provider: string; providerPlaceId: string },
+  ) {
     const accommodation = await this.resolve(sel.provider, sel.providerPlaceId)
     const rows = await this.d.store.getPlaces(trip.id)
-    const removed = rows.filter((r) => !isWithinRadius(accommodation.location, r.record.location))
-    await this.d.store.deletePlaces(trip.id, removed.map((r) => r.record.id))
+    const removed = rows.filter(
+      (r) => !isWithinRadius(accommodation.location, r.record.location),
+    )
+    await this.d.store.deletePlaces(
+      trip.id,
+      removed.map((r) => r.record.id),
+    )
     const removedIds = new Set(removed.map((r) => r.record.id))
 
     let itinerary = trip.itinerary
@@ -181,13 +222,22 @@ export class TripService {
           })
         : null
     }
-    const saved = await this.d.store.updateTrip(trip.id, { accommodation, itinerary }, this.now().toISOString())
-    return { trip: saved!, removedPlaces: removed.map((r) => r.record.name), removedFromPlan }
+    const saved = await this.d.store.updateTrip(
+      trip.id,
+      { accommodation, itinerary },
+      this.now().toISOString(),
+    )
+    return {
+      trip: saved!,
+      removedPlaces: removed.map((r) => r.record.name),
+      removedFromPlan,
+    }
   }
 
   async confirmAccommodation(trip: TripRow, acknowledgeAreaCentre: boolean) {
     const a = trip.accommodation
-    if (!a) throw new ServiceError(409, 'no_accommodation', 'Choose your accommodation first.')
+    if (!a)
+      throw new ServiceError(409, 'no_accommodation', 'Choose your accommodation first.')
     if (a.isAreaCentre && !acknowledgeAreaCentre) {
       throw new ServiceError(
         422,
@@ -196,14 +246,20 @@ export class TripService {
       )
     }
     const accommodation = { ...a, confirmed: true, confirmedAt: this.now().toISOString() }
-    return (await this.d.store.updateTrip(trip.id, { accommodation }, this.now().toISOString()))!
+    return (await this.d.store.updateTrip(
+      trip.id,
+      { accommodation },
+      this.now().toISOString(),
+    ))!
   }
 
   // -------------------------------------------------------- preferences
 
   async setPreferences(trip: TripRow, prefs: Preferences) {
     const datesChanged =
-      trip.preferences && (trip.preferences.checkIn !== prefs.checkIn || trip.preferences.checkOut !== prefs.checkOut)
+      trip.preferences &&
+      (trip.preferences.checkIn !== prefs.checkIn ||
+        trip.preferences.checkOut !== prefs.checkOut)
     return (await this.d.store.updateTrip(
       trip.id,
       { preferences: prefs, ...(datesChanged ? { itinerary: null } : {}) },
@@ -215,16 +271,34 @@ export class TripService {
 
   async discover(trip: TripRow) {
     const a = this.requireConfirmed(trip)
-    const categories = [...new Set((trip.preferences?.interests ?? []).flatMap((i) => INTEREST_CATEGORIES[i]))]
+    const categories = [
+      ...new Set(
+        (trip.preferences?.interests ?? []).flatMap((i) => INTEREST_CATEGORIES[i]),
+      ),
+    ]
     let raw: PlaceCandidate[]
     try {
       // The radius is always the server constant; nothing from the request.
-      raw = await this.d.places.searchNearby(a.location, MAX_RADIUS_M, categories, trip.preferences)
+      raw = await this.d.places.searchNearby(
+        a.location,
+        MAX_RADIUS_M,
+        categories,
+        trip.preferences,
+      )
     } catch {
-      throw new ServiceError(503, 'places_unavailable', 'The place search service is unavailable right now. Please try again shortly.')
+      throw new ServiceError(
+        503,
+        'places_unavailable',
+        'The place search service is unavailable right now. Please try again shortly.',
+      )
     }
 
-    const wellFormed = raw.filter((c) => typeof c.name === 'string' && c.name.length > 0 && typeof c.providerPlaceId === 'string')
+    const wellFormed = raw.filter(
+      (c) =>
+        typeof c.name === 'string' &&
+        c.name.length > 0 &&
+        typeof c.providerPlaceId === 'string',
+    )
     const unique = new Map<string, PlaceCandidate>()
     for (const c of wellFormed) unique.set(`${c.provider}:${c.providerPlaceId}`, c)
 
@@ -233,7 +307,11 @@ export class TripService {
     const records: PlaceRecord[] = qualifying
       .sort((x, y) => x.distanceMeters - y.distanceMeters)
       .slice(0, MAX_PLACES_PER_TRIP)
-      .map(({ distanceMeters: _d, ...c }) => ({ ...c, id: placeIdFor(c.provider, c.providerPlaceId), location: c.location as { lat: number; lng: number } }))
+      .map(({ distanceMeters: _d, ...c }) => ({
+        ...c,
+        id: placeIdFor(c.provider, c.providerPlaceId),
+        location: c.location as { lat: number; lng: number },
+      }))
     await this.d.store.replacePlaces(trip.id, records)
 
     const reasons: Record<string, number> = {}
@@ -254,15 +332,31 @@ export class TripService {
     // Remove plan items for places that disappeared from the new results.
     const keep = new Set(records.map((r) => r.id))
     let itinerary = trip.itinerary
-    if (itinerary && itinerary.days.some((d) => d.items.some((i) => i.placeId && !keep.has(i.placeId)))) {
+    if (
+      itinerary &&
+      itinerary.days.some((d) => d.items.some((i) => i.placeId && !keep.has(i.placeId)))
+    ) {
       itinerary = null
     }
-    return (await this.d.store.updateTrip(trip.id, { discovery, itinerary }, this.now().toISOString()))!
+    return (await this.d.store.updateTrip(
+      trip.id,
+      { discovery, itinerary },
+      this.now().toISOString(),
+    ))!
   }
 
-  async setSelection(trip: TripRow, placeId: string, sel: { selected?: boolean; favourite?: boolean }) {
+  async setSelection(
+    trip: TripRow,
+    placeId: string,
+    sel: { selected?: boolean; favourite?: boolean },
+  ) {
     const ok = await this.d.store.setSelection(trip.id, placeId, sel)
-    if (!ok) throw new ServiceError(404, 'place_not_found', 'That place is not part of this trip.')
+    if (!ok)
+      throw new ServiceError(
+        404,
+        'place_not_found',
+        'That place is not part of this trip.',
+      )
   }
 
   // ------------------------------------------------------------- views
@@ -277,7 +371,12 @@ export class TripService {
       if (r.record.expiresAt && Date.parse(r.record.expiresAt) < now) continue
       // Defensive: re-measure on every read, never trust a stored distance.
       if (!isWithinRadius(a.location, r.record.location)) continue
-      out.push({ ...r.record, distanceMeters: distanceMeters(a.location, r.record.location), selected: r.selected, favourite: r.favourite })
+      out.push({
+        ...r.record,
+        distanceMeters: distanceMeters(a.location, r.record.location),
+        selected: r.selected,
+        favourite: r.favourite,
+      })
     }
     return out.sort((x, y) => x.distanceMeters - y.distanceMeters)
   }
@@ -294,8 +393,10 @@ export class TripService {
   }
 
   async entitlement(trip: TripRow) {
-    if (!this.d.payments) return { fullGuide: true, reason: 'payments_not_configured' as const }
-    if (await this.d.store.hasPaidOrder(trip.id)) return { fullGuide: true, reason: 'paid' as const }
+    if (!this.d.payments)
+      return { fullGuide: true, reason: 'payments_not_configured' as const }
+    if (await this.d.store.hasPaidOrder(trip.id))
+      return { fullGuide: true, reason: 'paid' as const }
     return { fullGuide: false, reason: 'preview' as const }
   }
 
@@ -305,7 +406,13 @@ export class TripService {
     let itinerary = trip.itinerary
     let issues: ItineraryIssue[] = []
     if (itinerary && trip.accommodation && trip.preferences) {
-      issues = validateItinerary(itinerary, { accommodation: trip.accommodation, preferences: trip.preferences, places, now: this.now(), newId: () => '' })
+      issues = validateItinerary(itinerary, {
+        accommodation: trip.accommodation,
+        preferences: trip.preferences,
+        places,
+        now: this.now(),
+        newId: () => '',
+      })
     }
     let lockedDays = 0
     if (itinerary && !ent.fullGuide && itinerary.days.length > 1) {
@@ -318,7 +425,11 @@ export class TripService {
       updatedAt: trip.updatedAt,
       accommodation: trip.accommodation,
       preferences: opts.readOnly ? null : trip.preferences,
-      places: opts.readOnly ? places.filter((p) => itinerary?.days.some((d) => d.items.some((i) => i.placeId === p.id))) : places,
+      places: opts.readOnly
+        ? places.filter((p) =>
+            itinerary?.days.some((d) => d.items.some((i) => i.placeId === p.id)),
+          )
+        : places,
       discovery: trip.discovery,
       itinerary,
       issues,
@@ -333,7 +444,11 @@ export class TripService {
   private requireConfirmed(trip: TripRow): Accommodation {
     const a = trip.accommodation
     if (!a || !a.confirmed) {
-      throw new ServiceError(409, 'accommodation_unconfirmed', 'Confirm your accommodation location before discovering places or planning.')
+      throw new ServiceError(
+        409,
+        'accommodation_unconfirmed',
+        'Confirm your accommodation location before discovering places or planning.',
+      )
     }
     return a
   }
@@ -341,17 +456,40 @@ export class TripService {
   private async requireContext(trip: TripRow): Promise<EngineContext> {
     this.requireConfirmed(trip)
     const ctx = await this.context(trip)
-    if (!ctx) throw new ServiceError(409, 'preferences_missing', 'Tell us your dates and preferences first.')
-    if (ctx.places.length === 0) throw new ServiceError(409, 'no_places', 'There are no places within 50 km to plan with yet.')
+    if (!ctx)
+      throw new ServiceError(
+        409,
+        'preferences_missing',
+        'Tell us your dates and preferences first.',
+      )
+    if (ctx.places.length === 0)
+      throw new ServiceError(
+        409,
+        'no_places',
+        'There are no places within 50 km to plan with yet.',
+      )
     return ctx
   }
 
-  private async save(trip: TripRow, itin: Itinerary, ctx: EngineContext): Promise<{ trip: TripRow; issues: ItineraryIssue[] }> {
+  private async save(
+    trip: TripRow,
+    itin: Itinerary,
+    ctx: EngineContext,
+  ): Promise<{ trip: TripRow; issues: ItineraryIssue[] }> {
     const issues = validateItinerary(itin, ctx)
     if (hasErrors(issues)) {
-      throw new ServiceError(422, 'itinerary_invalid', 'This plan breaks one or more rules and was not saved.', issues)
+      throw new ServiceError(
+        422,
+        'itinerary_invalid',
+        'This plan breaks one or more rules and was not saved.',
+        issues,
+      )
     }
-    const saved = await this.d.store.updateTrip(trip.id, { itinerary: itin }, this.now().toISOString())
+    const saved = await this.d.store.updateTrip(
+      trip.id,
+      { itinerary: itin },
+      this.now().toISOString(),
+    )
     return { trip: saved!, issues }
   }
 
@@ -368,22 +506,40 @@ export class TripService {
           places: ctx.places,
         })
         const known = new Set(ctx.places.map((p) => p.id))
-        const invented = proposal.flatMap((d) => d.items).filter((i) => i.placeId !== null && !known.has(i.placeId))
+        const invented = proposal
+          .flatMap((d) => d.items)
+          .filter((i) => i.placeId !== null && !known.has(i.placeId))
         if (invented.length === 0) {
-          const itin = addRainyDayNotes(hydratePlan(proposal, ctx, { generatedBy: 'ai', version }), ctx)
+          const itin = addRainyDayNotes(
+            hydratePlan(proposal, ctx, { generatedBy: 'ai', version }),
+            ctx,
+          )
           const issues = validateItinerary(itin, ctx)
           if (!hasErrors(issues)) return this.save(trip, itin, ctx)
-          warnings.push(`The AI draft broke ${issues.filter((i) => i.severity === 'error').length} planning rule(s), so StayScout's built-in planner was used instead.`)
+          warnings.push(
+            `The AI draft broke ${issues.filter((i) => i.severity === 'error').length} planning rule(s), so StayScout's built-in planner was used instead.`,
+          )
         } else {
-          warnings.push('The AI draft referenced places that are not in your results, so it was discarded and StayScout’s built-in planner was used instead.')
+          warnings.push(
+            'The AI draft referenced places that are not in your results, so it was discarded and StayScout’s built-in planner was used instead.',
+          )
         }
       } catch {
-        warnings.push('The AI planner was unavailable, so StayScout’s built-in planner was used.')
+        warnings.push(
+          'The AI planner was unavailable, so StayScout’s built-in planner was used.',
+        )
       }
     }
 
     const { plan, warnings: w } = schedule(ctx)
-    const itin = addRainyDayNotes(hydratePlan(plan, ctx, { generatedBy: 'deterministic', version, warnings: [...warnings, ...w] }), ctx)
+    const itin = addRainyDayNotes(
+      hydratePlan(plan, ctx, {
+        generatedBy: 'deterministic',
+        version,
+        warnings: [...warnings, ...w],
+      }),
+      ctx,
+    )
     return this.save(trip, itin, ctx)
   }
 
@@ -393,18 +549,37 @@ export class TripService {
     const current = trip.itinerary
     if (!current) throw new ServiceError(409, 'no_itinerary', 'Generate a plan first.')
     const day = current.days[dayIndex]
-    if (!day) throw new ServiceError(404, 'day_not_found', 'That day is not in your plan.')
+    if (!day)
+      throw new ServiceError(404, 'day_not_found', 'That day is not in your plan.')
     const usedElsewhere = new Set(
-      current.days.flatMap((d, i) => (i === dayIndex ? [] : d.items.map((x) => x.placeId).filter((x): x is string => !!x))),
+      current.days.flatMap((d, i) =>
+        i === dayIndex
+          ? []
+          : d.items.map((x) => x.placeId).filter((x): x is string => !!x),
+      ),
     )
     // Rotate: avoid repeating what this day had, if there are alternatives.
-    const previous = new Set(day.items.map((x) => x.placeId).filter((x): x is string => !!x))
+    const previous = new Set(
+      day.items.map((x) => x.placeId).filter((x): x is string => !!x),
+    )
     let { plan } = schedule(ctx, [day.date], new Set([...usedElsewhere, ...previous]))
-    if (plan[0]!.items.every((i) => i.kind !== 'activity')) plan = schedule(ctx, [day.date], usedElsewhere).plan
-    const plans: PlanDay[] = current.days.map((d, i) => (i === dayIndex ? plan[0]! : { date: d.date, items: d.items }))
-    const itin = addRainyDayNotes(hydratePlan(plans, ctx, { generatedBy: current.generatedBy, version: current.version + 1, warnings: current.warnings }), ctx)
+    if (plan[0]!.items.every((i) => i.kind !== 'activity'))
+      plan = schedule(ctx, [day.date], usedElsewhere).plan
+    const plans: PlanDay[] = current.days.map((d, i) =>
+      i === dayIndex ? plan[0]! : { date: d.date, items: d.items },
+    )
+    const itin = addRainyDayNotes(
+      hydratePlan(plans, ctx, {
+        generatedBy: current.generatedBy,
+        version: current.version + 1,
+        warnings: current.warnings,
+      }),
+      ctx,
+    )
     // Keep the other days' notes as they were.
-    itin.days = itin.days.map((d, i) => (i === dayIndex ? d : { ...d, notes: current.days[i]!.notes }))
+    itin.days = itin.days.map((d, i) =>
+      i === dayIndex ? d : { ...d, notes: current.days[i]!.notes },
+    )
     return this.save(trip, itin, ctx)
   }
 
@@ -413,23 +588,49 @@ export class TripService {
     const current = trip.itinerary
     if (!current) throw new ServiceError(409, 'no_itinerary', 'Generate a plan first.')
     if (edit.version !== current.version) {
-      throw new ServiceError(409, 'version_conflict', 'This plan changed in another tab. Reload to see the latest version.')
+      throw new ServiceError(
+        409,
+        'version_conflict',
+        'This plan changed in another tab. Reload to see the latest version.',
+      )
     }
-    const itin = hydratePlan(edit.days, ctx, { generatedBy: current.generatedBy, version: current.version + 1, warnings: [] })
-    itin.days = itin.days.map((d) => ({ ...d, notes: current.days.find((c) => c.date === d.date)?.notes ?? d.notes }))
+    const itin = hydratePlan(edit.days, ctx, {
+      generatedBy: current.generatedBy,
+      version: current.version + 1,
+      warnings: [],
+    })
+    itin.days = itin.days.map((d) => ({
+      ...d,
+      notes: current.days.find((c) => c.date === d.date)?.notes ?? d.notes,
+    }))
     return this.save(trip, itin, ctx)
   }
 
   async exportableView(trip: TripRow): Promise<TripView> {
     const ent = await this.entitlement(trip)
-    if (!ent.fullGuide) throw new ServiceError(402, 'payment_required', 'Unlock the complete guide to download it.')
+    if (!ent.fullGuide)
+      throw new ServiceError(
+        402,
+        'payment_required',
+        'Unlock the complete guide to download it.',
+      )
     const view = await this.view(trip)
-    if (!view.itinerary) throw new ServiceError(409, 'no_itinerary', 'Generate a plan first.')
+    if (!view.itinerary)
+      throw new ServiceError(409, 'no_itinerary', 'Generate a plan first.')
     if (view.itinerary.accommodationKey !== accommodationKey(view.accommodation!)) {
-      throw new ServiceError(409, 'itinerary_stale', 'Your accommodation changed since this plan was made. Regenerate it first.')
+      throw new ServiceError(
+        409,
+        'itinerary_stale',
+        'Your accommodation changed since this plan was made. Regenerate it first.',
+      )
     }
     if (hasErrors(view.issues)) {
-      throw new ServiceError(422, 'itinerary_invalid', 'This plan no longer passes validation and cannot be exported.', view.issues)
+      throw new ServiceError(
+        422,
+        'itinerary_invalid',
+        'This plan no longer passes validation and cannot be exported.',
+        view.issues,
+      )
     }
     return view
   }
@@ -437,27 +638,46 @@ export class TripService {
   async safety(trip: TripRow): Promise<SafetyPanel> {
     const a = this.requireConfirmed(trip)
     const places = await this.tripPlaces(trip)
-    return buildSafetyPanel(this.d.safety, a, [...new Set(places.map((p) => p.category))], this.now())
+    return buildSafetyPanel(
+      this.d.safety,
+      a,
+      [...new Set(places.map((p) => p.category))],
+      this.now(),
+    )
   }
 
   // ------------------------------------------------------------- sharing
 
   async enableShare(trip: TripRow): Promise<string> {
     const token = newToken()
-    await this.d.store.updateTrip(trip.id, { shareTokenHash: sha256(token) }, this.now().toISOString())
+    await this.d.store.updateTrip(
+      trip.id,
+      { shareTokenHash: sha256(token) },
+      this.now().toISOString(),
+    )
     return token
   }
 
   async disableShare(trip: TripRow) {
-    await this.d.store.updateTrip(trip.id, { shareTokenHash: null }, this.now().toISOString())
+    await this.d.store.updateTrip(
+      trip.id,
+      { shareTokenHash: null },
+      this.now().toISOString(),
+    )
   }
 
   // ------------------------------------------------------------ payments
 
   async createCheckout(trip: TripRow) {
     const payments = this.d.payments
-    if (!payments) throw new ServiceError(409, 'payments_off', 'Payments are not configured; the full guide is already unlocked.')
-    if (await this.d.store.hasPaidOrder(trip.id)) throw new ServiceError(409, 'already_paid', 'This guide is already unlocked.')
+    if (!payments)
+      throw new ServiceError(
+        409,
+        'payments_off',
+        'Payments are not configured; the full guide is already unlocked.',
+      )
+    if (await this.d.store.hasPaidOrder(trip.id))
+      throw new ServiceError(409, 'already_paid', 'This guide is already unlocked.')
     const { GUIDE_PRICE: amount, GUIDE_CURRENCY: currency } = this.d.config
     let snap
     try {
@@ -469,9 +689,18 @@ export class TripService {
         description: `StayScout complete guide — ${trip.accommodation?.name ?? 'your stay'}`,
       })
     } catch {
-      throw new ServiceError(503, 'payments_unavailable', 'The payment service is unavailable. You have not been charged.')
+      throw new ServiceError(
+        503,
+        'payments_unavailable',
+        'The payment service is unavailable. You have not been charged.',
+      )
     }
-    if (!snap.orderId) throw new ServiceError(502, 'payments_bad_response', 'The payment service returned an unexpected response.')
+    if (!snap.orderId)
+      throw new ServiceError(
+        502,
+        'payments_bad_response',
+        'The payment service returned an unexpected response.',
+      )
     const now = this.now().toISOString()
     await this.d.store.createOrder({
       id: randomUUID(),
@@ -491,18 +720,32 @@ export class TripService {
   /** Idempotent: repeat calls (double clicks, retried callbacks) return the same outcome. */
   async captureCheckout(trip: TripRow, orderId: string) {
     const payments = this.d.payments
-    if (!payments) throw new ServiceError(409, 'payments_off', 'Payments are not configured.')
+    if (!payments)
+      throw new ServiceError(409, 'payments_off', 'Payments are not configured.')
     const order = await this.d.store.getOrderByProviderId(payments.name, orderId)
-    if (!order || order.tripId !== trip.id) throw new ServiceError(404, 'order_not_found', 'We have no record of that order for this guide.')
+    if (!order || order.tripId !== trip.id)
+      throw new ServiceError(
+        404,
+        'order_not_found',
+        'We have no record of that order for this guide.',
+      )
     if (order.status === 'paid') return { status: 'paid' as const }
 
     let snap
     try {
       snap = await payments.captureOrder(orderId, `capture-${order.id}`)
     } catch {
-      throw new ServiceError(503, 'payments_unavailable', 'We could not confirm the payment yet. If you were charged, it will be applied once confirmed — try again in a moment.')
+      throw new ServiceError(
+        503,
+        'payments_unavailable',
+        'We could not confirm the payment yet. If you were charged, it will be applied once confirmed — try again in a moment.',
+      )
     }
-    const outcome = evaluateOrder(snap, { tripId: trip.id, amount: order.amount, currency: order.currency })
+    const outcome = evaluateOrder(snap, {
+      tripId: trip.id,
+      amount: order.amount,
+      currency: order.currency,
+    })
     const now = this.now().toISOString()
     switch (outcome.state) {
       case 'paid':
@@ -520,7 +763,10 @@ export class TripService {
         // Do not unlock; record for investigation.
         await this.d.store.updateOrder(order.id, 'failed', null, now)
         console.warn(`[payments] order ${order.id} rejected: ${outcome.reason}`)
-        return { status: 'failed' as const, reason: 'The payment could not be matched to this guide. Contact support.' }
+        return {
+          status: 'failed' as const,
+          reason: 'The payment could not be matched to this guide. Contact support.',
+        }
     }
   }
 }

@@ -132,15 +132,24 @@ export function bearingDegrees(a: LatLng, b: LatLng): number {
 }
 
 /** Destination point given a start, bearing and distance (used by tests and demo data checks). */
-export function destinationPoint(origin: LatLng, bearingDeg: number, meters: number): LatLng {
+export function destinationPoint(
+  origin: LatLng,
+  bearingDeg: number,
+  meters: number,
+): LatLng {
   const δ = meters / EARTH_RADIUS_M
   const θ = toRad(bearingDeg)
   const φ1 = toRad(origin.lat)
   const λ1 = toRad(origin.lng)
-  const φ2 = Math.asin(Math.sin(φ1) * Math.cos(δ) + Math.cos(φ1) * Math.sin(δ) * Math.cos(θ))
+  const φ2 = Math.asin(
+    Math.sin(φ1) * Math.cos(δ) + Math.cos(φ1) * Math.sin(δ) * Math.cos(θ),
+  )
   const λ2 =
     λ1 +
-    Math.atan2(Math.sin(θ) * Math.sin(δ) * Math.cos(φ1), Math.cos(δ) - Math.sin(φ1) * Math.sin(φ2))
-  const lng = ((((λ2 * 180) / Math.PI + 540) % 360) + 360) % 360 - 180
+    Math.atan2(
+      Math.sin(θ) * Math.sin(δ) * Math.cos(φ1),
+      Math.cos(δ) - Math.sin(φ1) * Math.sin(φ2),
+    )
+  const lng = (((((λ2 * 180) / Math.PI + 540) % 360) + 360) % 360) - 180
   return { lat: (φ2 * 180) / Math.PI, lng }
 }
