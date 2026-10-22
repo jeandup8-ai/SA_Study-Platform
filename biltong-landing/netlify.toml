@@ -1,0 +1,4 @@
+# Static page: no build step needed.
+[build]
+  command = "echo static site, no build"
+  publish = "."
