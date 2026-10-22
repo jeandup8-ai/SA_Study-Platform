@@ -173,6 +173,10 @@
     .who > div + div { border-top: 1px solid var(--rule); }
     .inside { grid-template-columns: 1fr; }
   }
+  .free { padding-top: 56px; }
+  .free-box { display: flex; flex-wrap: wrap; gap: 18px 28px; align-items: center; justify-content: space-between; border: 2px dashed var(--spice); border-radius: 6px; padding: 26px 28px; }
+  .free-box h2 { margin: 0; }
+  .btn.ghost { background: transparent; color: inherit; border: 2px solid var(--spice); }
   @media (prefers-reduced-motion: reduce) { .btn { transition: none; } .btn:hover { transform: none; } }
 </style>
 <meta property="og:title" content="The Biltong Blueprint">
@@ -328,6 +332,19 @@
         <a class="btn" href="https://jeandup.gumroad.com/l/sdoln" id="cta-buy" rel="noopener">Get The Biltong Blueprint</a>
         <a class="alt-link" href="https://www.etsy.com/shop/BiltongBlueprint" id="cta-etsy" rel="noopener" hidden>Also on Etsy →</a>
         <span class="fine">Secure checkout · Card or PayPal</span>
+      </div>
+    </div>
+  </section>
+  <section class="band free" id="free">
+    <div class="wrap">
+      <div class="free-box">
+        <div class="stack" style="gap:8px">
+          <p class="eyebrow">Not ready yet?</p>
+          <h2>Free Biltong Spice Cheat Sheet</h2>
+          <p class="measure">The classic spice mix already scaled for 500 g to 3 kg (1 to 6.6 lb), plus 5 flavours and 3 quick fixes. Free PDF, sent to your inbox.</p>
+        </div>
+        <!-- FREE LINK: the $0 Gumroad product. Its URL ending must be set to spice-cheat-sheet in Gumroad. -->
+        <a class="btn ghost" href="https://jeandup.gumroad.com/l/spice-cheat-sheet" id="cta-free" rel="noopener">Get the free cheat sheet</a>
       </div>
     </div>
   </section>
