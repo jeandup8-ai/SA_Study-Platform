@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cleaning Business OS: quote calculator, client tracker and profit dashboard in one spreadsheet</title>
+<meta name="description" content="One Google Sheets and Excel system for cleaning business owners. Price every job with a profit check, track clients and unpaid invoices, run payroll and see your real monthly profit. $29.">
+<meta property="og:title" content="Cleaning Business OS: run your cleaning business from one sheet">
+<meta property="og:description" content="Quote calculator with a profit check, client tracker, invoices, team pay and a profit dashboard. Google Sheets and Excel. $29.">
+<meta property="og:image" content="https://biltongblueprint.netlify.app/cleaning/og-image.png">
+<meta property="og:url" content="https://biltongblueprint.netlify.app/cleaning/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230f5c5c'/%3E%3Crect x='8' y='9' width='16' height='3' rx='1.5' fill='%23f4c542'/%3E%3Crect x='8' y='15' width='16' height='3' rx='1.5' fill='%23fff'/%3E%3Crect x='8' y='21' width='10' height='3' rx='1.5' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#0d3b3b;--teal:#0f5c5c;--teal-2:#167373;--mint:#e6f2ef;--paper:#f7faf9;--line:#d5e3e0;--sun:#f4c542;--red:#c2412f;--green:#1f7a4a;--muted:#55706e;--white:#fff}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:400 17px/1.6 "Inter",system-ui,sans-serif}
+a{color:var(--teal)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+h1,h2,h3{line-height:1.1;letter-spacing:-.02em;margin:0;text-wrap:balance}
+h1{font-size:clamp(2.3rem,6vw,4rem);font-weight:800}
+h2{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h3{font-size:1.2rem;font-weight:700}
+p{margin:0}
+.kicker{font:700 .8rem "JetBrains Mono",monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--teal)}
+.hl{background:linear-gradient(transparent 60%,var(--sun) 60%);padding:0 .1em}
+.btn{display:inline-flex;align-items:center;gap:10px;background:var(--sun);color:var(--ink);font-weight:800;font-size:1.1rem;padding:16px 28px;border-radius:14px;text-decoration:none;box-shadow:0 6px 0 #c99d1f;transition:transform .1s}
+.btn:hover{transform:translateY(-1px)}
+.btn.ghost{background:transparent;box-shadow:none;border:2px solid var(--ink)}
+.small{font-size:.9rem;color:var(--muted)}
+section{padding:72px 0}
+.stack{display:flex;flex-direction:column;gap:18px}
+/* nav */
+nav{padding:18px 0}
+nav .wrap{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:800;text-decoration:none;color:var(--ink)}
+.logo i{width:26px;height:26px;border-radius:7px;background:var(--teal);position:relative;display:inline-block}
+.logo i::after{content:"";position:absolute;left:6px;right:6px;top:7px;height:3px;border-radius:2px;background:var(--sun);box-shadow:0 6px 0 #fff,0 12px 0 #fff}
+nav a.buy{font-weight:700;text-decoration:none;background:var(--ink);color:#fff;padding:10px 16px;border-radius:10px;font-size:.95rem}
+/* hero */
+.hero{padding:40px 0 72px}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+.hero .lead{font-size:1.2rem;color:var(--muted);max-width:34rem}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.tags span{font-size:.85rem;font-weight:600;padding:6px 12px;border-radius:999px;background:var(--mint);color:var(--teal)}
+.price-line{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.price-line s{color:var(--muted);font-weight:600}
+/* calculator */
+.calc{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 24px 50px rgba(13,59,59,.12);overflow:hidden}
+.calc header{background:var(--teal);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;font-weight:700;font-size:.95rem}
+.calc header span:last-child{font:500 .8rem "JetBrains Mono";color:#bfe0dc;align-self:center}
+.calc .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:18px 20px}
+.calc label{display:flex;flex-direction:column;gap:4px;font-size:.8rem;font-weight:600;color:var(--muted)}
+.calc input,.calc select{font:600 1rem "Inter";color:var(--ink);background:#fff8dc;border:1px solid #ecd98f;border-radius:10px;padding:9px 10px;width:100%}
+.calc .out{border-top:1px solid var(--line);padding:14px 20px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.calc .out div{display:flex;flex-direction:column}
+.calc .out b{font:700 1.35rem "JetBrains Mono";font-variant-numeric:tabular-nums}
+.calc .out span{font-size:.75rem;color:var(--muted);font-weight:600}
+.verdict{margin:0 20px 18px;padding:12px 14px;border-radius:12px;font-weight:800;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.verdict.ok{background:#d8f0e0;color:var(--green)}
+.verdict.low{background:#f8d7d3;color:var(--red)}
+.calc .note{padding:0 20px 18px;font-size:.78rem;color:var(--muted)}
+/* waterfall */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.bars{display:flex;flex-direction:column;gap:12px}
+.bar{display:grid;grid-template-columns:130px 1fr 72px;gap:12px;align-items:center;font-weight:600;font-size:.95rem}
+.track{height:30px;background:var(--mint);border-radius:8px;position:relative}
+.fill{position:absolute;top:0;bottom:0;border-radius:8px}
+.bar b{font-family:"JetBrains Mono";text-align:right}
+/* cards */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:8px}
+.card .ic{font:700 .75rem "JetBrains Mono";color:var(--teal);letter-spacing:.08em;text-transform:uppercase}
+.card p{color:var(--muted);font-size:.95rem}
+/* compare */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:#fff}
+table{border-collapse:collapse;width:100%;min-width:560px}
+th,td{padding:14px 16px;border-bottom:1px solid var(--line);text-align:left;font-size:.95rem}
+th{font:700 .75rem "JetBrains Mono";letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td.y{color:var(--green);font-weight:700}td.n{color:var(--muted)}
+tr:last-child td{border-bottom:0}
+.us{background:#f2faf7}
+/* who */
+.who{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.who div{border-top:3px solid var(--teal);padding-top:14px;display:flex;flex-direction:column;gap:6px}
+.who p{color:var(--muted);font-size:.95rem}
+/* free */
+.free{background:var(--mint);border-radius:24px;padding:40px;display:grid;grid-template-columns:1.3fr .7fr;gap:30px;align-items:center}
+/* faq */
+details{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 20px}
+details+details{margin-top:10px}
+summary{font-weight:700;cursor:pointer}
+details p{margin-top:10px;color:var(--muted)}
+/* final */
+.final{background:var(--ink);color:#fff;text-align:center}
+.final .stack{align-items:center}
+.final .small{color:#a9c9c4}
+footer{padding:30px 0;font-size:.85rem;color:var(--muted)}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+@media (max-width:860px){
+ .hero .wrap,.split,.free{grid-template-columns:1fr}
+ .cards{grid-template-columns:1fr 1fr}
+ .who{grid-template-columns:1fr 1fr}
+}
+@media (max-width:560px){
+ .cards,.who{grid-template-columns:1fr}
+ .calc .grid{grid-template-columns:1fr 1fr}
+ .free{padding:26px}
+ .bar{grid-template-columns:100px 1fr 64px}
+}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="logo" href="#"><i></i>Cleaning Business OS</a>
+  <a class="buy" href="https://jeandup.gumroad.com/l/cleaning-business-os" data-buy>Get it · $29</a>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div class="stack">
+    <span class="kicker">For house cleaning &amp; janitorial businesses</span>
+    <h1>Price every job with <span class="hl">confidence</span>. Know your real profit.</h1>
+    <p class="lead">One spreadsheet that quotes jobs, checks your margin before you send, tracks clients and unpaid invoices, works out team pay and shows what you actually made this month.</p>
+    <div class="tags"><span>Google Sheets</span><span>Excel</span><span>Any currency</span><span>No monthly fee</span></div>
+    <div class="price-line">
+      <a class="btn" href="https://jeandup.gumroad.com/l/cleaning-business-os" data-buy>Get Cleaning Business OS · $29</a>
+      <span class="small"><s>$39</s> launch price · instant download</span>
+    </div>
+    <span class="small">Secure checkout · card or PayPal</span>
+  </div>
+
+  <div class="calc" id="try" aria-label="Try the quote calculator">
+    <header><span>Quote Calculator · try it</span><span>live demo</span></header>
+    <div class="grid">
+      <label>Service
+        <select id="svc">
+          <option value="1000|10|20|50">Standard Clean</option>
+          <option value="500|20|35|60" selected>Deep Clean</option>
+          <option value="400|25|40|60">Move In / Out</option>
+          <option value="800|10|20|55">Airbnb Turnover</option>
+          <option value="1500|0|15|45">Office</option>
+        </select></label>
+      <label>Frequency
+        <select id="freq">
+          <option value="0">One-time</option><option value="0.15">Weekly</option>
+          <option value="0.10">Bi-weekly</option><option value="0.05">Monthly</option>
+        </select></label>
+      <label>Square feet<input id="sqft" type="number" min="200" step="50" value="1800" inputmode="numeric"></label>
+      <label>Condition
+        <select id="cond"><option value="0.9">Light</option><option value="1" selected>Normal</option><option value="1.25">Heavy (pets)</option><option value="1.5">Very heavy</option></select></label>
+      <label>Bedrooms<input id="bed" type="number" min="0" value="3" inputmode="numeric"></label>
+      <label>Bathrooms<input id="bath" type="number" min="0" step="0.5" value="2" inputmode="decimal"></label>
+      <label>Your price (optional)<input id="mine" type="number" min="0" placeholder="e.g. 250" inputmode="numeric"></label>
+      <label>Cleaner wage / hr<input id="wage" type="number" min="0" value="18" inputmode="decimal"></label>
+    </div>
+    <div class="out">
+      <div><b id="o-hrs">0</b><span>labour hours</span></div>
+      <div><b id="o-price">$0</b><span>suggested price</span></div>
+      <div><b id="o-margin">0%</b><span>profit margin</span></div>
+    </div>
+    <div class="verdict ok" id="verdict"><span id="v1">Healthy margin</span><span id="v2"></span></div>
+    <p class="note">Demo uses the sheet's default rates, 12% payroll costs, 5% supplies and a 35% target margin. In the full sheet you set your own.</p>
+  </div>
+</div></header>
+
+<section style="background:#fff"><div class="wrap split">
+  <div class="stack">
+    <span class="kicker">The problem</span>
+    <h2>You charged $150. You kept $79.</h2>
+    <p class="small" style="font-size:1.05rem">Most cleaning businesses price by feel, then wonder where the money went. Wages, payroll costs and supplies eat half of every clean before insurance, fuel and software. Cleaning Business OS shows you that number on every quote and every job, so underpriced work gets caught before you say yes.</p>
+  </div>
+  <div class="bars" aria-label="Breakdown of a $150 clean">
+    <div class="bar"><span>Price</span><div class="track"><div class="fill" style="left:0;width:100%;background:var(--teal)"></div></div><b>$150</b></div>
+    <div class="bar"><span>Cleaner wage</span><div class="track"><div class="fill" style="left:0;width:38%;background:var(--red)"></div></div><b>−$57</b></div>
+    <div class="bar"><span>Payroll costs</span><div class="track"><div class="fill" style="left:38%;width:4.6%;background:var(--red)"></div></div><b>−$7</b></div>
+    <div class="bar"><span>Supplies</span><div class="track"><div class="fill" style="left:42.6%;width:5%;background:var(--red)"></div></div><b>−$8</b></div>
+    <div class="bar"><span>Profit</span><div class="track"><div class="fill" style="left:47.6%;width:52.4%;background:var(--green)"></div></div><b>$79</b></div>
+    <p class="small">3 hours at $19/h, 12% payroll costs, 5% supplies.</p>
+  </div>
+</div></section>
+
+<section><div class="wrap stack" style="gap:28px">
+  <div class="stack"><span class="kicker">What's inside</span><h2>Everything connected, in one file</h2></div>
+  <div class="cards">
+    <div class="card"><span class="ic">Quote Calculator</span><h3>Price from size and rooms</h3><p>Square feet, bedrooms, bathrooms, service, frequency, condition and add-ons give you a price, labour hours and time on site.</p></div>
+    <div class="card"><span class="ic">Profit check</span><h3>Catch underpriced quotes</h3><p>Every quote shows profit and margin, and tells you the lowest price that hits your target.</p></div>
+    <div class="card"><span class="ic">Clients</span><h3>Who's due, who owes you</h3><p>Last clean, next due date, "Overdue" and "Due this week" flags, lifetime revenue and unpaid balance, all automatic.</p></div>
+    <div class="card"><span class="ic">Jobs</span><h3>Profit on every clean</h3><p>Log a job once. Tax, labour cost per cleaner, supplies, profit, margin, invoice number and payment status fill in.</p></div>
+    <div class="card"><span class="ic">Invoices</span><h3>Invoice in 5 seconds</h3><p>Type an invoice number and a branded invoice with a PAID or DUE stamp is ready to save as PDF.</p></div>
+    <div class="card"><span class="ic">Dashboard</span><h3>Your real monthly profit</h3><p>Revenue, net profit, margin, revenue per labour hour, tax to set aside, quote win rate and a month-by-month chart.</p></div>
+    <div class="card"><span class="ic">Team pay</span><h3>Payroll in one view</h3><p>Pick a pay period to see hours, jobs and gross pay for each cleaner.</p></div>
+    <div class="card"><span class="ic">Quotes</span><h3>Never forget a follow-up</h3><p>Quotes still open after 3 days get flagged, so leads don't go cold.</p></div>
+    <div class="card"><span class="ic">Expenses &amp; mileage</span><h3>Ready for tax time</h3><p>Every cost and business trip logged by category, with your mileage deduction worked out.</p></div>
+  </div>
+</div></section>
+
+<section style="background:#fff"><div class="wrap stack" style="gap:24px">
+  <div class="stack"><span class="kicker">Why this one</span><h2>More than a template, less than a subscription</h2></div>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th class="us">Cleaning Business OS</th><th>Single templates</th><th>Cleaning software</th></tr></thead>
+    <tbody>
+      <tr><td>Quote calculator with a margin check</td><td class="y us">Yes</td><td class="n">Rarely</td><td class="n">Some</td></tr>
+      <tr><td>Clients, jobs, invoices and payroll connected</td><td class="y us">Yes</td><td class="n">No, separate files</td><td class="y">Yes</td></tr>
+      <tr><td>Real net profit after expenses</td><td class="y us">Yes</td><td class="n">No</td><td class="n">Often extra</td></tr>
+      <tr><td>Cost</td><td class="us"><b>$29 once</b></td><td>$4–$18 each</td><td>Monthly fee</td></tr>
+      <tr><td>Works offline, your data stays yours</td><td class="y us">Yes</td><td class="y">Yes</td><td class="n">No</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<section><div class="wrap stack" style="gap:28px">
+  <div class="stack"><span class="kicker">Who it's for</span><h2>Built for owner-operators and small teams</h2></div>
+  <div class="who">
+    <div><h3>Solo house cleaners</h3><p>Stop guessing prices and know exactly what each client is worth.</p></div>
+    <div><h3>Growing teams</h3><p>Track each cleaner's hours and pay, and see which services make money.</p></div>
+    <div><h3>Airbnb turnover pros</h3><p>Fast repeat jobs, add-ons and per-property revenue in one place.</p></div>
+    <div><h3>Office cleaners</h3><p>Recurring contracts, invoices and overdue payments under control.</p></div>
+  </div>
+</div></section>
+
+<section id="free"><div class="wrap">
+  <div class="free">
+    <div class="stack">
+      <span class="kicker">Free download</span>
+      <h2>The Cleaning Price Cheat Sheet</h2>
+      <p class="small" style="font-size:1.05rem">The pricing formula, starting rates for 6 services, frequency discounts, an add-on price menu and the 30-second margin check. One printable PDF.</p>
+    </div>
+    <div><a class="btn ghost" href="https://jeandup.gumroad.com/l/cleaning-price-cheat-sheet">Get the free cheat sheet</a></div>
+  </div>
+</div></section>
+
+<section style="background:#fff"><div class="wrap stack" style="gap:20px;max-width:780px">
+  <div class="stack"><span class="kicker">Questions</span><h2>Good to know</h2></div>
+  <div>
+    <details><summary>Does it work in Google Sheets and Excel?</summary><p>Yes. You get an Excel file that opens directly in Excel, and a 1-minute guide to open it in Google Sheets (free) on any computer. Dropdowns, formulas and the dashboard chart work in both.</p></details>
+    <details><summary>I'm not good with spreadsheets. Is it hard?</summary><p>You only type in the yellow cells. Everything else calculates itself. A Start Here tab walks you through setup in about 15 minutes, and sample data shows how it works.</p></details>
+    <details><summary>Can I use my own prices and currency?</summary><p>Yes. Set your hourly rates per service, sq ft speeds, frequency discounts, add-on prices, wages, tax rate and currency label on the Settings tab.</p></details>
+    <details><summary>Does it work on a phone?</summary><p>You can view and log jobs in the Google Sheets app. Setting it up is easier on a computer.</p></details>
+    <details><summary>Is it a subscription?</summary><p>No. Pay once and the file is yours, with no monthly fee.</p></details>
+    <details><summary>What if I get stuck?</summary><p>Reply to your receipt email and we'll help you set it up.</p></details>
+  </div>
+</div></section>
+
+<section class="final"><div class="wrap stack">
+  <span class="kicker" style="color:var(--sun)">Launch price</span>
+  <h2>Run your cleaning business from one sheet</h2>
+  <p class="small">Quote calculator · profit check · clients · jobs · invoices · team pay · dashboard</p>
+  <a class="btn" href="https://jeandup.gumroad.com/l/cleaning-business-os" data-buy>Get it for $29</a>
+  <span class="small">Instant download · Google Sheets + Excel · secure checkout</span>
+</div></section>
+
+<footer><div class="wrap">
+  <span>© 2026 Cleaning Business OS</span>
+  <span>For business planning only. Check tax and payroll rules with your accountant.</span>
+</div></footer>
+
+<script>
+(function(){
+  // Carry UTM tags from the landing URL through to checkout so sales show their source.
+  var q = location.search;
+  if (q) document.querySelectorAll('[data-buy]').forEach(function(a){ a.href += (a.href.indexOf('?')<0?'?':'&') + q.slice(1); });
+
+  var $ = function(id){ return document.getElementById(id); };
+  var money = function(n){ return '$' + Math.round(n).toLocaleString('en-US'); };
+  function calc(){
+    var s = $('svc').value.split('|').map(Number); // sqft/hr, min/bed, min/bath, rate
+    var sqft = +$('sqft').value || 0, bed = +$('bed').value || 0, bath = +$('bath').value || 0;
+    var hrs = (sqft / s[0] + bed * s[1] / 60 + bath * s[2] / 60) * +$('cond').value;
+    var base = hrs * s[3];
+    var suggested = Math.max(120, base * (1 - +$('freq').value));
+    var price = +$('mine').value > 0 ? +$('mine').value : suggested;
+    var wage = +$('wage').value || 0;
+    var labour = hrs * wage * 1.12, supplies = price * 0.05;
+    var margin = price > 0 ? (price - labour - supplies) / price : 0;
+    var floor = Math.ceil(labour / (1 - 0.05 - 0.35) / 5) * 5;
+    $('o-hrs').textContent = hrs.toFixed(1);
+    $('o-price').textContent = money(suggested);
+    $('o-margin').textContent = (margin * 100).toFixed(0) + '%';
+    var ok = margin >= 0.35, v = $('verdict');
+    v.className = 'verdict ' + (ok ? 'ok' : 'low');
+    $('v1').textContent = ok ? 'Healthy margin' : 'Below 35% target';
+    $('v2').textContent = ok ? (+$('mine').value > 0 ? 'Good to send' : '') : 'Quote at least ' + money(floor);
+  }
+  ['svc','freq','sqft','cond','bed','bath','mine','wage'].forEach(function(id){ $(id).addEventListener('input', calc); });
+  calc();
+})();
+</script>
+</body>
+</html>
