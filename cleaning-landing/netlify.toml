@@ -1,4 +1,4 @@
 [build]
   publish = "."
 
-# Deployed by the cleaningbusinessos Netlify project (base directory cleaning-landing).
+# Deployed by the cleaningbusinessos Netlify project (base directory cleaning-landing, production branch claude/project-thread-ae1jje).
