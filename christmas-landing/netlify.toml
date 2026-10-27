@@ -1,0 +1,4 @@
+[build]
+  publish = "."
+
+# Deployed by the debtfreechristmas Netlify project (base directory christmas-landing, production branch claude/project-thread-ae1jje).

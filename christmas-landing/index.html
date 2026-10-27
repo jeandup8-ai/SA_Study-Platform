@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Debt-Free Christmas Planner: Christmas budget spreadsheet and gift tracker (Google Sheets + Excel)</title>
+<meta name="description" content="Plan every holiday dollar before you shop. Christmas budget spreadsheet with a gift tracker, Black Friday deal list, meal planner, card list and a debt-free check. Google Sheets and Excel. $9.">
+<meta property="og:title" content="Debt-Free Christmas Planner: know before you shop">
+<meta property="og:description" content="Christmas budget, gift tracker, Black Friday deals, meals, cards and a debt-free check in one spreadsheet. Google Sheets + Excel. $9.">
+<meta property="og:image" content="https://debtfreechristmas.netlify.app/og-image.png">
+<meta property="og:url" content="https://debtfreechristmas.netlify.app/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231f4d3a'/%3E%3Cpath d='M16 6l7 11h-4l5 8H8l5-8H9z' fill='%23fbf6ea'/%3E%3Ccircle cx='16' cy='6' r='2.4' fill='%23d9a520'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#1b2a24;--green:#1f4d3a;--green-2:#2c6650;--mint:#e4efe8;--cream:#fbf6ea;--paper:#fffdf8;--line:#e2dccb;--red:#a8322d;--red-soft:#f8dcd9;--gold:#d9a520;--amber-soft:#fce9c8;--muted:#5f6b66;--white:#fff}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--cream);color:var(--ink);font:400 17px/1.6 "Inter",system-ui,sans-serif}
+a{color:var(--green)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+h1,h2,h3{font-family:"Fraunces",Georgia,serif;line-height:1.08;letter-spacing:-.01em;margin:0;text-wrap:balance}
+h1{font-size:clamp(2.3rem,6vw,3.9rem);font-weight:800}
+h2{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800}
+h3{font-size:1.2rem;font-weight:600}
+p{margin:0}
+.kicker{font-weight:700;font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;color:var(--red)}
+.hl{color:var(--red)}
+.btn{display:inline-flex;align-items:center;gap:10px;background:var(--red);color:#fff;font-weight:700;font-size:1.08rem;padding:16px 28px;border-radius:999px;text-decoration:none;box-shadow:0 5px 0 #7a221e;transition:transform .1s}
+.btn:hover{transform:translateY(-1px)}
+.btn.alt{background:var(--green);box-shadow:0 5px 0 #12301f}
+.small{font-size:.9rem;color:var(--muted)}
+section{padding:72px 0}
+.stack{display:flex;flex-direction:column;gap:18px}
+nav{padding:18px 0}
+nav .wrap{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{display:flex;align-items:center;gap:10px;font-family:"Fraunces",serif;font-weight:800;font-size:1.1rem;text-decoration:none;color:var(--green)}
+.logo svg{flex:none}
+nav a.buy{font-weight:700;text-decoration:none;background:var(--green);color:#fff;padding:10px 16px;border-radius:999px;font-size:.95rem;white-space:nowrap}
+.hero{padding:30px 0 72px}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+.lead{font-size:1.18rem;color:var(--muted);max-width:34rem}
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.tags span{font-size:.85rem;font-weight:600;padding:6px 12px;border-radius:999px;background:var(--mint);color:var(--green)}
+.price-line{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+/* demo */
+.demo{background:var(--paper);border:1px solid var(--line);border-radius:20px;box-shadow:0 24px 50px rgba(31,77,58,.14);overflow:hidden}
+.demo header{background:var(--green);color:#fff;padding:14px 20px;display:flex;justify-content:space-between;font-weight:700;font-size:.95rem}
+.demo header span:last-child{font-weight:500;font-size:.8rem;color:#b9d6c6;align-self:center}
+.demo .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:18px 20px}
+.demo label{display:flex;flex-direction:column;gap:4px;font-size:.8rem;font-weight:600;color:var(--muted)}
+.demo input{font:600 1rem "Inter";color:var(--ink);background:#fff4d6;border:1px solid #ead7a0;border-radius:10px;padding:9px 10px;width:100%}
+.demo .out{border-top:1px solid var(--line);padding:14px 20px;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.demo .out div{display:flex;flex-direction:column}
+.demo .out b{font-size:1.35rem;font-variant-numeric:tabular-nums}
+.demo .out span{font-size:.75rem;color:var(--muted);font-weight:600}
+.verdict{margin:0 20px 18px;padding:12px 14px;border-radius:12px;font-weight:700}
+.verdict.ok{background:var(--mint);color:var(--green)}
+.verdict.warn{background:var(--amber-soft);color:#8a5300}
+.verdict.bad{background:var(--red-soft);color:var(--red)}
+.demo .note{padding:0 20px 18px;font-size:.78rem;color:var(--muted)}
+/* problem */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:26px;display:flex;flex-direction:column;gap:6px}
+.stat b{font-family:"Fraunces",serif;font-size:2.6rem;color:var(--red);line-height:1}
+/* tabs */
+.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:8px}
+.card .ic{font-weight:700;font-size:.72rem;color:var(--red);letter-spacing:.1em;text-transform:uppercase}
+.card p{color:var(--muted);font-size:.95rem}
+/* compare */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:16px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;min-width:540px}
+th,td{padding:14px 16px;border-bottom:1px solid var(--line);text-align:left;font-size:.95rem}
+th{font-weight:700;font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+td.y{color:var(--green);font-weight:700}td.n{color:var(--muted)}
+tr:last-child td{border-bottom:0}
+.us{background:#f1f7f3}
+/* free */
+.free{background:var(--green);color:#fff;border-radius:24px;padding:40px;display:grid;grid-template-columns:1.3fr .7fr;gap:30px;align-items:center}
+.free .small{color:#cfe3d7}
+.free .btn{background:#fff;color:var(--green);box-shadow:0 5px 0 #b9d6c6}
+details{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px 20px}
+details+details{margin-top:10px}
+summary{font-weight:700;cursor:pointer}
+details p{margin-top:10px;color:var(--muted)}
+.final{background:var(--ink);color:#fff;text-align:center}
+.final .stack{align-items:center}
+.final .small{color:#b7c4bd}
+footer{padding:30px 0;font-size:.85rem;color:var(--muted)}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+@media (max-width:860px){
+ .hero .wrap,.split,.free{grid-template-columns:1fr}
+ .cards{grid-template-columns:1fr 1fr}
+}
+@media (max-width:560px){
+ .cards{grid-template-columns:1fr}
+ .free{padding:26px}
+ .demo .out b{font-size:1.1rem}
+ nav .logo span{display:none}
+}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <a class="logo" href="#"><svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#1f4d3a"/><path d="M16 6l7 11h-4l5 8H8l5-8H9z" fill="#fbf6ea"/><circle cx="16" cy="6" r="2.4" fill="#d9a520"/></svg><span>Debt-Free Christmas</span></a>
+  <a class="buy" href="https://jeandup.gumroad.com/l/debt-free-christmas-planner" data-buy>Get it · $9</a>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div class="stack">
+    <span class="kicker">Christmas budget spreadsheet</span>
+    <h1>Have a great Christmas <span class="hl">without the January bill.</span></h1>
+    <p class="lead">One spreadsheet that plans every holiday dollar before you shop, tracks every gift, and tells you straight away if your plan will put you in debt.</p>
+    <div class="tags"><span>Google Sheets</span><span>Excel</span><span>Phone or computer</span><span>Any currency</span></div>
+    <div class="price-line">
+      <a class="btn" href="https://jeandup.gumroad.com/l/debt-free-christmas-planner" data-buy>Get the planner · $9</a>
+      <span class="small">One-time payment · instant download</span>
+    </div>
+    <span class="small">Secure checkout · card or PayPal</span>
+  </div>
+
+  <div class="demo" id="try" aria-label="Try the debt-free check">
+    <header><span>Debt-free check · try it</span><span>live demo</span></header>
+    <div class="grid">
+      <label>Money you have now<input id="have" type="number" inputmode="decimal" value="600" min="0"></label>
+      <label>Extra before Dec 25<input id="extra" type="number" inputmode="decimal" value="300" min="0"></label>
+      <label>People to buy for<input id="people" type="number" inputmode="numeric" value="10" min="0"></label>
+      <label>Average gift per person<input id="per" type="number" inputmode="decimal" value="50" min="0"></label>
+      <label>Food &amp; hosting<input id="food" type="number" inputmode="decimal" value="200" min="0"></label>
+      <label>Decor, wrap, outings<input id="other" type="number" inputmode="decimal" value="150" min="0"></label>
+    </div>
+    <div class="out">
+      <div><b id="o-avail">900</b><span>Money available</span></div>
+      <div><b id="o-plan">850</b><span>Your plan costs</span></div>
+      <div><b id="o-left">50</b><span>Left over</span></div>
+    </div>
+    <div class="verdict ok" id="verdict" role="status">You're debt-free. Your plan fits your money.</div>
+    <p class="note">The full planner does this for every category and every person, and updates as you shop.</p>
+  </div>
+</div></header>
+
+<section style="padding-top:20px"><div class="wrap split">
+  <div class="stack">
+    <span class="kicker">Why this exists</span>
+    <h2>December spending sneaks up. January sends the bill.</h2>
+    <p class="small" style="font-size:1rem">Most people never add it all up: gifts for ten people, the turkey, the tree, wrapping, a party outfit, and that "small" buy-now-pay-later order. This planner adds it up for you, before you spend, and keeps a running total of anything you put on credit so it never surprises you.</p>
+  </div>
+  <div class="stack">
+    <div class="stat"><b>$890</b><span class="small">What the average American planned to spend on the holidays in 2025 (National Retail Federation).</span></div>
+    <div class="stat"><b>1 sheet</b><span class="small">Budget, gifts, deals, meals, cards and checklist. No app, no subscription, no sign-up.</span></div>
+  </div>
+</div></section>
+
+<section><div class="wrap stack">
+  <span class="kicker">What's inside</span>
+  <h2>Ten tabs. Everything Christmas costs, in one place.</h2>
+  <div class="cards">
+    <div class="card"><span class="ic">Dashboard</span><h3>The answer, at a glance</h3><p>Days to Christmas, money left, the debt-free check, your January credit bill and gift progress.</p></div>
+    <div class="card"><span class="ic">Setup</span><h3>Budget by category</h3><p>Gifts, food, decor, wrapping, stocking stuffers, travel, outfits, outings and giving. Each turns red when you go over.</p></div>
+    <div class="card"><span class="ic">Gift List</span><h3>A budget for every person</h3><p>Gift ideas, where to buy, price paid, how you paid and status from Idea to Given. Overspending shows in red.</p></div>
+    <div class="card"><span class="ic">Deals</span><h3>Black Friday tracker</h3><p>Regular price vs deal price, so you see what you really saved, only on things you planned to buy.</p></div>
+    <div class="card"><span class="ic">Meals</span><h3>Holiday meal planner</h3><p>Menu and shopping list with estimated costs and cost per guest, checked against your food budget.</p></div>
+    <div class="card"><span class="ic">Cards · Checklist · Next Year</span><h3>The rest, handled</h3><p>Card list, a week-by-week to-do list from November to New Year, and a monthly savings plan for next Christmas.</p></div>
+  </div>
+</div></section>
+
+<section style="padding-top:0"><div class="wrap stack">
+  <span class="kicker">Compared</span>
+  <h2>More than a gift list</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th></th><th class="us">Debt-Free Christmas Planner</th><th>$1 gift trackers</th><th>Budget apps</th></tr></thead>
+    <tbody>
+      <tr><td>Debt-free check before you shop</td><td class="y us">Yes</td><td class="n">No</td><td class="n">Rarely</td></tr>
+      <tr><td>January credit / pay-later bill</td><td class="y us">Yes</td><td class="n">No</td><td class="n">Sometimes</td></tr>
+      <tr><td>Budget per person and per category</td><td class="y us">Yes</td><td class="n">Gifts only</td><td class="n">Category only</td></tr>
+      <tr><td>Black Friday deals, meals, cards, checklist</td><td class="y us">Yes</td><td class="n">No</td><td class="n">No</td></tr>
+      <tr><td>Monthly fee or bank login</td><td class="y us">None</td><td class="n">None</td><td class="n">Often</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<section style="padding-top:0"><div class="wrap">
+  <div class="free">
+    <div class="stack">
+      <span class="kicker" style="color:#f3c9c5">Free download</span>
+      <h2>Free printable Christmas gift list</h2>
+      <p>A printable gift list and holiday budget worksheet. Print it, stick it on the fridge, and start planning today.</p>
+    </div>
+    <div class="stack" style="align-items:flex-start">
+      <a class="btn" href="https://jeandup.gumroad.com/l/christmas-gift-list">Get the free printable</a>
+      <span class="small">Pay $0 at checkout. PDF, US Letter.</span>
+    </div>
+  </div>
+</div></section>
+
+<section style="padding-top:0"><div class="wrap stack">
+  <span class="kicker">Questions</span>
+  <h2>Good to know</h2>
+  <div>
+    <details><summary>Does it work on my phone?</summary><p>Yes. Open it in the free Google Sheets app on Android or iPhone, or in Excel. The setup guide shows you how in three steps.</p></details>
+    <details><summary>Do I need to connect my bank?</summary><p>No. Nothing connects to your bank. You type what you plan and what you spend, so your information stays with you.</p></details>
+    <details><summary>Can I use it next year?</summary><p>Yes. Change the year on the Setup tab and clear your entries. The Next Year Fund tab helps you save monthly so next Christmas is paid in cash.</p></details>
+    <details><summary>Which currency does it use?</summary><p>Any. Amounts are plain numbers, so it works in dollars, pounds, euros, rand or anything else.</p></details>
+    <details><summary>What do I get?</summary><p>The planner as an .xlsx file for Google Sheets and Excel, plus a one-page Start Here guide (PDF). You can download them straight away after checkout.</p></details>
+  </div>
+</div></section>
+
+<section class="final"><div class="wrap stack">
+  <h2>Plan it once. Enjoy it fully.</h2>
+  <p class="small">Debt-Free Christmas Planner · Google Sheets + Excel · $9 one-time</p>
+  <a class="btn" href="https://jeandup.gumroad.com/l/debt-free-christmas-planner" data-buy>Get the planner · $9</a>
+</div></section>
+
+<footer><div class="wrap">
+  <span>© Legend Supplies</span>
+  <span><a href="https://jeandup.gumroad.com">More from Legend Supplies</a></span>
+</div></footer>
+
+<script>
+(function(){
+  var ids=["have","extra","people","per","food","other"];
+  var fmt=function(n){return Math.round(n).toLocaleString("en-US")};
+  function v(id){var x=parseFloat(document.getElementById(id).value);return isNaN(x)||x<0?0:x}
+  function run(){
+    var avail=v("have")+v("extra");
+    var plan=v("people")*v("per")+v("food")+v("other");
+    var left=avail-plan;
+    document.getElementById("o-avail").textContent=fmt(avail);
+    document.getElementById("o-plan").textContent=fmt(plan);
+    document.getElementById("o-left").textContent=fmt(left);
+    var el=document.getElementById("verdict");
+    if(left<0){el.className="verdict bad";el.textContent="Over by "+fmt(-left)+". Trim the plan before you shop, or it ends up on a card."}
+    else if(avail>0&&left<avail*0.05){el.className="verdict warn";el.textContent="Tight: only "+fmt(left)+" spare. One extra gift tips you over."}
+    else{el.className="verdict ok";el.textContent="You're debt-free. Your plan fits your money."}
+  }
+  ids.forEach(function(id){document.getElementById(id).addEventListener("input",run)});
+  run();
+  // Tag checkout links so Gumroad shows where sales came from
+  var q=new URLSearchParams(location.search);var src=q.get("utm_source");
+  if(src){document.querySelectorAll("[data-buy]").forEach(function(a){a.href+= (a.href.indexOf("?")>-1?"&":"?")+"utm_source="+encodeURIComponent(src)})}
+})();
+</script>
+</body>
+</html>
