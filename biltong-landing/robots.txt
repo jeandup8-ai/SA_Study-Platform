@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://biltongblueprint.netlify.app/sitemap.xml
